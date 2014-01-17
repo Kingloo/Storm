@@ -5,7 +5,7 @@ A programme that notifies you when a live stream begins.
 
 Currently supports Twitch.tv and Justin.tv streams.
 
-Run the programme and StormUrls.txt will appear in your Documents directory. Paste in the user's account page URL - e.g. http://twitch.tv/purgegamers.
+Run the programme and StormUrls.txt will appear in your Documents directory. Paste in the user's account page URL - e.g. http://twitch.tv/purgegamers - only one per line.
 
 Close and relaunch.
 
