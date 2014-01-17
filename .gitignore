@@ -108,7 +108,6 @@ Backup*/
 UpgradeLog*.XML
 
 ## My own customizations of GitHub default cSharp gitignore
-[Pp]roperties/
 Service References/
 *.pfx
 BuildProcessTemplates/
