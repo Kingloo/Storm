@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
 using System.IO;
 using System.Net;
-using System;
+using Newtonsoft.Json.Linq;
 
 namespace Storm
 {
@@ -12,10 +12,18 @@ namespace Storm
         protected string _displayName = string.Empty;
         protected string _apiUri = string.Empty;
         protected bool _isLive = false;
+        protected bool _hasUpdatedDisplayName = false;
 
         public string Uri { get { return this._uri; } }
-        public string Name { get { return this._name; } }
-
+        public string Name
+        {
+            get { return this._name; }
+            set
+            {
+                this._name = value;
+                OnPropertyChanged("Name");
+            }
+        }
         public string DisplayName
         {
             get { return this._displayName; }
@@ -25,7 +33,6 @@ namespace Storm
                 OnPropertyChanged("DisplayName");
             }
         }
-
         public bool IsLive
         {
             get { return this._isLive; }
@@ -39,40 +46,36 @@ namespace Storm
         protected StreamBase(string streamerPageUri)
         {
             this._uri = streamerPageUri;
-            this._name = GetAccountName(streamerPageUri);
-            this._displayName = this._name;
+            this.Name = SetAccountName(streamerPageUri);
+            this.DisplayName = this.Name;
 
             this.HasGoneLive += StreamBase_HasGoneLive;
+        }
+
+        protected string SetAccountName(string s)
+        {
+            return s.Substring(s.LastIndexOf("/") + 1);
         }
 
         private void StreamBase_HasGoneLive(object sender, StreamBase e)
         {
             string message = string.Format("{0} is now live!", this.DisplayName);
 
-            this.notificationManager.CreateNotification(message, new TimeSpan(0, 0, 15), this.Uri);
+            Disp.Invoke(new Action(
+                delegate()
+                {
+                    this.notificationManager.CreateNotification(message, new TimeSpan(0, 0, 15), this.Uri);
+                }));
         }
 
-        private string GetAccountName(string s)
+        protected JObject GetApiResponse(HttpWebRequest request)
         {
-            return s.Substring(s.LastIndexOf("/") + 1);
-        }
-
-        protected JObject GetApiResponse(string fullApiRequestAddress)
-        {
-            HttpWebRequest httpWebReq = HttpWebRequest.CreateHttp(fullApiRequestAddress);
-            httpWebReq.Accept = ("application/vnd.twitchtv.v2+json");
-            httpWebReq.KeepAlive = false;
-            httpWebReq.Method = "GET";
-            httpWebReq.Referer = "twitch.tv";
-            httpWebReq.Timeout = 2500;
-            httpWebReq.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
-            
             string jsonResponse = string.Empty;
             WebResponse webResp = null;
 
             try
             {
-                webResp = httpWebReq.GetResponse();
+                webResp = request.GetResponse();
             }
             catch (ProtocolViolationException)
             {
@@ -86,6 +89,11 @@ namespace Storm
             using (StreamReader sr = new StreamReader(webResp.GetResponseStream()))
             {
                 jsonResponse = sr.ReadToEnd();
+            }
+
+            if (webResp != null)
+            {
+                webResp.Close();
             }
 
             if (jsonResponse != string.Empty)
@@ -103,6 +111,6 @@ namespace Storm
 
         public abstract void Update();
         protected abstract void ProcessApiResponse(JObject jobj);
-        protected abstract string SetDisplayName();
+        protected abstract bool TrySetDisplayName();
     }
 }

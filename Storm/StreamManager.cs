@@ -15,7 +15,7 @@ namespace Storm
         #region Hidden
         private readonly string urlsFilename = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
         private DispatcherTimer updateTimer = new DispatcherTimer();
-        private NotificationManager notificationManager = new NotificationManager();
+        private delegate void AddStreamsToCollectionDelegate(StreamBase stream);
         #endregion
 
         #region Visible
@@ -107,6 +107,7 @@ namespace Storm
                     case StreamingService.Ustream:
                         break;
                     case StreamingService.Justin:
+                        stream = new JustinStream(url);
                         break;
                     case StreamingService.UnsupportedService:
                         break;
@@ -122,6 +123,11 @@ namespace Storm
                         this.Streams.Add(stream);
                     }));
             }
+        }
+
+        private void AddStreamsToCollection(StreamBase stream)
+        {
+            this.Streams.Add(stream);
         }
 
         private StreamingService DetermineStreamingService(string s)
@@ -171,21 +177,9 @@ namespace Storm
 
         private void GoToStream(object parameter)
         {
-            if (!(parameter is StreamBase))
-            {
-                throw new ArgumentException("StreamManager.cs -> GoToStream(object parameter) -> parameter must be StreamBase");
-            }
-
             StreamBase stream = parameter as StreamBase;
 
-            try
-            {
-                Process.Start(stream.Uri);
-            }
-            catch (FileNotFoundException)
-            {
-                Process.Start("iexplore.exe", stream.Uri);
-            }
+            Misc.OpenUrlInBrowser(stream.Uri);
         }
 
         private void OpenFeedsFile(object parameter)

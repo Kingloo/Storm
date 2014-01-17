@@ -134,7 +134,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="JustinStream.cs" />
     <Compile Include="LiveColorConverter.cs" />
+    <Compile Include="Misc.cs" />
     <Compile Include="NotificationManager.cs" />
     <Compile Include="NotificationWindow.xaml.cs">
       <DependentUpon>NotificationWindow.xaml</DependentUpon>

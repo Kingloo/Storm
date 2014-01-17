@@ -1,51 +1,64 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace Storm
 {
     class TwitchStream : StreamBase
     {
-        private bool isFirstUpdate = true;
-
         public TwitchStream(string s)
             : base(s)
         {
             this._apiUri = "https://api.twitch.tv/kraken";
         }
 
-        protected override string SetDisplayName()
-        {
-            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
-            JObject response = GetApiResponse(apiAddressToQueryForDisplayName);
-
-            string displayName = this._name;
-
-            if (response != null)
-            {
-                if (response["display_name"] != null)
-                {
-                    displayName = (string)response["display_name"];
-                }
-            }
-
-            return displayName;
-        }
-
         public override void Update()
         {
-            if (this.isFirstUpdate)
+            if (!this._hasUpdatedDisplayName)
             {
-                this.DisplayName = SetDisplayName();
-                this.isFirstUpdate = false;
+                this._hasUpdatedDisplayName = TrySetDisplayName();
             }
 
             string streamApiAddress = string.Format("{0}/streams/{1}", this._apiUri, this._name);
 
-            JObject apiResponse = GetApiResponse(streamApiAddress);
+            HttpWebRequest updateRequest = BuildTwitchHttpWebRequest(streamApiAddress);
+            JObject apiResponse = GetApiResponse(updateRequest);
 
             if (apiResponse != null)
             {
                 ProcessApiResponse(apiResponse);
             }
+        }
+
+        protected override bool TrySetDisplayName()
+        {
+            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
+            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(apiAddressToQueryForDisplayName);
+            JObject response = GetApiResponse(twitchRequest);
+
+            if (response != null)
+            {
+                if (response["display_name"] != null)
+                {
+                    this.DisplayName = (string)response["display_name"];
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static HttpWebRequest BuildTwitchHttpWebRequest(string fullApiRequestAddress)
+        {
+            HttpWebRequest req = HttpWebRequest.CreateHttp(fullApiRequestAddress);
+
+            req.Accept = ("application/vnd.twitchtv.v2+json");
+            req.KeepAlive = false;
+            req.Method = "GET";
+            req.Referer = "twitch.tv";
+            req.Timeout = 2500;
+            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+
+            return req;
         }
 
         protected override void ProcessApiResponse(JObject jobj)
@@ -54,7 +67,7 @@ namespace Storm
             {
                 if (jobj["stream"].HasValues)
                 {
-                    if (this._isLive == false)
+                    if (this.IsLive == false)
                     {
                         this.IsLive = true;
 
@@ -63,7 +76,7 @@ namespace Storm
                 }
                 else
                 {
-                    if (this._isLive == true)
+                    if (this.IsLive == true)
                     {
                         this.IsLive = false;
                     }
