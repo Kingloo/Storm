@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Storm
@@ -11,17 +12,17 @@ namespace Storm
             this._apiUri = "https://api.twitch.tv/kraken";
         }
 
-        public override void Update()
+        public async override Task UpdateAsync()
         {
             if (!this._hasUpdatedDisplayName)
             {
-                this._hasUpdatedDisplayName = TrySetDisplayName();
+                this._hasUpdatedDisplayName = await TrySetDisplayNameAsync();
             }
 
             string streamApiAddress = string.Format("{0}/streams/{1}", this._apiUri, this._name);
 
             HttpWebRequest updateRequest = BuildTwitchHttpWebRequest(streamApiAddress);
-            JObject apiResponse = GetApiResponse(updateRequest);
+            JObject apiResponse = await GetApiResponseAsync(updateRequest);
 
             if (apiResponse != null)
             {
@@ -29,11 +30,11 @@ namespace Storm
             }
         }
 
-        protected override bool TrySetDisplayName()
+        protected async override Task<bool> TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
             HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(apiAddressToQueryForDisplayName);
-            JObject response = GetApiResponse(twitchRequest);
+            JObject response = await GetApiResponseAsync(twitchRequest);
 
             if (response != null)
             {

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Storm
@@ -11,18 +12,18 @@ namespace Storm
             this._apiUri = "https://api.justin.tv/api";
         }
 
-        public override void Update()
+        public async override Task UpdateAsync()
         {
             if (!this._hasUpdatedDisplayName)
             {
-                this._hasUpdatedDisplayName = TrySetDisplayName();
+                this._hasUpdatedDisplayName = await this.TrySetDisplayNameAsync();
             }
 
             // the url to query, the JSON from which we will determine if the user is live or not
             string streamApiAddress = string.Format("{0}/stream/summary.json?channel={1}", this._apiUri, this._name);
 
             HttpWebRequest updateRequest = BuildJustinHttpWebRequest(streamApiAddress);
-            JObject apiResponse = GetApiResponse(updateRequest);
+            JObject apiResponse = await GetApiResponseAsync(updateRequest);
 
             if (apiResponse != null)
             {
@@ -30,11 +31,11 @@ namespace Storm
             }
         }
 
-        protected override bool TrySetDisplayName()
+        protected async override Task<bool> TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channel/show/{1}.json", this._apiUri, this._name);
             HttpWebRequest justinRequest = BuildJustinHttpWebRequest(apiAddressToQueryForDisplayName);
-            JObject response = GetApiResponse(justinRequest);
+            JObject response = await GetApiResponseAsync(justinRequest);
 
             if (response != null)
             {
@@ -60,27 +61,24 @@ namespace Storm
 
         protected override void ProcessApiResponse(JObject jobj)
         {
-            if (jobj != null)
+            if (jobj.HasValues)
             {
-                if (jobj.HasValues)
+                int streams_count = (int)jobj["streams_count"];
+
+                if (streams_count == 0)
                 {
-                    int streams_count = (int)jobj["streams_count"];
-
-                    if (streams_count == 0)
+                    if (this.IsLive == true)
                     {
-                        if (this.IsLive == true)
-                        {
-                            this.IsLive = false;
-                        }
+                        this.IsLive = false;
                     }
-                    else
+                }
+                else
+                {
+                    if (this.IsLive == false)
                     {
-                        if (this.IsLive == false)
-                        {
-                            this.IsLive = true;
+                        this.IsLive = true;
 
-                            this.OnHasGoneLive(this);
-                        }
+                        this.OnHasGoneLive(this);
                     }
                 }
             }

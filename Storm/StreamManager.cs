@@ -15,7 +15,6 @@ namespace Storm
         #region Hidden
         private readonly string urlsFilename = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
         private DispatcherTimer updateTimer = new DispatcherTimer();
-        private delegate void AddStreamsToCollectionDelegate(StreamBase stream);
         #endregion
 
         #region Visible
@@ -70,12 +69,7 @@ namespace Storm
             await this.UpdateAllAsync();
         }
 
-        public Task LoadUrlsFromFileAsync()
-        {
-            return Task.Factory.StartNew(loadUrlsFromFileAsyncAction);
-        }
-
-        private void loadUrlsFromFileAsyncAction()
+        public async Task LoadUrlsFromFileAsync()
         {
             List<string> urls = new List<string>();
 
@@ -83,7 +77,7 @@ namespace Storm
 
             using (StreamReader sr = new StreamReader(this.urlsFilename))
             {
-                while ((url = sr.ReadLine()) != null)
+                while ((url = await sr.ReadLineAsync()) != null)
                 {
                     urls.Add(url);
                 }
@@ -117,17 +111,8 @@ namespace Storm
                         break;
                 }
 
-                Disp.Invoke(new Action(
-                    delegate()
-                    {
-                        this.Streams.Add(stream);
-                    }));
+                this.Streams.Add(stream);
             }
-        }
-
-        private void AddStreamsToCollection(StreamBase stream)
-        {
-            this.Streams.Add(stream);
         }
 
         private StreamingService DetermineStreamingService(string s)
@@ -155,24 +140,16 @@ namespace Storm
             return ss;
         }
 
-        public Task UpdateAllAsync()
+        public async Task UpdateAllAsync()
         {
             VisualStateManager.GoToState(Application.Current.MainWindow, "Updating", false);
 
-            return Task.Factory.StartNew(new Action(
-                delegate()
-                {
-                    foreach (StreamBase stream in this.Streams)
-                    {
-                        stream.Update();
-                    }
+            foreach (StreamBase stream in this.Streams)
+            {
+                await stream.UpdateAsync();
+            }
 
-                    Disp.Invoke(new Action(
-                        delegate()
-                        {
-                            VisualStateManager.GoToState(Application.Current.MainWindow, "Stable", false);
-                        }));
-                }));
+            VisualStateManager.GoToState(Application.Current.MainWindow, "Stable", false);
         }
 
         private void GoToStream(object parameter)
@@ -196,6 +173,7 @@ namespace Storm
 
         private bool canExecuteCommand(object parameter)
         {
+            // no need for any special logic, no reason to ever deny this
             return true;
         }
     }

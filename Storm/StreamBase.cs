@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Storm
@@ -68,32 +69,14 @@ namespace Storm
                 }));
         }
 
-        protected JObject GetApiResponse(HttpWebRequest request)
+        protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
-            WebResponse webResp = null;
 
-            try
+            using (WebResponse wr = await request.GetResponseAsync())
+            using (StreamReader sr = new StreamReader(wr.GetResponseStream()))
             {
-                webResp = request.GetResponse();
-            }
-            catch (ProtocolViolationException)
-            {
-                return null;
-            }
-            catch (WebException)
-            {
-                return null;
-            }
-
-            using (StreamReader sr = new StreamReader(webResp.GetResponseStream()))
-            {
-                jsonResponse = sr.ReadToEnd();
-            }
-
-            if (webResp != null)
-            {
-                webResp.Close();
+                jsonResponse = await sr.ReadToEndAsync();
             }
 
             if (jsonResponse != string.Empty)
@@ -109,8 +92,8 @@ namespace Storm
             return null;
         }
 
-        public abstract void Update();
+        public abstract Task UpdateAsync();
+        protected abstract Task<bool> TrySetDisplayNameAsync();
         protected abstract void ProcessApiResponse(JObject jobj);
-        protected abstract bool TrySetDisplayName();
     }
 }
