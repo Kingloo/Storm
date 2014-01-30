@@ -66,17 +66,34 @@ namespace Storm
                 delegate()
                 {
                     this.notificationManager.CreateNotification(message, new TimeSpan(0, 0, 15), this.Uri);
-                }));
+                }), System.Windows.Threading.DispatcherPriority.SystemIdle);
         }
 
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
 
-            using (WebResponse wr = await request.GetResponseAsync())
-            using (StreamReader sr = new StreamReader(wr.GetResponseStream()))
+            WebResponse wr = null;
+
+            try
             {
-                jsonResponse = await sr.ReadToEndAsync();
+                wr = await request.GetResponseAsync();
+
+                using (StreamReader sr = new StreamReader(wr.GetResponseStream()))
+                {
+                    jsonResponse = await sr.ReadToEndAsync();
+                }
+            }
+            catch (WebException)
+            {
+                jsonResponse = string.Empty;
+            }
+            finally
+            {
+                if (wr != null)
+                {
+                    wr.Close();
+                }
             }
 
             if (jsonResponse != string.Empty)

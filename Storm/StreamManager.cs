@@ -23,50 +23,39 @@ namespace Storm
 
         #region Commands
         private DelegateCommand _goToStreamCommand = null;
-        public DelegateCommand GoToStreamCommand
-        {
-            get
-            {
-                if (this._goToStreamCommand == null)
-                {
-                    this._goToStreamCommand = new DelegateCommand(GoToStream, canExecuteCommand);
-                }
-
-                return this._goToStreamCommand;
-            }
-        }
+        public DelegateCommand GoToStreamCommand { get { return this._goToStreamCommand; } }
         private DelegateCommand _openFeedsFileCommand = null;
-        public DelegateCommand OpenFeedsFileCommand
-        {
-            get
-            {
-                if (this._openFeedsFileCommand == null)
-                {
-                    this._openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecuteCommand);
-                }
-
-                return this._openFeedsFileCommand;
-            }
-        }
+        public DelegateCommand OpenFeedsFileCommand { get { return this._openFeedsFileCommand; } }
         #endregion
 
         public StreamManager()
+        {
+            InitializePublicMembers();
+
+            CheckUrlsFilename();
+        }
+
+        private void InitializePublicMembers()
+        {
+            this._openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecuteCommand);
+            this._goToStreamCommand = new DelegateCommand(GoToStream, canExecuteCommand);
+
+            this.Streams = new ObservableCollection<StreamBase>();
+
+            this.updateTimer.Tick += async (sender, e) =>
+                {
+                    await this.UpdateAllAsync();
+                };
+            this.updateTimer.Interval = new TimeSpan(0, 2, 30);
+            this.updateTimer.IsEnabled = true;
+        }
+
+        private void CheckUrlsFilename()
         {
             if (!(File.Exists(this.urlsFilename)))
             {
                 File.CreateText(this.urlsFilename);
             }
-
-            this.Streams = new ObservableCollection<StreamBase>();
-
-            this.updateTimer.Tick += updateTimer_Tick;
-            this.updateTimer.Interval = new TimeSpan(0, 2, 30);
-            this.updateTimer.IsEnabled = true;
-        }
-
-        private async void updateTimer_Tick(object sender, EventArgs e)
-        {
-            await this.UpdateAllAsync();
         }
 
         public async Task LoadUrlsFromFileAsync()
@@ -155,7 +144,7 @@ namespace Storm
         private void GoToStream(object parameter)
         {
             StreamBase stream = parameter as StreamBase;
-
+            
             Misc.OpenUrlInBrowser(stream.Uri);
         }
 

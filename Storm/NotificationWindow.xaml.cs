@@ -25,20 +25,14 @@ namespace Storm
 
         void closeTimer_Tick(object sender, EventArgs e)
         {
+            this.closeTimer.Tick -= closeTimer_Tick;
             this.closeTimer.IsEnabled = false;
             this.Close();
         }
 
         private void Window_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            try
-            {
-                Process.Start("firefox.exe", this.doubleClickUrl);
-            }
-            catch (FileNotFoundException)
-            {
-                Process.Start("iexplore.exe", this.doubleClickUrl);
-            }
+            Misc.OpenUrlInBrowser(this.doubleClickUrl);
         }
     }
 }

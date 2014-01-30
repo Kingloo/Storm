@@ -19,7 +19,7 @@ namespace Storm
 
         protected virtual void OnCanExecuteChanged()
         {
-            Disp.Invoke((ThreadStart)OnCanExecuteChanged, DispatcherPriority.Normal);
+            Disp.BeginInvoke((ThreadStart)OnCanExecuteChanged, DispatcherPriority.Normal);
         }
 
         public abstract void Execute(object parameter);

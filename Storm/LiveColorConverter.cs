@@ -11,11 +11,6 @@ namespace Storm
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is bool))
-            {
-                throw new ArgumentException("LiveColorConverter.cs -> Convert -> value is not bool");
-            }
-
             bool islive = (bool)value;
             SolidColorBrush brush = null;
 

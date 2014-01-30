@@ -76,7 +76,7 @@
 
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel />
+                    <StackPanel />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 
@@ -88,12 +88,12 @@
 
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Label Content="{Binding Path=DisplayName}"
-                           Background="{Binding Path=IsLive, Converter={StaticResource liveColorConverter}}"
+                    <Label Content="{Binding Path=DisplayName, Mode=OneWay}"
+                           Background="{Binding Path=IsLive, Converter={StaticResource liveColorConverter}, Mode=OneWay}"
                            Height="50">
                         <Label.InputBindings>
                             <MouseBinding MouseAction="LeftDoubleClick"
-                                          Command="{Binding Path=GoToStreamCommand, ElementName=streamManager}"
+                                          Command="{Binding Path=GoToStreamCommand, ElementName=streamManager, Mode=OneTime}"
                                           CommandParameter="{Binding}" />
                         </Label.InputBindings>
                     </Label>
@@ -103,7 +103,7 @@
         </ItemsControl>
 
         <Button Grid.Row="1"
-                Command="{Binding Path=OpenFeedsFileCommand}"
+                Command="{Binding Path=OpenFeedsFileCommand, ElementName=streamManager, Mode=OneTime}"
                 Content="Open Feeds File" />
     </Grid>
 </Window>

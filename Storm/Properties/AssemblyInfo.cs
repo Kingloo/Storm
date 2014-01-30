@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("Storm")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Kingloo Holdings Ltd.")]
+[assembly: AssemblyCompany("Kingloo Holdings Ltd")]
 [assembly: AssemblyProduct("Storm")]
 [assembly: AssemblyCopyright("Copyright © Kingloo 2013")]
 [assembly: AssemblyTrademark("Kingloo")]

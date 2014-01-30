@@ -8,9 +8,6 @@ using System.Windows;
 
 namespace Storm
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
     }
