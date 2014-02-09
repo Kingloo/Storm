@@ -12,7 +12,3 @@ Close and relaunch.
 Now every 2m 30s it will poll to see if they have started streaming.
 
 When it detects that a stream has started, a notification will pop up in the upper right of the screen accompanied by a familiar Windows noise.
-
-
-I made a(n unsigned) binary available here:
-https://s3-eu-west-1.amazonaws.com/kingloosoftware/Storm.zip
