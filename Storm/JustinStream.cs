@@ -78,7 +78,7 @@ namespace Storm
                     {
                         this.IsLive = true;
 
-                        this.OnHasGoneLive(this);
+                        this.NotifyIsNowLive();
                     }
                 }
             }

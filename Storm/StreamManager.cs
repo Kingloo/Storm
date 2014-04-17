@@ -22,32 +22,33 @@ namespace Storm
         #endregion
 
         #region Commands
-        private DelegateCommand _goToStreamCommand = null;
-        public DelegateCommand GoToStreamCommand { get { return this._goToStreamCommand; } }
         private DelegateCommand _openFeedsFileCommand = null;
-        public DelegateCommand OpenFeedsFileCommand { get { return this._openFeedsFileCommand; } }
+        public DelegateCommand OpenFeedsFileCommand
+        {
+            get
+            {
+                if (this._openFeedsFileCommand == null)
+                {
+                    this._openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecuteCommand);
+                }
+
+                return this._openFeedsFileCommand;
+            }
+        }
         #endregion
 
         public StreamManager()
         {
-            InitializePublicMembers();
-
-            CheckUrlsFilename();
-        }
-
-        private void InitializePublicMembers()
-        {
-            this._openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecuteCommand);
-            this._goToStreamCommand = new DelegateCommand(GoToStream, canExecuteCommand);
-
             this.Streams = new ObservableCollection<StreamBase>();
 
             this.updateTimer.Tick += async (sender, e) =>
-                {
-                    await this.UpdateAllAsync();
-                };
+            {
+                await this.UpdateAllAsync();
+            };
             this.updateTimer.Interval = new TimeSpan(0, 2, 30);
             this.updateTimer.IsEnabled = true;
+
+            CheckUrlsFilename();
         }
 
         private void CheckUrlsFilename()
@@ -64,11 +65,14 @@ namespace Storm
 
             string url = string.Empty;
 
-            using (StreamReader sr = new StreamReader(this.urlsFilename))
+            using (FileStream fs = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 32, true))
             {
-                while ((url = await sr.ReadLineAsync()) != null)
+                using (StreamReader sr = new StreamReader(fs))
                 {
-                    urls.Add(url);
+                    while ((url = await sr.ReadLineAsync()) != null)
+                    {
+                        urls.Add(url);
+                    }
                 }
             }
 
@@ -139,13 +143,6 @@ namespace Storm
             }
 
             VisualStateManager.GoToState(Application.Current.MainWindow, "Stable", false);
-        }
-
-        private void GoToStream(object parameter)
-        {
-            StreamBase stream = parameter as StreamBase;
-            
-            Misc.OpenUrlInBrowser(stream.Uri);
         }
 
         private void OpenFeedsFile(object parameter)

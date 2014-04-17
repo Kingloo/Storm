@@ -68,15 +68,20 @@ namespace Storm
             {
                 if (jobj["stream"].HasValues)
                 {
+                    string gameName = jobj["stream"]["game"].ToString();
+                    this.CurrentlyPlaying = string.Format("{0} is live and playing {1}", this.DisplayName, gameName);
+
                     if (this.IsLive == false)
                     {
                         this.IsLive = true;
 
-                        this.OnHasGoneLive(this);
+                        this.NotifyIsNowLive();
                     }
                 }
                 else
                 {
+                    this.CurrentlyPlaying = string.Format("{0} is offline", this.DisplayName);
+
                     if (this.IsLive == true)
                     {
                         this.IsLive = false;

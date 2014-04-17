@@ -8,14 +8,42 @@ namespace Storm
 {
     abstract class StreamBase : ViewModelBase
     {
+        #region Commands
+        private DelegateCommand _goToStreamCommand = null;
+        public DelegateCommand GoToStreamCommand
+        {
+            get
+            {
+                if (this._goToStreamCommand == null)
+                {
+                    this._goToStreamCommand = new DelegateCommand(GoToStream, canExecute);
+                }
+
+                return this._goToStreamCommand;
+            }
+        }
+        #endregion
+
+        #region Fields
         protected string _uri = string.Empty;
         protected string _name = string.Empty;
         protected string _displayName = string.Empty;
         protected string _apiUri = string.Empty;
         protected bool _isLive = false;
         protected bool _hasUpdatedDisplayName = false;
+        protected string _currentlyPlaying = string.Empty;
+        #endregion
 
-        public string Uri { get { return this._uri; } }
+        #region Properties
+        public string Uri
+        {
+            get { return this._uri; }
+            set
+            {
+                this._uri = value;
+                OnPropertyChanged("Uri");
+            }
+        }
         public string Name
         {
             get { return this._name; }
@@ -43,30 +71,49 @@ namespace Storm
                 OnPropertyChanged("IsLive");
             }
         }
+        public string CurrentlyPlaying
+        {
+            get { return this._currentlyPlaying; }
+            set
+            {
+                this._currentlyPlaying = value;
+                OnPropertyChanged("CurrentlyPlaying");
+            }
+        }
+        #endregion
 
+        // ctor
         protected StreamBase(string streamerPageUri)
         {
             this._uri = streamerPageUri;
             this.Name = SetAccountName(streamerPageUri);
             this.DisplayName = this.Name;
-
-            this.HasGoneLive += StreamBase_HasGoneLive;
         }
 
-        protected string SetAccountName(string s)
+        private string SetAccountName(string s)
         {
             return s.Substring(s.LastIndexOf("/") + 1);
         }
 
-        private void StreamBase_HasGoneLive(object sender, StreamBase e)
+        protected void NotifyIsNowLive()
         {
-            string message = string.Format("{0} is now live!", this.DisplayName);
-
-            Disp.Invoke(new Action(
+            Disp.Invoke(new System.Action(
                 delegate()
                 {
-                    this.notificationManager.CreateNotification(message, new TimeSpan(0, 0, 15), this.Uri);
+                    string message = string.Format("{0} is now live!", this.DisplayName);
+
+                    this.notificationManager.CreateNotification(message, new System.TimeSpan(0, 0, 15), this.Uri);
                 }), System.Windows.Threading.DispatcherPriority.SystemIdle);
+        }
+
+        private void GoToStream(object parameter)
+        {
+            Misc.OpenUrlInBrowser(this._uri);
+        }
+
+        private bool canExecute(object parameter)
+        {
+            return true;
         }
 
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)

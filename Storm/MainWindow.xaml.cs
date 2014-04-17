@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace Storm
 {
@@ -11,10 +11,9 @@ namespace Storm
             this.InitializeComponent();
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void MouseBinding_Changed(object sender, EventArgs e)
         {
-            await streamManager.LoadUrlsFromFileAsync();
-            await streamManager.UpdateAllAsync();
+            Console.WriteLine("HERE: " + e.ToString() + ", " + sender.ToString());
         }
     }
 }
