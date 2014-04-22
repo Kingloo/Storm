@@ -28,7 +28,7 @@
         </Style>
         
         <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Control}}">
-            <Setter Property="Margin" Value="30,20,30,0" />
+            <Setter Property="Margin" Value="20,15,20,0" />
         </Style>
         
         <SolidColorBrush x:Key="Online" Color="LightGreen" />

@@ -65,9 +65,9 @@ namespace Storm
 
             string url = string.Empty;
 
-            using (FileStream fs = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 32, true))
+            using (FileStream fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 32, true))
             {
-                using (StreamReader sr = new StreamReader(fs))
+                using (StreamReader sr = new StreamReader(fsAsync))
                 {
                     while ((url = await sr.ReadLineAsync()) != null)
                     {

@@ -10,10 +10,5 @@ namespace Storm
         {
             this.InitializeComponent();
         }
-
-        private void MouseBinding_Changed(object sender, EventArgs e)
-        {
-            Console.WriteLine("HERE: " + e.ToString() + ", " + sender.ToString());
-        }
     }
 }
