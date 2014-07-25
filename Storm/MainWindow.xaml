@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:this="clr-namespace:Storm"
         DataContext="{StaticResource streamManager}"
+        Loaded="Window_Loaded"
         Title="Storm"
         Top="50" Left="150" Width="350">
     
@@ -86,11 +87,14 @@
                 <DataTemplate>
                     <Label Content="{Binding Path=DisplayName, Mode=OneWay}"
                            Background="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource liveColorConverter}}"
-                           Height="50">
+                           Height="50"
+                           ToolTipService.InitialShowDelay="550"
+                           ToolTipService.ShowDuration="3000"
+                           ToolTipService.HasDropShadow="True">
                         <Label.ToolTip>
                             <ToolTip>
                                 <TextBlock DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource TemplatedParent}}"
-                                           Text="{Binding CurrentlyPlaying, Mode=OneWay}" />
+                                           Text="{Binding Path=MouseOverTooltip, Mode=OneWay}" />
                             </ToolTip>
                         </Label.ToolTip>
                         <Label.InputBindings>
@@ -104,6 +108,7 @@
         </ItemsControl>
 
         <Button Grid.Row="1"
+                Margin="40,0,40,5"
                 Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}"
                 Content="Open Feeds File" />
     </Grid>

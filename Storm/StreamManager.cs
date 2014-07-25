@@ -61,50 +61,54 @@ namespace Storm
 
         public async Task LoadUrlsFromFileAsync()
         {
+            string fileContents = string.Empty;
             List<string> urls = new List<string>();
 
-            string url = string.Empty;
-
-            using (FileStream fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 32, true))
+            using (FileStream fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 4096, true))
             {
                 using (StreamReader sr = new StreamReader(fsAsync))
                 {
-                    while ((url = await sr.ReadLineAsync()) != null)
-                    {
-                        urls.Add(url);
-                    }
+                    fileContents = await sr.ReadToEndAsync();
                 }
             }
 
-            BuildStreamsCollection(urls);
+            using (StringReader sr = new StringReader(fileContents))
+            {
+                string each = string.Empty;
+
+                while ((each = await sr.ReadLineAsync()) != null)
+                {
+                    AddService(each);
+                }
+            }
         }
 
-        private void BuildStreamsCollection(List<string> urls)
+        private void AddService(string each)
         {
-            foreach (string url in urls)
+            StreamingService service = DetermineStreamingService(each);
+            StreamBase sb = null;
+
+            switch (service)
             {
-                StreamingService provider = DetermineStreamingService(url);
-                StreamBase stream = null;
+                case StreamingService.Twitch:
+                    sb = new TwitchStream(each);
+                    break;
+                case StreamingService.Ustream:
+                    break;
+                case StreamingService.Justin:
+                    sb = new JustinStream(each);
+                    break;
+                case StreamingService.UnsupportedService:
+                    break;
+                case StreamingService.None:
+                    break;
+                default:
+                    break;
+            }
 
-                switch (provider)
-                {
-                    case StreamingService.Twitch:
-                        stream = new TwitchStream(url);
-                        break;
-                    case StreamingService.Ustream:
-                        break;
-                    case StreamingService.Justin:
-                        stream = new JustinStream(url);
-                        break;
-                    case StreamingService.UnsupportedService:
-                        break;
-                    case StreamingService.None:
-                        break;
-                    default:
-                        break;
-                }
-
-                this.Streams.Add(stream);
+            if (sb != null)
+            {
+                this.Streams.Add(sb);
             }
         }
 

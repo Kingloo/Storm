@@ -11,9 +11,8 @@ namespace Storm
             StreamManager sm = (StreamManager)Application.Current.Resources["streamManager"];
 
             await sm.LoadUrlsFromFileAsync();
-            await sm.UpdateAllAsync();
         }
-
+        
         private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             string logFilePath = string.Format("C:\\Users\\{0}\\Documents\\logfile.txt", Environment.UserName);

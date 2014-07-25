@@ -19,16 +19,7 @@ namespace Storm
                 this._hasUpdatedDisplayName = await this.TrySetDisplayNameAsync();
             }
 
-            // the url to query, the JSON from which we will determine if the user is live or not
-            string streamApiAddress = string.Format("{0}/stream/summary.json?channel={1}", this._apiUri, this._name);
-
-            HttpWebRequest updateRequest = BuildJustinHttpWebRequest(streamApiAddress);
-            JObject apiResponse = await GetApiResponseAsync(updateRequest);
-
-            if (apiResponse != null)
-            {
-                ProcessApiResponse(apiResponse);
-            }
+            await DetermineIfLive();
         }
 
         protected async override Task<bool> TrySetDisplayNameAsync()
@@ -46,6 +37,38 @@ namespace Storm
             return false;
         }
 
+        protected async override Task DetermineIfLive()
+        {
+            string apiAddressToQuery = string.Format("{0}/stream/summary.json?channel={1}", this._apiUri, this._name);
+            HttpWebRequest req = BuildJustinHttpWebRequest(apiAddressToQuery);
+            JObject resp = await GetApiResponseAsync(req);
+
+            if (resp != null)
+            {
+                if (resp.HasValues)
+                {
+                    int streams_count = (int)resp["streams_count"];
+
+                    if (streams_count > 0)
+                    {
+                        if (this.IsLive == false)
+                        {
+                            this.IsLive = true;
+
+                            this.NotifyIsNowLive();
+                        }
+                    }
+                    else
+                    {
+                        if (this.IsLive == true)
+                        {
+                            this.IsLive = false;
+                        }
+                    }
+                }
+            }
+        }
+
         private static HttpWebRequest BuildJustinHttpWebRequest(string fullApiRequestAddress)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(fullApiRequestAddress);
@@ -57,31 +80,6 @@ namespace Storm
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 
             return req;
-        }
-
-        protected override void ProcessApiResponse(JObject jobj)
-        {
-            if (jobj.HasValues)
-            {
-                int streams_count = (int)jobj["streams_count"];
-
-                if (streams_count == 0)
-                {
-                    if (this.IsLive == true)
-                    {
-                        this.IsLive = false;
-                    }
-                }
-                else
-                {
-                    if (this.IsLive == false)
-                    {
-                        this.IsLive = true;
-
-                        this.NotifyIsNowLive();
-                    }
-                }
-            }
         }
     }
 }

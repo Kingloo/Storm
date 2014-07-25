@@ -19,21 +19,16 @@ namespace Storm
                 this._hasUpdatedDisplayName = await TrySetDisplayNameAsync();
             }
 
-            string streamApiAddress = string.Format("{0}/streams/{1}", this._apiUri, this._name);
-
-            HttpWebRequest updateRequest = BuildTwitchHttpWebRequest(streamApiAddress);
-            JObject apiResponse = await GetApiResponseAsync(updateRequest);
-
-            if (apiResponse != null)
-            {
-                ProcessApiResponse(apiResponse);
-            }
+            // we call DetermineGame first so that the Notification is aware of the game
+            await DetermineGame();
+            await DetermineIfLive();
         }
 
         protected async override Task<bool> TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
             HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(apiAddressToQueryForDisplayName);
+
             JObject response = await GetApiResponseAsync(twitchRequest);
 
             if (response != null)
@@ -41,11 +36,57 @@ namespace Storm
                 if (response["display_name"] != null)
                 {
                     this.DisplayName = (string)response["display_name"];
+
                     return true;
                 }
             }
 
             return false;
+        }
+
+        protected async override Task DetermineIfLive()
+        {
+            string apiAddressToQuery = string.Format("{0}/streams/{1}", this._apiUri, this._name);
+            HttpWebRequest req = BuildTwitchHttpWebRequest(apiAddressToQuery);
+            JObject resp = await GetApiResponseAsync(req);
+
+            if (resp != null)
+            {
+                if (resp["stream"] is JToken)
+                {
+                    if (resp["stream"].HasValues)
+                    {
+                        if (this.IsLive == false)
+                        {
+                            this.IsLive = true;
+
+                            this.NotifyIsNowLive();
+                        }
+                    }
+                    else
+                    {
+                        if (this.IsLive == true)
+                        {
+                            this.IsLive = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        protected async Task DetermineGame()
+        {
+            string apiAddressToQuery = string.Format("{0}/channels/{1}", this._apiUri, this._name);
+            HttpWebRequest req = BuildTwitchHttpWebRequest(apiAddressToQuery);
+            JObject resp = await GetApiResponseAsync(req);
+
+            if (resp != null)
+            {
+                if (resp["game"] is JToken)
+                {
+                    this.Game = ((string)resp["game"]) ?? "unknown";
+                }
+            }
         }
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(string fullApiRequestAddress)
@@ -56,38 +97,10 @@ namespace Storm
             req.KeepAlive = false;
             req.Method = "GET";
             req.Referer = "twitch.tv";
-            req.Timeout = 2500;
+            req.Timeout = 850;
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 
             return req;
-        }
-
-        protected override void ProcessApiResponse(JObject jobj)
-        {
-            if (jobj["stream"] is JToken)
-            {
-                if (jobj["stream"].HasValues)
-                {
-                    string gameName = jobj["stream"]["game"].ToString();
-                    this.CurrentlyPlaying = string.Format("{0} is live and playing {1}", this.DisplayName, gameName);
-
-                    if (this.IsLive == false)
-                    {
-                        this.IsLive = true;
-
-                        this.NotifyIsNowLive();
-                    }
-                }
-                else
-                {
-                    this.CurrentlyPlaying = string.Format("{0} is offline", this.DisplayName);
-
-                    if (this.IsLive == true)
-                    {
-                        this.IsLive = false;
-                    }
-                }
-            }
         }
     }
 }

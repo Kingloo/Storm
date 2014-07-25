@@ -8,7 +8,6 @@ namespace Storm
     class ViewModelBase : INotifyPropertyChanged
     {
         protected enum StreamingService { None, Twitch, Ustream, Justin, UnsupportedService };
-        protected NotificationManager notificationManager = new NotificationManager();
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name)

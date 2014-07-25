@@ -25,17 +25,18 @@ namespace Storm
         #endregion
 
         #region Fields
-        protected string _uri = string.Empty;
+        protected Uri _uri = null;
         protected string _name = string.Empty;
         protected string _displayName = string.Empty;
         protected string _apiUri = string.Empty;
         protected bool _isLive = false;
         protected bool _hasUpdatedDisplayName = false;
-        protected string _currentlyPlaying = string.Empty;
+        protected string _game = "game unknown";
+        protected string _mouseOverTooltip = "user and game unknown";
         #endregion
 
         #region Properties
-        public string Uri
+        public Uri Uri
         {
             get { return this._uri; }
             set
@@ -71,21 +72,44 @@ namespace Storm
                 OnPropertyChanged("IsLive");
             }
         }
-        public string CurrentlyPlaying
+        public string Game
         {
-            get { return this._currentlyPlaying; }
+            get { return this._game; }
             set
             {
-                this._currentlyPlaying = value;
-                OnPropertyChanged("CurrentlyPlaying");
+                this._game = value;
+
+                if (this.IsLive)
+                {
+                    this.MouseOverTooltip = string.Format("{0} is live and playing {1}", this.DisplayName, this.Game);
+                }
+                else
+                {
+                    this.MouseOverTooltip = string.Format("{0} is offline", this.DisplayName);
+                }
+
+                OnPropertyChanged("Game");
+            }
+        }
+        public string MouseOverTooltip
+        {
+            get { return this._mouseOverTooltip; }
+            set
+            {
+                this._mouseOverTooltip = value;
+                OnPropertyChanged("MouseOverTooltip");
             }
         }
         #endregion
 
-        // ctor
         protected StreamBase(string streamerPageUri)
         {
-            this._uri = streamerPageUri;
+            Uri tmp = null;
+            if (Uri.TryCreate(streamerPageUri, UriKind.Absolute, out tmp))
+            {
+                this.Uri = tmp;
+            }
+
             this.Name = SetAccountName(streamerPageUri);
             this.DisplayName = this.Name;
         }
@@ -93,27 +117,6 @@ namespace Storm
         private string SetAccountName(string s)
         {
             return s.Substring(s.LastIndexOf("/") + 1);
-        }
-
-        protected void NotifyIsNowLive()
-        {
-            Disp.Invoke(new System.Action(
-                delegate()
-                {
-                    string message = string.Format("{0} is now live!", this.DisplayName);
-
-                    this.notificationManager.CreateNotification(message, new System.TimeSpan(0, 0, 15), this.Uri);
-                }), System.Windows.Threading.DispatcherPriority.SystemIdle);
-        }
-
-        private void GoToStream(object parameter)
-        {
-            Misc.OpenUrlInBrowser(this._uri);
-        }
-
-        private bool canExecute(object parameter)
-        {
-            return true;
         }
 
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
@@ -135,12 +138,10 @@ namespace Storm
             {
                 jsonResponse = string.Empty;
             }
-            finally
+
+            if (wr != null)
             {
-                if (wr != null)
-                {
-                    wr.Close();
-                }
+                wr.Close();
             }
 
             if (jsonResponse != string.Empty)
@@ -156,8 +157,26 @@ namespace Storm
             return null;
         }
 
+        protected void NotifyIsNowLive()
+        {
+            string title = string.Format("{0} is live", this.DisplayName);
+            string description = string.Format("and playing {0}", this.Game);
+
+            NotificationService.Send(title, description, this.Uri);
+        }
+
+        private void GoToStream(object parameter)
+        {
+            Misc.OpenUrlInBrowser(this._uri);
+        }
+
+        private bool canExecute(object parameter)
+        {
+            return true;
+        }
+
         public abstract Task UpdateAsync();
         protected abstract Task<bool> TrySetDisplayNameAsync();
-        protected abstract void ProcessApiResponse(JObject jobj);
+        protected abstract Task DetermineIfLive();
     }
 }

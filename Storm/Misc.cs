@@ -54,7 +54,7 @@ namespace Storm
             }
             else
             {
-                MessageBox.Show("The Uri is a relative address. An absolute Uri is required.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("The Uri does not appear to be a web address.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -32,7 +32,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>22</ApplicationRevision>
+    <ApplicationRevision>26</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -143,10 +143,7 @@
     <Compile Include="JustinStream.cs" />
     <Compile Include="LiveColorConverter.cs" />
     <Compile Include="Misc.cs" />
-    <Compile Include="NotificationManager.cs" />
-    <Compile Include="NotificationWindow.xaml.cs">
-      <DependentUpon>NotificationWindow.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="NotificationService.cs" />
     <Compile Include="StreamBase.cs" />
     <Compile Include="StreamManager.cs" />
     <Compile Include="TwitchStream.cs" />
@@ -163,10 +160,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="NotificationWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
