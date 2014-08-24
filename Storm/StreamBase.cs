@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Storm
@@ -136,7 +137,16 @@ namespace Storm
 
             if (jsonResponse != string.Empty)
             {
-                JObject j = JObject.Parse(jsonResponse);
+                JObject j = null;
+                
+                try
+                {
+                    j = JObject.Parse(jsonResponse);
+                }
+                catch (JsonReaderException)
+                {
+                    j = null;
+                }
 
                 if (j != null)
                 {

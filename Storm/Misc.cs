@@ -127,6 +127,7 @@ namespace Storm
 
             logMessage.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
             logMessage.AppendLine(e.Message);
+            logMessage.AppendLine(e.StackTrace);
 
             logMessage.AppendLine(Environment.NewLine);
 
@@ -151,6 +152,8 @@ namespace Storm
 
             logMessage.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
             logMessage.AppendLine(e.Message);
+            logMessage.AppendLine(e.StackTrace);
+
             logMessage.AppendLine(Environment.NewLine);
 
             using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, true))

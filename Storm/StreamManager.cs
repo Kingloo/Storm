@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace Storm
@@ -40,7 +40,7 @@ namespace Storm
 
         public StreamManager()
         {
-            this.updateTimer.Interval = new TimeSpan(0, 2, 30);
+            this.updateTimer.Interval = new TimeSpan(0, 6, 0); // hours, minutes, seconds
             this.updateTimer.Tick += async (sender, e) =>
             {
                 await this.UpdateAllAsync();
@@ -68,7 +68,7 @@ namespace Storm
             {
                 using (StreamReader sr = new StreamReader(fsAsync))
                 {
-                    fileContents = await sr.ReadToEndAsync();
+                    fileContents = await sr.ReadToEndAsync().ConfigureAwait(false);
                 }
             }
 
@@ -76,7 +76,7 @@ namespace Storm
             {
                 string each = string.Empty;
 
-                while ((each = await sr.ReadLineAsync()) != null)
+                while ((each = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                 {
                     AddService(each);
                 }
@@ -138,10 +138,7 @@ namespace Storm
         {
             VisualStateManager.GoToState(Application.Current.MainWindow, "Updating", false);
 
-            foreach (StreamBase stream in this.Streams)
-            {
-                await stream.UpdateAsync();
-            }
+            await Task.WhenAll(from each in Streams select each.UpdateAsync());
 
             VisualStateManager.GoToState(Application.Current.MainWindow, "Stable", false);
         }

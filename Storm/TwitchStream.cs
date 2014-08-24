@@ -30,7 +30,7 @@ namespace Storm
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
             HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
 
-            JObject response = await GetApiResponseAsync(twitchRequest);
+            JObject response = await GetApiResponseAsync(twitchRequest).ConfigureAwait(false);
 
             if (response != null)
             {
@@ -49,7 +49,8 @@ namespace Storm
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}", this._apiUri, this._name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
-            JObject resp = await GetApiResponseAsync(req);
+
+            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
 
             if (resp != null)
             {
@@ -64,6 +65,7 @@ namespace Storm
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", this._apiUri, this._name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+
             JObject resp = await GetApiResponseAsync(req);
 
             if (resp != null)
