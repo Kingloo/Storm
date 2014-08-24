@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -27,7 +28,7 @@ namespace Storm
         protected async override Task<bool> TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
-            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(apiAddressToQueryForDisplayName);
+            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
 
             JObject response = await GetApiResponseAsync(twitchRequest);
 
@@ -44,10 +45,25 @@ namespace Storm
             return false;
         }
 
+        protected async Task DetermineGame()
+        {
+            string apiAddressToQuery = string.Format("{0}/channels/{1}", this._apiUri, this._name);
+            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+            JObject resp = await GetApiResponseAsync(req);
+
+            if (resp != null)
+            {
+                if (resp["game"] is JToken)
+                {
+                    this.Game = ((string)resp["game"]) ?? "unknown";
+                }
+            }
+        }
+
         protected async override Task DetermineIfLive()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", this._apiUri, this._name);
-            HttpWebRequest req = BuildTwitchHttpWebRequest(apiAddressToQuery);
+            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
             JObject resp = await GetApiResponseAsync(req);
 
             if (resp != null)
@@ -74,29 +90,15 @@ namespace Storm
             }
         }
 
-        protected async Task DetermineGame()
+        private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
         {
-            string apiAddressToQuery = string.Format("{0}/channels/{1}", this._apiUri, this._name);
-            HttpWebRequest req = BuildTwitchHttpWebRequest(apiAddressToQuery);
-            JObject resp = await GetApiResponseAsync(req);
-
-            if (resp != null)
-            {
-                if (resp["game"] is JToken)
-                {
-                    this.Game = ((string)resp["game"]) ?? "unknown";
-                }
-            }
-        }
-
-        private static HttpWebRequest BuildTwitchHttpWebRequest(string fullApiRequestAddress)
-        {
-            HttpWebRequest req = HttpWebRequest.CreateHttp(fullApiRequestAddress);
+            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
 
             req.Accept = ("application/vnd.twitchtv.v2+json");
+            req.Host = uri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
-            req.Referer = "twitch.tv";
+            req.Referer = uri.DnsSafeHost;
             req.Timeout = 850;
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 

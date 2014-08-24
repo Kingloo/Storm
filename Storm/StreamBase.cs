@@ -122,26 +122,16 @@ namespace Storm
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
+            HttpWebResponse resp = await request.GetResponseAsyncExt();
 
-            WebResponse wr = null;
-
-            try
+            if (resp != null)
             {
-                wr = await request.GetResponseAsync();
-
-                using (StreamReader sr = new StreamReader(wr.GetResponseStream()))
+                using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
                 {
                     jsonResponse = await sr.ReadToEndAsync();
                 }
-            }
-            catch (WebException)
-            {
-                jsonResponse = string.Empty;
-            }
 
-            if (wr != null)
-            {
-                wr.Close();
+                resp.Close();
             }
 
             if (jsonResponse != string.Empty)

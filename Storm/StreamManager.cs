@@ -12,13 +12,14 @@ namespace Storm
 {
     class StreamManager : ViewModelBase
     {
-        #region Hidden
+        #region Fields
         private readonly string urlsFilename = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
         private DispatcherTimer updateTimer = new DispatcherTimer();
         #endregion
 
-        #region Visible
-        public ObservableCollection<StreamBase> Streams { get; private set; }
+        #region Properties
+        private ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
+        public ObservableCollection<StreamBase> Streams { get { return this._streams; } }
         #endregion
 
         #region Commands
@@ -39,13 +40,12 @@ namespace Storm
 
         public StreamManager()
         {
-            this.Streams = new ObservableCollection<StreamBase>();
-
+            this.updateTimer.Interval = new TimeSpan(0, 2, 30);
             this.updateTimer.Tick += async (sender, e) =>
             {
                 await this.UpdateAllAsync();
             };
-            this.updateTimer.Interval = new TimeSpan(0, 2, 30);
+
             this.updateTimer.IsEnabled = true;
 
             CheckUrlsFilename();
@@ -95,9 +95,6 @@ namespace Storm
                     break;
                 case StreamingService.Ustream:
                     break;
-                case StreamingService.Justin:
-                    sb = new JustinStream(each);
-                    break;
                 case StreamingService.UnsupportedService:
                     break;
                 case StreamingService.None:
@@ -118,16 +115,16 @@ namespace Storm
 
             Uri uri = new Uri(s);
 
-            switch (uri.Host)
+            switch (uri.DnsSafeHost)
             {
                 case "twitch.tv":
                     ss = StreamingService.Twitch;
                     break;
+                case "www.twitch.tv":
+                    ss = StreamingService.Twitch;
+                    break;
                 case "ustream.tv":
                     ss = StreamingService.Ustream;
-                    break;
-                case "justin.tv":
-                    ss = StreamingService.Justin;
                     break;
                 default:
                     ss = StreamingService.UnsupportedService;

@@ -32,7 +32,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>26</ApplicationRevision>
+    <ApplicationRevision>27</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -140,7 +140,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="JustinStream.cs" />
     <Compile Include="LiveColorConverter.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="NotificationService.cs" />
