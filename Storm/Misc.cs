@@ -70,6 +70,52 @@ namespace Storm
         }
 
         /// <summary>
+        /// Logs a message to logfile.txt in user's Documents directory.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        public static void LogMessage(string message)
+        {
+            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
+
+            StringBuilder logMessage = new StringBuilder();
+
+            logMessage.AppendLine(string.Format("{0} logged the following message at {1}:", Application.Current.ToString(), DateTime.Now));
+            logMessage.AppendLine(message);
+            logMessage.AppendLine(Environment.NewLine);
+
+            using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, false))
+            {
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.Write(logMessage.ToString());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously logs a message to logfile.txt in user's Documents directory.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        public static async Task LogMessageAsync(string message)
+        {
+            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
+
+            StringBuilder logMessage = new StringBuilder();
+
+            logMessage.AppendLine(string.Format("{0} logged the following message at {1}:", Application.Current.ToString(), DateTime.Now));
+            logMessage.AppendLine(message);
+            logMessage.AppendLine(Environment.NewLine);
+
+            using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, true))
+            {
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    await sw.WriteAsync(logMessage.ToString());
+                }
+            }
+        }
+
+        /// <summary>
         /// Logs a DispatcherUnhandledException's Exception property to a file.
         /// </summary>
         /// <param name="e">The exception object within the DispatcherUnhandledException.</param>
@@ -105,7 +151,6 @@ namespace Storm
 
             logMessage.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
             logMessage.AppendLine(e.Message);
-
             logMessage.AppendLine(Environment.NewLine);
 
             using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, true))
@@ -187,6 +232,8 @@ namespace Storm
 
                 if (webResp == null)
                 {
+                    Misc.LogMessage("GetResponseAsyncExt: webResp was null");
+
                     throw;
                 }
             }
