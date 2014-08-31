@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -9,6 +8,10 @@ namespace Storm
     [ValueConversion(typeof(bool), typeof(SolidColorBrush))]
     class LiveColorConverter : IValueConverter
     {
+        public SolidColorBrush Online { get; set; }
+        public SolidColorBrush Offline { get; set; }
+        public SolidColorBrush Default { get; set; }
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool islive = (bool)value;
@@ -17,13 +20,13 @@ namespace Storm
             switch (islive)
             {
                 case true:
-                    brush = (SolidColorBrush)Application.Current.Resources["Online"];
+                    brush = this.Online;
                     break;
                 case false:
-                    brush = (SolidColorBrush)Application.Current.Resources["Offline"];
+                    brush = this.Offline;
                     break;
                 default:
-                    brush = (SolidColorBrush)Application.Current.Resources["Default"];
+                    brush = this.Default;
                     break;
             }
 
@@ -32,7 +35,7 @@ namespace Storm
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return null;
+            return true;
         }
     }
 }

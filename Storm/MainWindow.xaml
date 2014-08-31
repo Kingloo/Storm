@@ -1,14 +1,15 @@
 ﻿<Window x:Class="Storm.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:this="clr-namespace:Storm"
-        DataContext="{StaticResource streamManager}"
-        Loaded="Window_Loaded"
-        Title="Storm"
-        Top="50" Left="150" Width="350">
+        xmlns:this="clr-namespace:Storm">
     
-    <Window.Style>
-        <Style TargetType="{x:Type Window}">
+    <Window.Resources>
+        <Style TargetType="{x:Type this:MainWindow}">
+            <Setter Property="Title" Value="Storm" />
+            <Setter Property="Top" Value="50" />
+            <Setter Property="Left" Value="150" />
+            <Setter Property="Width" Value="350" />
+            <Setter Property="MaxHeight" Value="1100" />
             <Setter Property="ShowInTaskbar" Value="True" />
             <Setter Property="ResizeMode" Value="CanMinimize" />
             <Setter Property="WindowStyle" Value="SingleBorderWindow" />
@@ -27,9 +28,14 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Window}">
-                        <Border x:Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                        <Border x:Name="Border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}">
                             <AdornerDecorator>
-                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
+                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
                             </AdornerDecorator>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="Custom">
@@ -54,11 +60,16 @@
                 </Setter.Value>
             </Setter>
         </Style>
-    </Window.Style>
-    
-    <Window.Resources>
-        <this:LiveColorConverter x:Key="liveColorConverter" />
     </Window.Resources>
+    
+    <Window.InputBindings>
+        <KeyBinding Key="F5"
+                    Command="{Binding Path=UpdateAllCommandAsync, Mode=OneTime}" />
+        <KeyBinding Key="F6"
+                    Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
+        <KeyBinding Key="F9"
+                    Command="{Binding Path=LoadUrlsFromFileCommandAsync, Mode=OneTime}" />
+    </Window.InputBindings>
     
     <Grid>
 
@@ -68,27 +79,37 @@
         </Grid.RowDefinitions>
 
         <ItemsControl Grid.Row="0"
-                      Margin="0,0,0,15"
+                      Margin="0,0,0,10"
                       ItemsSource="{Binding Path=Streams, Mode=OneWay}">
-
+            
+            <ItemsControl.Template>
+                <ControlTemplate>
+                    <ScrollViewer CanContentScroll="True">
+                        <ItemsPresenter />
+                    </ScrollViewer>
+                </ControlTemplate>
+            </ItemsControl.Template>
+            
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel />
+                    <VirtualizingStackPanel Margin="10,0,10,0" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 
-            <ItemsControl.Template>
-                <ControlTemplate>
-                    <ItemsPresenter />
-                </ControlTemplate>
-            </ItemsControl.Template>
-
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Label Content="{Binding Path=DisplayName, Mode=OneWay}"
+                    <DataTemplate.Resources>
+                        <this:LiveColorConverter x:Key="liveColorConverter"
+                                                 Online="{StaticResource Online}"
+                                                 Offline="{StaticResource Offline}"
+                                                 Default="{StaticResource Default}" />
+                    </DataTemplate.Resources>
+                    
+                    <Label Margin="0,10,0,0"
+                           Content="{Binding Path=DisplayName, Mode=OneWay}"
                            Background="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource liveColorConverter}}"
                            Height="50"
-                           ToolTipService.InitialShowDelay="550"
+                           ToolTipService.InitialShowDelay="510"
                            ToolTipService.ShowDuration="3000"
                            ToolTipService.HasDropShadow="True">
                         <Label.ToolTip>
@@ -99,18 +120,36 @@
                         </Label.ToolTip>
                         <Label.InputBindings>
                             <MouseBinding MouseAction="LeftDoubleClick"
-                                          Command="{Binding Path=GoToStreamCommand, Mode=OneWay, FallbackValue={x:Null}}" />
+                                          Command="{Binding Path=GoToStreamCommand, Mode=OneWay}" />
                         </Label.InputBindings>
                     </Label>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
 
         </ItemsControl>
+        
+        <StackPanel Grid.Row="1"
+                    Margin="10,0,0,10"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
 
-        <Button Grid.Row="1"
-                Width="150"
-                Height="40"
-                Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}"
-                Content="Open Feeds File" />
+            <Button Width="150"
+                    Height="40"
+                    FontSize="13"
+                    Margin="0,0,8,0"
+                    Content="Open Feeds File"
+                    ToolTip="F6"
+                    Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
+            
+            <Button Width="50"
+                    Height="40"
+                    Margin="8,0,0,0"
+                    FontFamily="WebDings"
+                    FontSize="24"
+                    Content="q"
+                    ToolTip="F9"
+                    Command="{Binding Path=LoadUrlsFromFileCommandAsync, Mode=OneTime}" />
+
+        </StackPanel>
     </Grid>
 </Window>

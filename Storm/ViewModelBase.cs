@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -10,12 +10,12 @@ namespace Storm
         protected enum StreamingService { None, Twitch, Ustream, Justin, UnsupportedService };
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string name)
+        protected void OnNotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChangedEventHandler pceh = this.PropertyChanged;
             if (pceh != null)
             {
-                pceh(this, new PropertyChangedEventArgs(name));
+                pceh(this, new PropertyChangedEventArgs(propertyName));
             }
         }
 

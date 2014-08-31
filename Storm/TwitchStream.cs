@@ -20,9 +20,26 @@ namespace Storm
                 this._hasUpdatedDisplayName = await TrySetDisplayNameAsync();
             }
 
-            // we call DetermineGame first so that the Notification is aware of the game
-            await DetermineGame();
-            await DetermineIfLive();
+            bool isUserLive = await DetermineIfLive();
+            
+            if (isUserLive)
+            {
+                this.Game = await DetermineGame();
+
+                if (this.IsLive == false)
+                {
+                    this.IsLive = true;
+
+                    this.NotifyIsNowLive();
+                }
+            }
+            else
+            {
+                if (this.IsLive == true)
+                {
+                    this.IsLive = false;
+                }
+            }
         }
 
         protected async override Task<bool> TrySetDisplayNameAsync()
@@ -45,7 +62,7 @@ namespace Storm
             return false;
         }
 
-        protected async Task DetermineGame()
+        protected async Task<string> DetermineGame()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}", this._apiUri, this._name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
@@ -56,17 +73,19 @@ namespace Storm
             {
                 if (resp["game"] is JToken)
                 {
-                    this.Game = ((string)resp["game"]) ?? "unknown";
+                    return ((string)resp["game"]) ?? "unknown";
                 }
             }
+
+            return "unknown";
         }
 
-        protected async override Task DetermineIfLive()
+        protected async override Task<bool> DetermineIfLive()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", this._apiUri, this._name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
 
-            JObject resp = await GetApiResponseAsync(req);
+            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
 
             if (resp != null)
             {
@@ -74,22 +93,12 @@ namespace Storm
                 {
                     if (resp["stream"].HasValues)
                     {
-                        if (this.IsLive == false)
-                        {
-                            this.IsLive = true;
-
-                            this.NotifyIsNowLive();
-                        }
-                    }
-                    else
-                    {
-                        if (this.IsLive == true)
-                        {
-                            this.IsLive = false;
-                        }
+                        return true;
                     }
                 }
             }
+
+            return false;
         }
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)

@@ -15,6 +15,7 @@ namespace Storm
         #region Fields
         private readonly string urlsFilename = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
         private DispatcherTimer updateTimer = new DispatcherTimer();
+        private readonly MainWindow mainWindow = null;
         #endregion
 
         #region Properties
@@ -23,32 +24,70 @@ namespace Storm
         #endregion
 
         #region Commands
-        private DelegateCommand _openFeedsFileCommand = null;
-        public DelegateCommand OpenFeedsFileCommand
+        private DelegateCommand<object> _openFeedsFileCommand = null;
+        public DelegateCommand<object> OpenFeedsFileCommand
         {
             get
             {
                 if (this._openFeedsFileCommand == null)
                 {
-                    this._openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecuteCommand);
+                    this._openFeedsFileCommand = new DelegateCommand<object>(OpenFeedsFile, canExecute);
                 }
 
                 return this._openFeedsFileCommand;
             }
         }
+
+        private DelegateCommandAsync<object> _loadUrlsFromFileCommandAsync = null;
+        public DelegateCommandAsync<object> LoadUrlsFromFileCommandAsync
+        {
+            get
+            {
+                if (this._loadUrlsFromFileCommandAsync == null)
+                {
+                    this._loadUrlsFromFileCommandAsync = new DelegateCommandAsync<object>(new Func<object, Task>(LoadUrlsFromFileAsync), canExecute);
+                }
+
+                return this._loadUrlsFromFileCommandAsync;
+            }
+        }
+
+        private DelegateCommandAsync<object> _updateAllCommandAsync = null;
+        public DelegateCommandAsync<object> UpdateAllCommandAsync
+        {
+            get
+            {
+                if (this._updateAllCommandAsync == null)
+                {
+                    this._updateAllCommandAsync = new DelegateCommandAsync<object>(new Func<object, Task>(UpdateAllAsync), canExecute);
+                }
+
+                return this._updateAllCommandAsync;
+            }
+        }
         #endregion
 
-        public StreamManager()
+        public StreamManager(MainWindow mainWindow)
         {
-            this.updateTimer.Interval = new TimeSpan(0, 6, 0); // hours, minutes, seconds
-            this.updateTimer.Tick += async (sender, e) =>
-            {
-                await this.UpdateAllAsync();
-            };
-
+            this.mainWindow = mainWindow;
+            
+            this.mainWindow.Loaded += mainWindow_Loaded;
+            
+            this.updateTimer.Interval = new TimeSpan(0, 6, 0);
+            this.updateTimer.Tick += updateTimer_Tick;
             this.updateTimer.IsEnabled = true;
+        }
 
+        private async void updateTimer_Tick(object sender, EventArgs e)
+        {
+            await UpdateAllAsync(null).ConfigureAwait(false);
+        }
+
+        private async void mainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
             CheckUrlsFilename();
+
+            await LoadUrlsFromFileAsync(null);
         }
 
         private void CheckUrlsFilename()
@@ -59,28 +98,24 @@ namespace Storm
             }
         }
 
-        public async Task LoadUrlsFromFileAsync()
+        public async Task LoadUrlsFromFileAsync(object _)
         {
-            string fileContents = string.Empty;
-            List<string> urls = new List<string>();
+            this.Streams.Clear();
 
-            using (FileStream fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 4096, true))
+            using (FileStream fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 1023, true))
             {
                 using (StreamReader sr = new StreamReader(fsAsync))
                 {
-                    fileContents = await sr.ReadToEndAsync().ConfigureAwait(false);
+                    string line = string.Empty;
+
+                    while ((line = await sr.ReadLineAsync()) != null)
+                    {
+                        AddService(line);
+                    }
                 }
             }
 
-            using (StringReader sr = new StringReader(fileContents))
-            {
-                string each = string.Empty;
-
-                while ((each = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
-                {
-                    AddService(each);
-                }
-            }
+            await UpdateAllAsync(null).ConfigureAwait(false);
         }
 
         private void AddService(string each)
@@ -134,16 +169,16 @@ namespace Storm
             return ss;
         }
 
-        public async Task UpdateAllAsync()
+        public async Task UpdateAllAsync(object _)
         {
-            VisualStateManager.GoToState(Application.Current.MainWindow, "Updating", false);
+            VisualStateManager.GoToState(this.mainWindow, "Updating", false);
 
             await Task.WhenAll(from each in Streams select each.UpdateAsync());
 
-            VisualStateManager.GoToState(Application.Current.MainWindow, "Stable", false);
+            VisualStateManager.GoToState(this.mainWindow, "Stable", false);
         }
 
-        private void OpenFeedsFile(object parameter)
+        private void OpenFeedsFile(object _)
         {
             try
             {
@@ -155,7 +190,7 @@ namespace Storm
             }
         }
 
-        private bool canExecuteCommand(object parameter)
+        private bool canExecute(object parameter)
         {
             // no need for any special logic, no reason to ever deny this
             return true;

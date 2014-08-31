@@ -99,7 +99,12 @@ namespace Storm
 
                 if (!(String.IsNullOrEmpty(n.Description)))
                 {
-                    Label labelDescription = new Label { Content = this._n.Description, Style = BuildLabelDescriptionStyle() };
+                    Label labelDescription = new Label
+                    {
+                        Content = this._n.Description,
+                        Style = BuildLabelDescriptionStyle()
+                    };
+
                     grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                     Grid.SetRow(labelDescription, 1);
 

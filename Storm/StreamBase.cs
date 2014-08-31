@@ -10,14 +10,14 @@ namespace Storm
     abstract class StreamBase : ViewModelBase
     {
         #region Commands
-        private DelegateCommand _goToStreamCommand = null;
-        public DelegateCommand GoToStreamCommand
+        private DelegateCommand<StreamBase> _goToStreamCommand = null;
+        public DelegateCommand<StreamBase> GoToStreamCommand
         {
             get
             {
                 if (this._goToStreamCommand == null)
                 {
-                    this._goToStreamCommand = new DelegateCommand(GoToStream, canExecute);
+                    this._goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
                 }
 
                 return this._goToStreamCommand;
@@ -26,79 +26,79 @@ namespace Storm
         #endregion
 
         #region Fields
-        protected Uri _uri = null;
-        protected string _name = string.Empty;
-        protected string _displayName = string.Empty;
         protected string _apiUri = string.Empty;
-        protected bool _isLive = false;
         protected bool _hasUpdatedDisplayName = false;
-        protected string _game = "game unknown";
-        protected string _mouseOverTooltip = "user and game unknown";
         #endregion
 
         #region Properties
+        protected Uri _uri = null;
         public Uri Uri
         {
             get { return this._uri; }
             set
             {
                 this._uri = value;
-                OnPropertyChanged("Uri");
+                OnNotifyPropertyChanged();
             }
         }
+
+        protected string _name = string.Empty;
         public string Name
         {
             get { return this._name; }
             set
             {
                 this._name = value;
-                OnPropertyChanged("Name");
+                OnNotifyPropertyChanged();
             }
         }
+
+        protected string _displayName = string.Empty;
         public string DisplayName
         {
             get { return this._displayName; }
             set
             {
                 this._displayName = value;
-                OnPropertyChanged("DisplayName");
+                OnNotifyPropertyChanged();
             }
         }
+
+        protected bool _isLive = false;
         public bool IsLive
         {
             get { return this._isLive; }
             set
             {
                 this._isLive = value;
-                OnPropertyChanged("IsLive");
+                OnNotifyPropertyChanged();
+                OnNotifyPropertyChanged("MouseOverTooltip");
             }
         }
+
+        protected string _game = "game unknown";
         public string Game
         {
             get { return this._game; }
             set
             {
                 this._game = value;
+                OnNotifyPropertyChanged();
+            }
+        }
 
+        public string MouseOverTooltip
+        {
+            get
+            {
                 if (this.IsLive)
                 {
-                    this.MouseOverTooltip = string.Format("{0} is live and playing {1}", this.DisplayName, this.Game);
+                    return string.Format("{0} is live and playing {1}", this.DisplayName, this.Game);
                 }
                 else
                 {
-                    this.MouseOverTooltip = string.Format("{0} is offline", this.DisplayName);
+                    return string.Format("{0} is offline", this.DisplayName);
                 }
-
-                OnPropertyChanged("Game");
-            }
-        }
-        public string MouseOverTooltip
-        {
-            get { return this._mouseOverTooltip; }
-            set
-            {
-                this._mouseOverTooltip = value;
-                OnPropertyChanged("MouseOverTooltip");
             }
         }
         #endregion
@@ -123,13 +123,13 @@ namespace Storm
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
-            HttpWebResponse resp = await request.GetResponseAsyncExt();
+            HttpWebResponse resp = await request.GetResponseAsyncExt().ConfigureAwait(false);
 
             if (resp != null)
             {
                 using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
                 {
-                    jsonResponse = await sr.ReadToEndAsync();
+                    jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
                 }
 
                 resp.Close();
@@ -177,6 +177,6 @@ namespace Storm
 
         public abstract Task UpdateAsync();
         protected abstract Task<bool> TrySetDisplayNameAsync();
-        protected abstract Task DetermineIfLive();
+        protected abstract Task<bool> DetermineIfLive();
     }
 }

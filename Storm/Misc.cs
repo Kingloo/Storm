@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -231,17 +230,41 @@ namespace Storm
             }
             catch (WebException e)
             {
-                webResp = e.Response;
-
-                if (webResp == null)
+                if (e.Response != null)
                 {
-                    Misc.LogMessage("GetResponseAsyncExt: webResp was null");
-
-                    throw;
+                    webResp = e.Response;
+                }
+                else
+                {
+                    Misc.LogException(e);
                 }
             }
 
             return (HttpWebResponse)webResp;
+        }
+
+        /// <summary>
+        /// Downloads a request as a string.
+        /// </summary>
+        /// <param name="req">Custom HttpWebRequest object.</param>
+        /// <returns></returns>
+        public static async Task<string> DownloadWebsiteAsString(HttpWebRequest req)
+        {
+            string response = string.Empty;
+
+            HttpWebResponse resp = await req.GetResponseAsyncExt();
+
+            if (resp != null)
+            {
+                using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                {
+                    response = await sr.ReadToEndAsync();
+                }
+
+                resp.Close();
+            }
+
+            return response;
         }
 
         /// <summary>
@@ -282,7 +305,6 @@ namespace Storm
             {
                 sorted[i] = kvp.Value;
                 i++;
-                Console.WriteLine("Dict: " + kvp.Key.ToString() + ", " + kvp.Value);
             }
 
             return sorted;
@@ -318,6 +340,38 @@ namespace Storm
             double windowWidth = window.Width;
             window.Left = (screenWidth / 2) - (windowWidth / 2);
         }
+
+        /// <summary>
+        /// Removes CR+LF, LF, CR and Environment.NewLine from a string in that order.
+        /// </summary>
+        /// <param name="s">String to cleanse of filth.</param>
+        /// <returns></returns>
+        public static string RemoveNewLines(this string s)
+        {
+            string toReturn = s;
+
+            if (toReturn.Contains("\r\n"))
+            {
+                toReturn = toReturn.Replace("\r\n", " ");
+            }
+
+            if (toReturn.Contains("\r"))
+            {
+                toReturn = toReturn.Replace("\r", " ");
+            }
+
+            if (toReturn.Contains("\n"))
+            {
+                toReturn = toReturn.Replace("\n", " ");
+            }
+
+            if (toReturn.Contains(Environment.NewLine))
+            {
+                toReturn = toReturn.Replace(Environment.NewLine, " ");
+            }
+
+            return toReturn;
+        }   
     }
 	
 	/// <summary>

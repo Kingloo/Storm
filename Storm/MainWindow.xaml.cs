@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Storm
 {
@@ -9,13 +7,8 @@ namespace Storm
         public MainWindow()
         {
             this.InitializeComponent();
-        }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            StreamManager sm = (StreamManager)Application.Current.Resources["streamManager"];
-
-            await sm.UpdateAllAsync();
+            DataContext = new StreamManager(this);
         }
     }
 }
