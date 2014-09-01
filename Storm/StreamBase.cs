@@ -84,6 +84,7 @@ namespace Storm
             {
                 this._game = value;
                 OnNotifyPropertyChanged();
+                OnNotifyPropertyChanged("MouseOverTooltip");
             }
         }
 
