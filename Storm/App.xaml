@@ -15,6 +15,15 @@
 
         <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
         <Style TargetType="{x:Type this:MainWindow}" BasedOn="{StaticResource {x:Type Window}}" />
+        <Style TargetType="{x:Type ItemsPresenter}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
+        <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
+
+        <Style TargetType="{x:Type VirtualizingStackPanel}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+            <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Pixel" />
+            <Setter Property="VirtualizingPanel.CacheLength" Value="200" />
+        </Style>
 
         <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
             <Setter Property="FontFamily" Value="Calibri" />
@@ -35,15 +44,13 @@
             <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
         </Style>
         
-        <Style TargetType="{x:Type VirtualizingStackPanel}">
-            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
-            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
-            <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Pixel" />
-            <Setter Property="VirtualizingPanel.CacheLength" Value="200" />
+        <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Type Control}}">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         </Style>
         
-        <Style TargetType="{x:Type ScrollViewer}">
-            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+        <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Type Control}}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
         </Style>
         
         <SolidColorBrush x:Key="Online" Color="LightGreen" />
