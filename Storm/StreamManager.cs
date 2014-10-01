@@ -92,9 +92,9 @@ namespace Storm
 
         private void CheckUrlsFilename()
         {
-            if (!(File.Exists(this.urlsFilename)))
+            if (File.Exists(this.urlsFilename) == false)
             {
-                File.CreateText(this.urlsFilename);
+                using (FileStream fs = new FileStream(this.urlsFilename, FileMode.Create)) { }
             }
         }
 
