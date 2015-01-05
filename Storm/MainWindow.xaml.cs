@@ -8,7 +8,17 @@ namespace Storm
         {
             this.InitializeComponent();
 
+            this.MaxHeight = CalculateMaxHeight();
+
             DataContext = new StreamManager(this);
+        }
+
+        private double CalculateMaxHeight()
+        {
+            double screenHeight = SystemParameters.WorkArea.Bottom;
+            double maxHeight = screenHeight - 150;
+
+            return maxHeight;
         }
     }
 }
