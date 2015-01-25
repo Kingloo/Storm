@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -216,13 +217,78 @@ namespace Storm
         }
 
         /// <summary>
+        /// Removes an IEnumerable's worth of T from an ICollection.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection">The collection to remove from.</param>
+        /// <param name="list">The items to remove from the collection.</param>
+        public static void RemoveList<T>(this ICollection<T> collection, IEnumerable<T> list)
+        {
+            foreach (T obj in list)
+            {
+                collection.Remove(obj);
+            }
+        }
+
+        /// <summary>
+        /// Returns the string from between two parts of a string.
+        /// </summary>
+        /// <param name="whole">The string to search within.</param>
+        /// <param name="beginning">Should end immediately before what we want back.</param>
+        /// <param name="ending">Should begin immediately after what we want back.</param>
+        /// <returns></returns>
+        public static string FromBetween(this string whole, string beginning, string ending)
+        {
+            if (whole.Contains(beginning) == false)
+            {
+                //throw new ArgumentException(string.Format("beginning ({0}) does not appear within whole ({1})", beginning, whole));
+
+                return string.Format("beginning ({0}) does not appear within whole ({1})", beginning, whole);
+            }
+
+            if (whole.Contains(ending) == false)
+            {
+                //throw new ArgumentException(string.Format("ending ({0}) does not appear within whole ({1})", ending, whole));
+
+                return string.Format("ending ({0}) does not appear within whole ({1})", ending, whole);
+            }
+
+            if (whole.IndexOf(beginning) < 0)
+            {
+                //throw new ArgumentOutOfRangeException(string.Format("beginning ({0}) does not seem to appear in whole ({1})", beginning, whole));
+
+                return string.Format("beginning ({0}) does not seem to appear in whole ({1})", beginning, whole);
+            }
+
+            if (whole.IndexOf(ending) < 0)
+            {
+                //throw new ArgumentOutOfRangeException(string.Format("ending ({0}) does not seem to appear within whole ({1})", ending, whole));
+
+                return string.Format("ending ({0}) does not seem to appear within whole ({1})", ending, whole);
+            }
+
+            int beginningOfString = whole.IndexOf(beginning) + beginning.Length;
+            int endingOfString = whole.IndexOf(ending);
+
+            int length = endingOfString - beginningOfString;
+
+            return whole.Substring(beginningOfString, length);
+        }
+
+        /// <summary>
         /// Returns a HttpWebResponse that deals with WebException inside.
         /// </summary>
         /// <param name="req">The HttpWebRequest to perform.</param>
         /// <returns></returns>
-        public static async Task<HttpWebResponse> GetResponseAsyncExt(this HttpWebRequest req)
+        public static async Task<HttpWebResponse> GetResponseAsyncExt(this HttpWebRequest req, int maxRounds)
         {
+            if (maxRounds == 0)
+            {
+                return null;
+            }
+
             WebResponse webResp = null;
+            bool tryAgain = false;
 
             try
             {
@@ -236,8 +302,19 @@ namespace Storm
                 }
                 else
                 {
-                    Misc.LogException(e);
+                    tryAgain = true;
                 }
+
+                Misc.LogException(e);
+            }
+
+            if (tryAgain)
+            {
+                await Misc.LogMessageAsync(string.Format("tryAgain: {0}, tries left: {1}", req.RequestUri.AbsoluteUri, maxRounds - 1));
+
+                await Task.Delay(5000);
+
+                webResp = await GetResponseAsyncExt(req, maxRounds - 1);
             }
 
             return (HttpWebResponse)webResp;
@@ -248,20 +325,33 @@ namespace Storm
         /// </summary>
         /// <param name="req">Custom HttpWebRequest object.</param>
         /// <returns></returns>
-        public static async Task<string> DownloadWebsiteAsString(HttpWebRequest req)
+        public static async Task<string> DownloadWebsiteAsString(HttpWebRequest req, int maxRounds)
         {
-            string response = string.Empty;
+            string response = null;
 
-            HttpWebResponse resp = await req.GetResponseAsyncExt();
-
-            if (resp != null)
+            using (HttpWebResponse resp = await req.GetResponseAsyncExt(maxRounds))
             {
-                using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                if (resp != null)
                 {
-                    response = await sr.ReadToEndAsync();
-                }
+                    if (resp.StatusCode == HttpStatusCode.OK)
+                    {
+                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                        {
+                            //response = await sr.ReadToEndAsync().ConfigureAwait(false);
 
-                resp.Close();
+                            // documentation says this shouldn't throw an IOException, it comes from deeper in the framework
+                            try
+                            {
+                                response = await sr.ReadToEndAsync().ConfigureAwait(false);
+                            }
+                            catch (IOException)
+                            {
+                                //response = string.Empty;
+                                response = null;
+                            }
+                        }
+                    }
+                }
             }
 
             return response;

@@ -17,11 +17,16 @@ namespace Storm
             {
                 if (this._goToStreamCommand == null)
                 {
-                    this._goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
+                    this._goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, (_) => { return true; }); // because we never have a reason to refuse this
                 }
 
                 return this._goToStreamCommand;
             }
+        }
+
+        private void GoToStream(object parameter)
+        {
+            Misc.OpenUrlInBrowser(this._uri);
         }
         #endregion
 
@@ -124,7 +129,7 @@ namespace Storm
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
-            HttpWebResponse resp = await request.GetResponseAsyncExt().ConfigureAwait(false);
+            HttpWebResponse resp = await request.GetResponseAsyncExt(2).ConfigureAwait(false);
 
             if (resp != null)
             {
@@ -164,16 +169,6 @@ namespace Storm
             string description = string.Format("and playing {0}", this.Game);
 
             NotificationService.Send(title, description, this.Uri);
-        }
-
-        private void GoToStream(object parameter)
-        {
-            Misc.OpenUrlInBrowser(this._uri);
-        }
-
-        private bool canExecute(object parameter)
-        {
-            return true;
         }
 
         public abstract Task UpdateAsync();

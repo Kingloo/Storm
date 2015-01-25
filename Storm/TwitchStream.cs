@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -106,14 +107,35 @@ namespace Storm
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
 
             req.Accept = ("application/vnd.twitchtv.v2+json");
+            req.AutomaticDecompression = DecompressionMethods.GZip;
             req.Host = uri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
-            req.Referer = uri.DnsSafeHost;
-            req.Timeout = 850;
+            req.ProtocolVersion = HttpVersion.Version11;
+            req.Referer = string.Format("{0}://{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
+            req.Timeout = 2850;
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 
+            req.Headers.Add("DNT", "1");
+            req.Headers.Add("Accept-Encoding: gzip");
+
             return req;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(this.GetType().ToString());
+            sb.AppendLine(string.Format("API Uri: {0}", this._apiUri));
+            sb.AppendLine(string.Format("Uri: {0}", this.Uri));
+            sb.AppendLine(string.Format("Name: {0}", this.Name));
+            sb.AppendLine(string.Format("DisplayName: {0}", this.DisplayName));
+            sb.AppendLine(string.Format("Is live? {0}", this.IsLive));
+            sb.AppendLine(string.Format("Game: {0}", this.Game));
+            sb.AppendLine(string.Format("MouseOverTooltip: {0}", this.MouseOverTooltip));
+
+            return sb.ToString();
         }
     }
 }

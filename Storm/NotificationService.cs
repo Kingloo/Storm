@@ -168,9 +168,6 @@ namespace Storm
                 style.Setters.Add(new Setter(WindowStyleProperty, WindowStyle.None));
                 style.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(0d)));
 
-                //style.Setters.Add(new Setter(TopProperty, 80d));
-                //style.Setters.Add(new Setter(LeftProperty, 1250d));
-
                 double top = SystemParameters.WorkArea.Top + 50;
                 double left = SystemParameters.WorkArea.Right - 475d - 100;
 
@@ -179,8 +176,6 @@ namespace Storm
 
                 style.Setters.Add(new Setter(SizeToContentProperty, SizeToContent.Height));
                 style.Setters.Add(new Setter(WidthProperty, 475d));
-
-                
 
                 return style;
             }

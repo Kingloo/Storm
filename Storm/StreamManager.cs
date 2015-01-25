@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -14,108 +15,208 @@ namespace Storm
     {
         #region Fields
         private readonly string urlsFilename = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
-        private DispatcherTimer updateTimer = new DispatcherTimer();
-        private readonly MainWindow mainWindow = null;
+        private DispatcherTimer updateTimer = null;
         #endregion
 
         #region Properties
+        private bool _activity = false;
+        public bool Activity
+        {
+            get
+            {
+                return this._activity;
+            }
+            set
+            {
+                this._activity = value;
+
+                OnNotifyPropertyChanged();
+
+                this.RaiseAllAsyncCanExecuteChangedEvents();
+            }
+        }
+
+        private void RaiseAllAsyncCanExecuteChangedEvents()
+        {
+            this.LoadUrlsFromFileCommandAsync.RaiseCanExecuteChanged();
+            this.UpdateAllCommandAsync.RaiseCanExecuteChanged();
+        }
+
         private ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
         public ObservableCollection<StreamBase> Streams { get { return this._streams; } }
         #endregion
 
         #region Commands
-        private DelegateCommand<object> _openFeedsFileCommand = null;
-        public DelegateCommand<object> OpenFeedsFileCommand
+        private DelegateCommand _openFeedsFileCommand = null;
+        public DelegateCommand OpenFeedsFileCommand
         {
             get
             {
                 if (this._openFeedsFileCommand == null)
                 {
-                    this._openFeedsFileCommand = new DelegateCommand<object>(OpenFeedsFile, canExecute);
+                    this._openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecute);
                 }
 
                 return this._openFeedsFileCommand;
             }
         }
 
-        private DelegateCommandAsync<object> _loadUrlsFromFileCommandAsync = null;
-        public DelegateCommandAsync<object> LoadUrlsFromFileCommandAsync
+        private void OpenFeedsFile()
+        {
+            try
+            {
+                Process.Start("notepad.exe", this.urlsFilename);
+            }
+            catch (FileNotFoundException)
+            {
+                Process.Start("wordpad.exe", this.urlsFilename);
+            }
+        }
+
+        private DelegateCommandAsync _loadUrlsFromFileCommandAsync = null;
+        public DelegateCommandAsync LoadUrlsFromFileCommandAsync
         {
             get
             {
                 if (this._loadUrlsFromFileCommandAsync == null)
                 {
-                    this._loadUrlsFromFileCommandAsync = new DelegateCommandAsync<object>(new Func<object, Task>(LoadUrlsFromFileAsync), canExecute);
+                    this._loadUrlsFromFileCommandAsync = new DelegateCommandAsync(new Func<Task>(LoadUrlsFromFileAsync), canExecuteAsync);
                 }
 
                 return this._loadUrlsFromFileCommandAsync;
             }
         }
 
-        private DelegateCommandAsync<object> _updateAllCommandAsync = null;
-        public DelegateCommandAsync<object> UpdateAllCommandAsync
+        public async Task LoadUrlsFromFileAsync()
+        {
+            this.Activity = true;
+
+            this.Streams.Clear();
+
+            FileStream fsAsync = null;
+
+            try
+            {
+                fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 4096, true);
+            }
+            catch (FileNotFoundException)
+            {
+                if (fsAsync != null)
+                {
+                    fsAsync.Close();
+                }
+
+                File.CreateText(this.urlsFilename);
+
+                OpenFeedsFile();
+
+                return;
+            }
+
+            using (StreamReader sr = new StreamReader(fsAsync))
+            {
+                string line = string.Empty;
+
+                while ((line = await sr.ReadLineAsync()) != null)
+                {
+                    AddService(line);
+                }
+            }
+
+            if (fsAsync != null)
+            {
+                fsAsync.Close();
+            }
+
+            this.Activity = false;
+        }
+
+        private DelegateCommandAsync _updateAllCommandAsync = null;
+        public DelegateCommandAsync UpdateAllCommandAsync
         {
             get
             {
                 if (this._updateAllCommandAsync == null)
                 {
-                    this._updateAllCommandAsync = new DelegateCommandAsync<object>(new Func<object, Task>(UpdateAllAsync), canExecute);
+                    this._updateAllCommandAsync = new DelegateCommandAsync(new Func<Task>(UpdateAllAsync), canExecute);
                 }
 
                 return this._updateAllCommandAsync;
             }
         }
+
+        public async Task UpdateAllAsync()
+        {
+            this.Activity = true;
+
+            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
+
+            VisualStateManager.GoToState(appMainWindow, "Updating", false);
+            
+            IEnumerable<Task> allUpdateTasks = from each in Streams
+                                               select each.UpdateAsync();
+
+            await Task.WhenAll(allUpdateTasks);
+
+            VisualStateManager.GoToState(appMainWindow, "Stable", false);
+
+            this.Activity = false;
+        }
+
+        private DelegateCommand _exitCommand = null;
+        public DelegateCommand ExitCommand
+        {
+            get
+            {
+                if (this._exitCommand == null)
+                {
+                    this._exitCommand = new DelegateCommand(Exit, canExecute);
+                }
+
+                return this._exitCommand;
+            }
+        }
+
+        private void Exit()
+        {
+            Application.Current.MainWindow.Close();
+        }
+
+        private bool canExecute(object parameter)
+        {
+            // no need for any special logic, no reason to ever deny this
+            return true;
+        }
+
+        private bool canExecuteAsync(object parameter)
+        {
+            return !this.Activity;
+        }
         #endregion
 
-        public StreamManager(MainWindow mainWindow)
+        public StreamManager()
         {
-            this.mainWindow = mainWindow;
-            
-            this.mainWindow.Loaded += mainWindow_Loaded;
-            
-            this.updateTimer.Interval = new TimeSpan(0, 6, 0);
+            this.updateTimer = new DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 4, 0)
+            };
+
             this.updateTimer.Tick += updateTimer_Tick;
             this.updateTimer.IsEnabled = true;
+
+            Init();
         }
 
         private async void updateTimer_Tick(object sender, EventArgs e)
         {
-            await UpdateAllAsync(null).ConfigureAwait(false);
+            await UpdateAllAsync().ConfigureAwait(false);
         }
 
-        private async void mainWindow_Loaded(object sender, RoutedEventArgs e)
+        public async Task Init()
         {
-            CheckUrlsFilename();
+            await LoadUrlsFromFileAsync();
 
-            await LoadUrlsFromFileAsync(null);
-        }
-
-        private void CheckUrlsFilename()
-        {
-            if (File.Exists(this.urlsFilename) == false)
-            {
-                using (FileStream fs = new FileStream(this.urlsFilename, FileMode.Create)) { }
-            }
-        }
-
-        public async Task LoadUrlsFromFileAsync(object _)
-        {
-            this.Streams.Clear();
-
-            using (FileStream fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 1023, true))
-            {
-                using (StreamReader sr = new StreamReader(fsAsync))
-                {
-                    string line = string.Empty;
-
-                    while ((line = await sr.ReadLineAsync()) != null)
-                    {
-                        AddService(line);
-                    }
-                }
-            }
-
-            await UpdateAllAsync(null).ConfigureAwait(false);
+            await UpdateAllAsync().ConfigureAwait(false);
         }
 
         private void AddService(string each)
@@ -169,31 +270,22 @@ namespace Storm
             return ss;
         }
 
-        public async Task UpdateAllAsync(object _)
+        public override string ToString()
         {
-            VisualStateManager.GoToState(this.mainWindow, "Updating", false);
+            StringBuilder sb = new StringBuilder();
 
-            await Task.WhenAll(from each in Streams select each.UpdateAsync());
+            sb.AppendLine(this.GetType().ToString());
+            sb.AppendLine(string.Format("URLs file: {0}", this.urlsFilename));
 
-            VisualStateManager.GoToState(this.mainWindow, "Stable", false);
-        }
-
-        private void OpenFeedsFile(object _)
-        {
-            try
+            if (this.Streams.Count > 0)
             {
-                Process.Start("notepad.exe", this.urlsFilename);
+                foreach (StreamBase each in Streams)
+                {
+                    sb.AppendLine(each.ToString());
+                }
             }
-            catch (FileNotFoundException)
-            {
-                Process.Start("wordpad.exe", this.urlsFilename);
-            }
-        }
 
-        private bool canExecute(object parameter)
-        {
-            // no need for any special logic, no reason to ever deny this
-            return true;
+            return sb.ToString();
         }
     }
 }
