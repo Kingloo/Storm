@@ -107,14 +107,18 @@ namespace Storm
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
 
             req.Accept = ("application/vnd.twitchtv.v2+json");
+            req.AllowAutoRedirect = true;
             req.AutomaticDecompression = DecompressionMethods.GZip;
+            req.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
             req.Host = uri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
             req.Referer = string.Format("{0}://{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
-            req.Timeout = 2850;
+            req.Timeout = 4000;
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-Encoding: gzip");

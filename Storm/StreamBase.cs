@@ -129,22 +129,25 @@ namespace Storm
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
-            HttpWebResponse resp = await request.GetResponseAsyncExt(2).ConfigureAwait(false);
+            HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt(2).ConfigureAwait(false));
 
             if (resp != null)
             {
-                using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                if (resp.StatusCode == HttpStatusCode.OK)
                 {
-                    jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
+                    using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                    {
+                        jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
+                    }
                 }
 
                 resp.Close();
             }
 
+            JObject j = null;
+
             if (jsonResponse != string.Empty)
             {
-                JObject j = null;
-                
                 try
                 {
                     j = JObject.Parse(jsonResponse);
@@ -153,14 +156,9 @@ namespace Storm
                 {
                     j = null;
                 }
-
-                if (j != null)
-                {
-                    return j;
-                }
             }
 
-            return null;
+            return j;
         }
 
         protected void NotifyIsNowLive()

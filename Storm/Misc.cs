@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -119,16 +118,21 @@ namespace Storm
         /// Logs a DispatcherUnhandledException's Exception property to a file.
         /// </summary>
         /// <param name="e">The exception object within the DispatcherUnhandledException.</param>
-        public static void LogException(Exception e)
+        public static void LogException(Exception e, string customMessage)
         {
             string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
 
             StringBuilder logMessage = new StringBuilder();
 
             logMessage.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+
+            if (String.IsNullOrWhiteSpace(customMessage) == false)
+            {
+                logMessage.AppendLine(customMessage);
+            }
+
             logMessage.AppendLine(e.Message);
             logMessage.AppendLine(e.StackTrace);
-
             logMessage.AppendLine(Environment.NewLine);
 
             using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, false))
@@ -144,16 +148,21 @@ namespace Storm
         /// Asynchronously logs an Exception to a file.
         /// </summary>
         /// <param name="e">The exception to log.</param>
-        public async static Task LogExceptionAsync(Exception e)
+        public async static Task LogExceptionAsync(Exception e, string customMessage)
         {
             string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
 
             StringBuilder logMessage = new StringBuilder();
 
             logMessage.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+
+            if (String.IsNullOrWhiteSpace(customMessage) == false)
+            {
+                logMessage.AppendLine(customMessage);
+            }
+
             logMessage.AppendLine(e.Message);
             logMessage.AppendLine(e.StackTrace);
-
             logMessage.AppendLine(Environment.NewLine);
 
             using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, true))
@@ -276,23 +285,19 @@ namespace Storm
         }
 
         /// <summary>
-        /// Returns a HttpWebResponse that deals with WebException inside.
+        /// Returns a WebResponse that deals with WebException inside.
         /// </summary>
         /// <param name="req">The HttpWebRequest to perform.</param>
+        /// <param name="maxRounds">The maximum number of times to attempt the operation with a hardcoded (blocking) 3.5s delay between attempts.</param>
         /// <returns></returns>
-        public static async Task<HttpWebResponse> GetResponseAsyncExt(this HttpWebRequest req, int maxRounds)
+        public static WebResponse GetResponseExt(this WebRequest req, int maxRounds)
         {
-            if (maxRounds == 0)
-            {
-                return null;
-            }
-
             WebResponse webResp = null;
             bool tryAgain = false;
 
             try
             {
-                webResp = await req.GetResponseAsync();
+                webResp = req.GetResponse();
             }
             catch (WebException e)
             {
@@ -305,19 +310,70 @@ namespace Storm
                     tryAgain = true;
                 }
 
-                Misc.LogException(e);
+                string message = string.Format("Request uri: {0}, Tries left: {1}, Method: {2}, Timeout: {3}", req.RequestUri, maxRounds - 1, req.Method, req.Timeout);
+
+                Misc.LogException(e, message);
+
+                if (maxRounds == 1)
+                {
+                    return webResp;
+                }
             }
 
             if (tryAgain)
             {
-                await Misc.LogMessageAsync(string.Format("tryAgain: {0}, tries left: {1}", req.RequestUri.AbsoluteUri, maxRounds - 1));
+                System.Threading.Thread.Sleep(3500);
 
-                await Task.Delay(5000);
-
-                webResp = await GetResponseAsyncExt(req, maxRounds - 1);
+                webResp = GetResponseExt(req, maxRounds - 1);
             }
 
-            return (HttpWebResponse)webResp;
+            return webResp;
+        }
+
+        /// <summary>
+        /// Asynchronously returns a WebResponse that deals with WebException inside.
+        /// </summary>
+        /// <param name="req">The HttpWebRequest to perform.</param>
+        /// <param name="maxRounds">The maximum number of times to attempt the operation with a hardcoded 3.5s delay between attempts.</param>
+        /// <returns></returns>
+        public static async Task<WebResponse> GetResponseAsyncExt(this WebRequest req, int maxRounds)
+        {
+            WebResponse webResp = null;
+            bool tryAgain = false;
+
+            try
+            {
+                webResp = await req.GetResponseAsync().ConfigureAwait(false);
+            }
+            catch (WebException e)
+            {
+                if (e.Response != null)
+                {
+                    webResp = e.Response;
+                }
+                else
+                {
+                    tryAgain = true;
+                }
+
+                string message = string.Format("Request uri: {0}, Tries left: {1}, Method: {2}, Timeout: {3}", req.RequestUri, maxRounds - 1, req.Method, req.Timeout);
+
+                Misc.LogException(e, message);
+
+                if (maxRounds == 1)
+                {
+                    return webResp;
+                }
+            }
+
+            if (tryAgain)
+            {
+                await Task.Delay(3500);
+
+                webResp = await GetResponseAsyncExt(req, maxRounds - 1).ConfigureAwait(false);
+            }
+
+            return webResp;
         }
 
         /// <summary>
@@ -327,9 +383,9 @@ namespace Storm
         /// <returns></returns>
         public static async Task<string> DownloadWebsiteAsString(HttpWebRequest req, int maxRounds)
         {
-            string response = null;
+            string response = string.Empty;
 
-            using (HttpWebResponse resp = await req.GetResponseAsyncExt(maxRounds))
+            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt(maxRounds)))
             {
                 if (resp != null)
                 {
@@ -337,17 +393,14 @@ namespace Storm
                     {
                         using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
                         {
-                            //response = await sr.ReadToEndAsync().ConfigureAwait(false);
-
-                            // documentation says this shouldn't throw an IOException, it comes from deeper in the framework
+                            // documentation says this doesn't throw an IOException, but one comes from deeper in the framework
                             try
                             {
                                 response = await sr.ReadToEndAsync().ConfigureAwait(false);
                             }
                             catch (IOException)
                             {
-                                //response = string.Empty;
-                                response = null;
+                                response = string.Empty;
                             }
                         }
                     }
