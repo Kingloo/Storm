@@ -11,7 +11,7 @@ using System.Windows.Threading;
 
 namespace Storm
 {
-    class StreamManager : ViewModelBase
+    public class StreamManager : ViewModelBase
     {
         #region Fields
         private readonly string urlsFilename = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
@@ -47,6 +47,25 @@ namespace Storm
         #endregion
 
         #region Commands
+        private DelegateCommand<StreamBase> _goToStreamCommand = null;
+        public DelegateCommand<StreamBase> GoToStreamCommand
+        {
+            get
+            {
+                if (this._goToStreamCommand == null)
+                {
+                    this._goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
+                }
+
+                return this._goToStreamCommand;
+            }
+        }
+
+        private void GoToStream(StreamBase stream)
+        {
+            Utils.OpenUriInBrowser(stream.Uri);
+        }
+
         private DelegateCommand _openFeedsFileCommand = null;
         public DelegateCommand OpenFeedsFileCommand
         {
@@ -97,7 +116,7 @@ namespace Storm
 
             try
             {
-                fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 4096, true);
+                fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 1024, true);
             }
             catch (FileNotFoundException)
             {
@@ -138,7 +157,7 @@ namespace Storm
             {
                 if (this._updateAllCommandAsync == null)
                 {
-                    this._updateAllCommandAsync = new DelegateCommandAsync(new Func<Task>(UpdateAllAsync), canExecute);
+                    this._updateAllCommandAsync = new DelegateCommandAsync(UpdateAllAsync, canExecuteAsync);
                 }
 
                 return this._updateAllCommandAsync;
@@ -153,10 +172,7 @@ namespace Storm
 
             VisualStateManager.GoToState(appMainWindow, "Updating", false);
             
-            IEnumerable<Task> allUpdateTasks = from each in Streams
-                                               select each.UpdateAsync();
-
-            await Task.WhenAll(allUpdateTasks);
+            await Task.WhenAll(from each in Streams select each.UpdateAsync());
 
             VisualStateManager.GoToState(appMainWindow, "Stable", false);
 
@@ -182,7 +198,7 @@ namespace Storm
             Application.Current.MainWindow.Close();
         }
 
-        private bool canExecute(object parameter)
+        private bool canExecute(object _)
         {
             // no need for any special logic, no reason to ever deny this
             return true;
@@ -196,6 +212,26 @@ namespace Storm
 
         public StreamManager()
         {
+            Init();
+        }
+
+        private async void updateTimer_Tick(object sender, EventArgs e)
+        {
+            await UpdateAllAsync();
+        }
+
+        public async Task Init()
+        {
+            await LoadUrlsFromFileAsync();
+
+            await UpdateAllAsync();
+
+            // We do this here just in case either of these takes a while. Should prevent race condition.
+            CreateAndStartTimer();
+        }
+
+        private void CreateAndStartTimer()
+        {
             this.updateTimer = new DispatcherTimer
             {
                 Interval = new TimeSpan(0, 4, 0)
@@ -203,20 +239,6 @@ namespace Storm
 
             this.updateTimer.Tick += updateTimer_Tick;
             this.updateTimer.IsEnabled = true;
-
-            Init();
-        }
-
-        private async void updateTimer_Tick(object sender, EventArgs e)
-        {
-            await UpdateAllAsync().ConfigureAwait(false);
-        }
-
-        public async Task Init()
-        {
-            await LoadUrlsFromFileAsync();
-
-            await UpdateAllAsync().ConfigureAwait(false);
         }
 
         private void AddService(string each)
@@ -277,12 +299,9 @@ namespace Storm
             sb.AppendLine(this.GetType().ToString());
             sb.AppendLine(string.Format("URLs file: {0}", this.urlsFilename));
 
-            if (this.Streams.Count > 0)
+            foreach (StreamBase each in Streams)
             {
-                foreach (StreamBase each in Streams)
-                {
-                    sb.AppendLine(each.ToString());
-                }
+                sb.AppendLine(each.ToString());
             }
 
             return sb.ToString();

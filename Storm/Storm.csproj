@@ -32,7 +32,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>47</ApplicationRevision>
+    <ApplicationRevision>49</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -86,7 +86,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Storm.App</StartupObject>
+    <StartupObject>Storm.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>profile_icon.ico</ApplicationIcon>
@@ -141,12 +141,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="LiveColorConverter.cs" />
-    <Compile Include="Misc.cs" />
     <Compile Include="NotificationService.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="StreamBase.cs" />
     <Compile Include="StreamManager.cs" />
     <Compile Include="TwitchStream.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

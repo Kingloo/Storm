@@ -7,29 +7,8 @@ using Newtonsoft.Json.Linq;
 
 namespace Storm
 {
-    abstract class StreamBase : ViewModelBase
+    public abstract class StreamBase : ViewModelBase
     {
-        #region Commands
-        private DelegateCommand<StreamBase> _goToStreamCommand = null;
-        public DelegateCommand<StreamBase> GoToStreamCommand
-        {
-            get
-            {
-                if (this._goToStreamCommand == null)
-                {
-                    this._goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, (_) => { return true; }); // because we never have a reason to refuse this
-                }
-
-                return this._goToStreamCommand;
-            }
-        }
-
-        private void GoToStream(object parameter)
-        {
-            Misc.OpenUrlInBrowser(this._uri);
-        }
-        #endregion
-
         #region Fields
         protected string _apiUri = string.Empty;
         protected bool _hasUpdatedDisplayName = false;
@@ -129,32 +108,33 @@ namespace Storm
         protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
-            HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt(2).ConfigureAwait(false));
 
-            if (resp != null)
+            using (HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt(2).ConfigureAwait(false)))
             {
-                if (resp.StatusCode == HttpStatusCode.OK)
+                if (resp != null)
                 {
-                    using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                    if (resp.StatusCode == HttpStatusCode.OK)
                     {
-                        jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
+                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                        {
+                            jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
+                        }
                     }
                 }
-
-                resp.Close();
             }
+
 
             JObject j = null;
 
-            if (jsonResponse != string.Empty)
+            if (String.IsNullOrEmpty(jsonResponse) == false)
             {
                 try
                 {
                     j = JObject.Parse(jsonResponse);
                 }
-                catch (JsonReaderException)
+                catch (JsonReaderException jre)
                 {
-                    j = null;
+                    Utils.LogException(jre);
                 }
             }
 
