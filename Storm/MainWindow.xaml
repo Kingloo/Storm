@@ -1,7 +1,8 @@
 ﻿<Window x:Class="Storm.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:this="clr-namespace:Storm">
+        xmlns:this="clr-namespace:Storm"
+        Loaded="Window_Loaded">
     
     <Window.DataContext>
         <this:StreamManager x:Name="streamManager" />
@@ -66,13 +67,17 @@
     </Window.Style>
     
     <Window.InputBindings>
-        <KeyBinding Key="Escape"
+        <KeyBinding x:Name="ExitCommandKeyBinding"
+                    Key="Escape"
                     Command="{Binding Path=ExitCommand, Mode=OneTime}" />
-        <KeyBinding Key="F5"
+        <KeyBinding x:Name="UpdateAllCommandAsyncKeyBinding"
+                    Key="F5"
                     Command="{Binding Path=UpdateAllCommandAsync, Mode=OneTime}" />
-        <KeyBinding Key="F6"
+        <KeyBinding x:Name="OpenFeedsFileCommandKeyBinding"
+                    Key="F9"
                     Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
-        <KeyBinding Key="F9"
+        <KeyBinding x:Name="LoadUrlsFromFileCommandAsyncKeyBinding"
+                    Key="F12"
                     Command="{Binding Path=LoadUrlsFromFileCommandAsync, Mode=OneTime}" />
     </Window.InputBindings>
     
@@ -102,7 +107,7 @@
             </ItemsControl.ItemsPanel>
 
             <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="{x:Type this:StreamBase}">
                     <DataTemplate.Resources>
                         <this:LiveColorConverter x:Key="liveColorConverter"
                                                  Online="{StaticResource Online}"
@@ -144,7 +149,7 @@
                     FontSize="13"
                     Margin="0,0,8,0"
                     Content="Open Feeds File"
-                    ToolTip="F6"
+                    ToolTip="{Binding Path=Key, ElementName=OpenFeedsFileCommandKeyBinding}"
                     Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
             
             <Button Width="50"
@@ -153,7 +158,7 @@
                     Content="q"
                     FontFamily="WebDings"
                     FontSize="24"
-                    ToolTip="F9"
+                    ToolTip="{Binding Path=Key, ElementName=LoadUrlsFromFileCommandAsyncKeyBinding}"
                     Command="{Binding Path=LoadUrlsFromFileCommandAsync, Mode=OneTime}" />
 
         </StackPanel>

@@ -8,6 +8,37 @@ namespace Storm
 {
     class TwitchStream : StreamBase
     {
+        private string _game = "game unknown";
+        public string Game
+        {
+            get
+            {
+                return this._game;
+            }
+            set
+            {
+                this._game = value;
+
+                OnNotifyPropertyChanged();
+                OnNotifyPropertyChanged("MouseOverTooltip");
+            }
+        }
+
+        public override string MouseOverTooltip
+        {
+            get
+            {
+                if (this.IsLive)
+                {
+                    return string.Format("{0} is live and playing {1}", this.DisplayName, this.Game);
+                }
+                else
+                {
+                    return string.Format("{0} is offline", this.DisplayName);
+                }
+            }
+        }
+        
         public TwitchStream(string s)
             : base(s)
         {
@@ -16,6 +47,8 @@ namespace Storm
 
         public async override Task UpdateAsync()
         {
+            this.Updating = true;
+            
             if (!this._hasUpdatedDisplayName)
             {
                 this._hasUpdatedDisplayName = await TrySetDisplayNameAsync();
@@ -41,9 +74,11 @@ namespace Storm
                     this.IsLive = false;
                 }
             }
+
+            this.Updating = false;
         }
 
-        protected async override Task<bool> TrySetDisplayNameAsync()
+        protected async Task<bool> TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
             HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
@@ -102,6 +137,14 @@ namespace Storm
             return false;
         }
 
+        protected override void NotifyIsNowLive()
+        {
+            string title = string.Format("{0} is live", this.DisplayName);
+            string description = string.Format("and playing {0}", this.Game);
+
+            NotificationService.Send(title, description, this.Uri);
+        }
+
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
@@ -130,14 +173,8 @@ namespace Storm
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(this.GetType().ToString());
-            sb.AppendLine(string.Format("API Uri: {0}", this._apiUri));
-            sb.AppendLine(string.Format("Uri: {0}", this.Uri));
-            sb.AppendLine(string.Format("Name: {0}", this.Name));
-            sb.AppendLine(string.Format("DisplayName: {0}", this.DisplayName));
-            sb.AppendLine(string.Format("Is live? {0}", this.IsLive));
+            sb.AppendLine(base.ToString());
             sb.AppendLine(string.Format("Game: {0}", this.Game));
-            sb.AppendLine(string.Format("MouseOverTooltip: {0}", this.MouseOverTooltip));
 
             return sb.ToString();
         }

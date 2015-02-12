@@ -48,6 +48,36 @@ namespace Storm
             return toReturn;
         }
 
+        public static string FromBetween(this string whole, string beginning, string ending)
+        {
+            if (whole.Contains(beginning) == false)
+            {
+                return string.Format("beginning ({0}) does not appear within whole ({1})", beginning, whole);
+            }
+
+            if (whole.Contains(ending) == false)
+            {
+                return string.Format("ending ({0}) does not appear within whole ({1})", ending, whole);
+            }
+
+            if (whole.IndexOf(beginning) < 0)
+            {
+                return string.Format("beginning ({0}) does not seem to appear in whole ({1})", beginning, whole);
+            }
+
+            if (whole.IndexOf(ending) < 0)
+            {
+                return string.Format("ending ({0}) does not seem to appear within whole ({1})", ending, whole);
+            }
+
+            int beginningOfString = whole.IndexOf(beginning) + beginning.Length;
+            int endingOfString = whole.IndexOf(ending);
+
+            int length = endingOfString - beginningOfString;
+
+            return whole.Substring(beginningOfString, length);
+        }
+
         // ICollection<T>
         public static void AddList<T>(this ICollection<T> collection, IEnumerable<T> list)
         {

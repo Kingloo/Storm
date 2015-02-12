@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,6 @@ namespace Storm
     public class StreamManager : ViewModelBase
     {
         #region Fields
-        private readonly string urlsFilename = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
         private DispatcherTimer updateTimer = null;
         #endregion
 
@@ -84,11 +84,11 @@ namespace Storm
         {
             try
             {
-                Process.Start("notepad.exe", this.urlsFilename);
+                Process.Start("notepad.exe", Program.StormUrlsFilePath);
             }
             catch (FileNotFoundException)
             {
-                Process.Start("wordpad.exe", this.urlsFilename);
+                Process.Start("wordpad.exe", Program.StormUrlsFilePath);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Storm
             {
                 if (this._loadUrlsFromFileCommandAsync == null)
                 {
-                    this._loadUrlsFromFileCommandAsync = new DelegateCommandAsync(new Func<Task>(LoadUrlsFromFileAsync), canExecuteAsync);
+                    this._loadUrlsFromFileCommandAsync = new DelegateCommandAsync(LoadUrlsFromFileAsync, canExecuteAsync);
                 }
 
                 return this._loadUrlsFromFileCommandAsync;
@@ -112,42 +112,21 @@ namespace Storm
 
             this.Streams.Clear();
 
-            FileStream fsAsync = null;
+            IEnumerable<string> loaded = await Program.LoadUrlsFromFile();
 
-            try
-            {
-                fsAsync = new FileStream(this.urlsFilename, FileMode.Open, FileAccess.Read, FileShare.None, 1024, true);
-            }
-            catch (FileNotFoundException)
-            {
-                if (fsAsync != null)
-                {
-                    fsAsync.Close();
-                }
+            CreateStreamBasesFromStrings(loaded);
 
-                File.CreateText(this.urlsFilename);
-
-                OpenFeedsFile();
-
-                return;
-            }
-
-            using (StreamReader sr = new StreamReader(fsAsync))
-            {
-                string line = string.Empty;
-
-                while ((line = await sr.ReadLineAsync()) != null)
-                {
-                    AddService(line);
-                }
-            }
-
-            if (fsAsync != null)
-            {
-                fsAsync.Close();
-            }
+            await UpdateAllAsync();
 
             this.Activity = false;
+        }
+
+        private void CreateStreamBasesFromStrings(IEnumerable<string> loaded)
+        {
+            foreach (string each in loaded)
+            {
+                AddService(each);
+            }
         }
 
         private DelegateCommandAsync _updateAllCommandAsync = null;
@@ -167,14 +146,16 @@ namespace Storm
         public async Task UpdateAllAsync()
         {
             this.Activity = true;
-
+            
             MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
-            VisualStateManager.GoToState(appMainWindow, "Updating", false);
+            VisualStateManager.GoToState(appMainWindow, "Updating", true);
             
-            await Task.WhenAll(from each in Streams select each.UpdateAsync());
+            await Task.WhenAll(from each in Streams
+                               where (each != null) && (each.Updating == false)
+                               select each.UpdateAsync());
 
-            VisualStateManager.GoToState(appMainWindow, "Stable", false);
+            VisualStateManager.GoToState(appMainWindow, "Stable", true);
 
             this.Activity = false;
         }
@@ -212,7 +193,9 @@ namespace Storm
 
         public StreamManager()
         {
-            Init();
+            CreateStreamBasesFromStrings(Program.URLs);
+
+            CreateAndStartTimer();
         }
 
         private async void updateTimer_Tick(object sender, EventArgs e)
@@ -220,21 +203,12 @@ namespace Storm
             await UpdateAllAsync();
         }
 
-        public async Task Init()
-        {
-            await LoadUrlsFromFileAsync();
-
-            await UpdateAllAsync();
-
-            // We do this here just in case either of these takes a while. Should prevent race condition.
-            CreateAndStartTimer();
-        }
-
         private void CreateAndStartTimer()
         {
             this.updateTimer = new DispatcherTimer
             {
-                Interval = new TimeSpan(0, 4, 0)
+                Interval = new TimeSpan(0, 4, 0),
+                IsEnabled = false
             };
 
             this.updateTimer.Tick += updateTimer_Tick;
@@ -252,6 +226,7 @@ namespace Storm
                     sb = new TwitchStream(each);
                     break;
                 case StreamingService.Ustream:
+                    sb = new Ustream(each);
                     break;
                 case StreamingService.UnsupportedService:
                     break;
@@ -284,6 +259,9 @@ namespace Storm
                 case "ustream.tv":
                     ss = StreamingService.Ustream;
                     break;
+                case "www.ustream.tv":
+                    ss = StreamingService.Ustream;
+                    break;
                 default:
                     ss = StreamingService.UnsupportedService;
                     break;
@@ -297,7 +275,7 @@ namespace Storm
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(this.GetType().ToString());
-            sb.AppendLine(string.Format("URLs file: {0}", this.urlsFilename));
+            sb.AppendLine(string.Format("URLs file: {0}", Program.StormUrlsFilePath));
 
             foreach (StreamBase each in Streams)
             {

@@ -18,5 +18,10 @@ namespace Storm
 
             return maxHeight;
         }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            await streamManager.UpdateAllAsync();
+        }
     }
 }

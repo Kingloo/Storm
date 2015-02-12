@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -44,6 +45,7 @@ namespace Storm
             set
             {
                 this._displayName = value;
+
                 OnNotifyPropertyChanged();
             }
         }
@@ -60,30 +62,20 @@ namespace Storm
             }
         }
 
-        protected string _game = "game unknown";
-        public string Game
-        {
-            get { return this._game; }
-            set
-            {
-                this._game = value;
-                OnNotifyPropertyChanged();
-                OnNotifyPropertyChanged("MouseOverTooltip");
-            }
-        }
+        public abstract string MouseOverTooltip { get; }
 
-        public string MouseOverTooltip
+        private bool _updating = false;
+        public bool Updating
         {
             get
             {
-                if (this.IsLive)
-                {
-                    return string.Format("{0} is live and playing {1}", this.DisplayName, this.Game);
-                }
-                else
-                {
-                    return string.Format("{0} is offline", this.DisplayName);
-                }
+                return this._updating;
+            }
+            set
+            {
+                this._updating = value;
+
+                OnNotifyPropertyChanged();
             }
         }
         #endregion
@@ -141,16 +133,22 @@ namespace Storm
             return j;
         }
 
-        protected void NotifyIsNowLive()
-        {
-            string title = string.Format("{0} is live", this.DisplayName);
-            string description = string.Format("and playing {0}", this.Game);
-
-            NotificationService.Send(title, description, this.Uri);
-        }
-
         public abstract Task UpdateAsync();
-        protected abstract Task<bool> TrySetDisplayNameAsync();
         protected abstract Task<bool> DetermineIfLive();
+        protected abstract void NotifyIsNowLive();
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(this.GetType().ToString());
+            sb.AppendLine(string.Format("Uri: {0}", this.Uri));
+            sb.AppendLine(string.Format("Name: {0}", this.Name));
+            sb.AppendLine(string.Format("Display name: {0}", this.DisplayName));
+            sb.AppendLine(string.Format("Is Live: {0}", this.IsLive.ToString()));
+             sb.AppendLine(string.Format("MouseOverToolTip: {0}", this.MouseOverTooltip));
+
+            return sb.ToString();
+        }
     }
 }
