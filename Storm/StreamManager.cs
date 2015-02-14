@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -149,13 +148,19 @@ namespace Storm
             
             MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
-            VisualStateManager.GoToState(appMainWindow, "Updating", true);
-            
+            //if (appMainWindow.CheckAccess())
+            //{
+                VisualStateManager.GoToState(appMainWindow, "Updating", true);
+            //}
+
             await Task.WhenAll(from each in Streams
                                where (each != null) && (each.Updating == false)
                                select each.UpdateAsync());
 
-            VisualStateManager.GoToState(appMainWindow, "Stable", true);
+            //if (appMainWindow.CheckAccess())
+            //{
+                VisualStateManager.GoToState(appMainWindow, "Stable", true);
+            //}
 
             this.Activity = false;
         }
