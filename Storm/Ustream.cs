@@ -102,7 +102,7 @@ namespace Storm
         private async Task<string> DetermineChannelId()
         {
             HttpWebRequest req = BuildUstreamHttpWebRequest(this.Uri);
-            string response = await Utils.DownloadWebsiteAsStringAsync(req);
+            string response = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
             if (String.IsNullOrWhiteSpace(response))
             {
@@ -110,19 +110,12 @@ namespace Storm
             }
             else
             {
-                string beginning = "<param name=\"flashvars\" value=\"cid=";
-                string ending = "&amp;locale=";
+                string beginning = "<div class=\"viewer-bg\" data-content-id=\"";
+                string ending = "\" data-content-type=\"channel\"><div class=\"transparent-bg\"></div></div>";
 
-                channelId = response.FromBetween(beginning, ending);
-                
-                if (string.IsNullOrWhiteSpace(channelId))
-                {
-                    return null;
-                }
-                else
-                {
-                    return channelId;
-                }
+                string id = response.FromBetween(beginning, ending);
+
+                return id;
             }
         }
 
@@ -172,8 +165,8 @@ namespace Storm
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
             req.Referer = string.Format("{0}://{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
-            req.Timeout = 4000;
-            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+            req.Timeout = 2000;
+            req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 
             if (uri.Scheme.Equals("https"))
             {

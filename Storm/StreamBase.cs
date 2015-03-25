@@ -101,7 +101,7 @@ namespace Storm
         {
             string jsonResponse = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt(2).ConfigureAwait(false)))
+            using (HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt(true).ConfigureAwait(false)))
             {
                 if (resp != null)
                 {

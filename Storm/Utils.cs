@@ -4,11 +4,36 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace Storm
 {
     public static class Utils
     {
+        public static void SetWindowToMiddleOfScreen(Window window)
+        {
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            double windowHeight = window.Height;
+            window.Top = (screenHeight / 2) - (windowHeight / 2);
+
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double windowWidth = window.Width;
+            window.Left = (screenWidth / 2) - (windowWidth / 2);
+        }
+
+        public static void SafeDispatcher(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            if (Application.Current.Dispatcher.CheckAccess())
+            {
+                action();
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(action, priority);
+            }
+        }
+
+
         public static void OpenUriInBrowser(string uri)
         {
             Uri tmp = null;
@@ -159,13 +184,20 @@ namespace Storm
         }
 
 
-        public static string DownloadWebsiteAsString(HttpWebRequest req)
+        public static string DownloadWebsiteAsString(HttpWebRequest req, bool useLogging = false, int rounds = 1)
         {
             string response = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)req.GetResponseExt())
+            using (HttpWebResponse resp = (HttpWebResponse)req.GetResponseExt(useLogging, rounds))
             {
-                if (resp != null)
+                if (resp == null)
+                {
+                    if (req != null)
+                    {
+                        req.Abort();
+                    }
+                }
+                else
                 {
                     if (resp.StatusCode == HttpStatusCode.OK)
                     {
@@ -181,33 +213,11 @@ namespace Storm
                             }
                         }
                     }
-                }
-            }
-
-            return response;
-        }
-
-        public static string DownloadWebsiteAsString(HttpWebRequest req, int rounds)
-        {
-            string response = string.Empty;
-
-            using (HttpWebResponse resp = (HttpWebResponse)req.GetResponseExt(rounds))
-            {
-                if (resp != null)
-                {
-                    if (resp.StatusCode == HttpStatusCode.OK)
+                    else
                     {
-                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
-                        {
-                            try
-                            {
-                                response = sr.ReadToEnd();
-                            }
-                            catch (IOException)
-                            {
-                                response = string.Empty;
-                            }
-                        }
+                        string errorMessage = string.Format("Getting website {0} failed with code {1}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString());
+
+                        Utils.LogMessage(errorMessage);
                     }
                 }
             }
@@ -215,13 +225,20 @@ namespace Storm
             return response;
         }
 
-        public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest req)
+        public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest req, bool useLogging = false, int rounds = 1)
         {
             string response = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt()))
+            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt(useLogging, rounds)))
             {
-                if (resp != null)
+                if (resp == null)
+                {
+                    if (req != null)
+                    {
+                        req.Abort();
+                    }
+                }
+                else
                 {
                     if (resp.StatusCode == HttpStatusCode.OK)
                     {
@@ -237,50 +254,16 @@ namespace Storm
                             }
                         }
                     }
-                }
-            }
-
-            return response;
-        }
-
-        public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest req, int rounds)
-        {
-            string response = string.Empty;
-
-            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt(rounds)))
-            {
-                if (resp != null)
-                {
-                    if (resp.StatusCode == HttpStatusCode.OK)
+                    else
                     {
-                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
-                        {
-                            try
-                            {
-                                response = await sr.ReadToEndAsync().ConfigureAwait(false);
-                            }
-                            catch (IOException)
-                            {
-                                response = string.Empty;
-                            }
-                        }
+                        string errorMessage = string.Format("Getting website {0} failed with code: {1}, desc: {2}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString(), resp.StatusDescription);
+
+                        await Utils.LogMessageAsync(errorMessage).ConfigureAwait(false);
                     }
                 }
             }
 
             return response;
-        }
-
-
-        public static void SetWindowToMiddleOfScreen(Window window)
-        {
-            double screenHeight = SystemParameters.PrimaryScreenHeight;
-            double windowHeight = window.Height;
-            window.Top = (screenHeight / 2) - (windowHeight / 2);
-
-            double screenWidth = SystemParameters.PrimaryScreenWidth;
-            double windowWidth = window.Width;
-            window.Left = (screenWidth / 2) - (windowWidth / 2);
         }
     }
 }
