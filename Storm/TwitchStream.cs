@@ -8,7 +8,7 @@ namespace Storm
 {
     class TwitchStream : StreamBase
     {
-        private string _game = "game unknown";
+        private string _game = string.Empty;
         public string Game
         {
             get
@@ -30,7 +30,16 @@ namespace Storm
             {
                 if (this.IsLive)
                 {
-                    return string.Format("{0} is live and playing {1}", this.DisplayName, this.Game);
+                    StringBuilder sb = new StringBuilder();
+
+                    sb.Append(string.Format("{0} is live", this.DisplayName));
+
+                    if (String.IsNullOrWhiteSpace(this.Game) == false)
+                    {
+                        sb.Append(string.Format(" and playing {0}", this.Game));
+                    }
+
+                    return sb.ToString();
                 }
                 else
                 {
@@ -109,11 +118,11 @@ namespace Storm
             {
                 if (resp["game"] is JToken)
                 {
-                    return ((string)resp["game"]) ?? "unknown";
+                    return (string)resp["game"];
                 }
             }
 
-            return "unknown";
+            return string.Empty;
         }
 
         protected async override Task<bool> DetermineIfLive()
