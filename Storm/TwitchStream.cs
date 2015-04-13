@@ -149,9 +149,17 @@ namespace Storm
         protected override void NotifyIsNowLive()
         {
             string title = string.Format("{0} is live", this.DisplayName);
-            string description = string.Format("and playing {0}", this.Game);
 
-            NotificationService.Send(title, description, this.Uri);
+            if (String.IsNullOrWhiteSpace(this.Game))
+            {
+                NotificationService.Send(title, this.Uri);
+            }
+            else
+            {
+                string description = string.Format("and playing {0}", this.Game);
+
+                NotificationService.Send(title, description, this.Uri);
+            }
         }
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
