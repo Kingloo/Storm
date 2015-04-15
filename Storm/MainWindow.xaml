@@ -74,7 +74,7 @@
                     Key="F5"
                     Command="{Binding Path=UpdateAllCommandAsync, Mode=OneTime}" />
         <KeyBinding x:Name="OpenFeedsFileCommandKeyBinding"
-                    Key="F9"
+                    Key="F11"
                     Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
         <KeyBinding x:Name="LoadUrlsFromFileCommandAsyncKeyBinding"
                     Key="F12"
