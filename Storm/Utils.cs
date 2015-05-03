@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -10,6 +11,9 @@ namespace Storm
 {
     public static class Utils
     {
+        private static string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
+
+
         public static void SetWindowToMiddleOfScreen(Window window)
         {
             double screenHeight = SystemParameters.PrimaryScreenHeight;
@@ -23,13 +27,33 @@ namespace Storm
 
         public static void SafeDispatcher(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            if (Application.Current.Dispatcher.CheckAccess())
+            if (action == null) throw new ArgumentNullException("Utils.SafeDispatcher: action was null");
+
+            Dispatcher disp = Application.Current.MainWindow.Dispatcher;
+
+            if (disp.CheckAccess())
             {
                 action();
             }
             else
             {
-                Application.Current.Dispatcher.Invoke(action, priority);
+                disp.Invoke(action, priority);
+            }
+        }
+
+        public static async Task SafeDispatcherAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            if (action == null) throw new ArgumentNullException("Utils.SafeDispatcherAsync: action was null");
+
+            Dispatcher disp = Application.Current.MainWindow.Dispatcher;
+
+            if (disp.CheckAccess())
+            {
+                await Task.Run(() => action);
+            }
+            else
+            {
+                await disp.InvokeAsync(action, priority);
             }
         }
 
@@ -40,11 +64,13 @@ namespace Storm
 
             if (Uri.TryCreate(uri, UriKind.Absolute, out tmp))
             {
-                System.Diagnostics.Process.Start(tmp.AbsoluteUri);
+                Process.Start(tmp.AbsoluteUri);
             }
             else
             {
-                Utils.LogMessage(string.Format("Uri.TryCreate returned false on {0}", uri));
+                string errorMessage = string.Format("Uri.TryCreate returned false on {0}", uri);
+
+                Utils.LogMessage(errorMessage);
             }
         }
 
@@ -52,22 +78,22 @@ namespace Storm
         {
             if (uri.IsAbsoluteUri)
             {
-                System.Diagnostics.Process.Start(uri.AbsoluteUri);
+                Process.Start(uri.AbsoluteUri);
             }
             else
             {
-                Utils.LogMessage(string.Format("Uri ({0}) was not absolute", uri.OriginalString));
+                string errorMessage = string.Format("Uri ({0}) was not absolute", uri.OriginalString);
+
+                Utils.LogMessage(errorMessage);
             }
         }
 
 
         public static void LogMessage(string message)
         {
-            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
-
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} logged the following message at {1}", Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} logged the following message at {1}", Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
             sb.AppendLine(Environment.NewLine);
 
@@ -82,11 +108,9 @@ namespace Storm
 
         public static async Task LogMessageAsync(string message)
         {
-            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
-
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} logged the following message at {1}", Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} logged the following message at {1}", Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
             sb.AppendLine(Environment.NewLine);
 
@@ -102,11 +126,9 @@ namespace Storm
 
         public static void LogException(Exception e)
         {
-            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
-
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
 
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
@@ -123,11 +145,9 @@ namespace Storm
 
         public static void LogException(Exception e, string message)
         {
-            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
-
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
@@ -144,11 +164,9 @@ namespace Storm
 
         public static async Task LogExceptionAsync(Exception e)
         {
-            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
-
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
             sb.AppendLine(Environment.NewLine);
@@ -164,11 +182,9 @@ namespace Storm
 
         public static async Task LogExceptionAsync(Exception e, string message)
         {
-            string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
-
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
@@ -184,11 +200,11 @@ namespace Storm
         }
 
 
-        public static string DownloadWebsiteAsString(HttpWebRequest req, bool useLogging = false, int rounds = 1)
+        public static string DownloadWebsiteAsString(HttpWebRequest req)
         {
             string response = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)req.GetResponseExt(useLogging, rounds))
+            using (HttpWebResponse resp = (HttpWebResponse)req.GetResponseExt())
             {
                 if (resp == null)
                 {
@@ -225,11 +241,11 @@ namespace Storm
             return response;
         }
 
-        public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest req, bool useLogging = false, int rounds = 1)
+        public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest req)
         {
             string response = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt(useLogging, rounds)))
+            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt().ConfigureAwait(false)))
             {
                 if (resp == null)
                 {

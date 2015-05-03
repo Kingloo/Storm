@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Storm
@@ -134,12 +133,9 @@ namespace Storm
 
 
         // HttpWebRequest
-        public static WebResponse GetResponseExt(this HttpWebRequest req, bool useLogging, int rounds = 1)
+        public static WebResponse GetResponseExt(this HttpWebRequest req)
         {
-            if (rounds < 1) throw new ArgumentException("rounds cannot be < 1");
-
             WebResponse webResp = null;
-            bool tryAgain = false;
 
             try
             {
@@ -147,64 +143,37 @@ namespace Storm
             }
             catch (WebException e)
             {
-                tryAgain = (rounds > 1);
-
                 if (e.Response != null)
                 {
                     webResp = e.Response;
                 }
 
-                if (useLogging)
-                {
-                    string message = string.Format("Request uri: {0}, Tries left: {1}, Method: {2}, Timeout: {3}", req.RequestUri, rounds - 1, req.Method, req.Timeout);
+                string message = string.Format("Request uri: {0}, Method: {2}, Timeout: {3}", req.RequestUri, req.Method, req.Timeout);
 
-                    Utils.LogException(e, message);
-                }
-            }
-
-            if (tryAgain)
-            {
-                System.Threading.Thread.Sleep(3500);
-
-                webResp = GetResponseExt(req, useLogging, rounds - 1);
+                Utils.LogException(e, message);
             }
 
             return webResp;
         }
         
-        public static async Task<WebResponse> GetResponseAsyncExt(this HttpWebRequest req, bool useLogging, int rounds = 1)
+        public static async Task<WebResponse> GetResponseAsyncExt(this HttpWebRequest req)
         {
-            if (rounds < 1) throw new ArgumentException("rounds cannot be < 1");
-
             WebResponse webResp = null;
-            bool tryAgain = false;
-
+            
             try
             {
                 webResp = await req.GetResponseAsync().ConfigureAwait(false);
             }
             catch (WebException e)
             {
-                tryAgain = (rounds > 1);
-
                 if (e.Response != null)
                 {
                     webResp = e.Response;
                 }
 
-                if (useLogging)
-                {
-                    string message = string.Format("Request uri: {0}, Tries left: {1}, Method: {2}, Timeout: {3}", req.RequestUri, rounds - 1, req.Method, req.Timeout);
+                string message = string.Format("Request uri: {0}, Method: {2}, Timeout: {3}", req.RequestUri, req.Method, req.Timeout);
 
-                    Utils.LogException(e, message);
-                }
-            }
-
-            if (tryAgain)
-            {
-                await Task.Delay(3000);
-
-                webResp = await GetResponseAsyncExt(req, useLogging, rounds - 1).ConfigureAwait(false);
+                Utils.LogException(e, message); // C#6 will allow for awaiting in Catch/Finally blocks
             }
 
             return webResp;
@@ -217,6 +186,18 @@ namespace Storm
             if (task == Task.WhenAny(task, Task.Delay(timeout)))
             {
                 await task;
+            }
+            else
+            {
+                throw new TimeoutException(string.Format("Task timed out: {0}", task.Status.ToString()));
+            }
+        }
+
+        public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
+        {
+            if (task == await Task.WhenAny(task, Task.Delay(timeout)))
+            {
+                return task.Result;
             }
             else
             {
