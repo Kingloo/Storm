@@ -29,7 +29,7 @@ namespace Storm
         {
             if (action == null) throw new ArgumentNullException("Utils.SafeDispatcher: action was null");
 
-            Dispatcher disp = Application.Current.MainWindow.Dispatcher;
+            Dispatcher disp = Application.Current.Dispatcher;
 
             if (disp.CheckAccess())
             {
