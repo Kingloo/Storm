@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -12,6 +13,7 @@ namespace Storm
     public static class Utils
     {
         private static string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
+        private static int loggingRounds = 3;
 
 
         public static void SetWindowToMiddleOfScreen(Window window)
@@ -45,7 +47,7 @@ namespace Storm
         {
             if (action == null) throw new ArgumentNullException("Utils.SafeDispatcherAsync: action was null");
 
-            Dispatcher disp = Application.Current.MainWindow.Dispatcher;
+            Dispatcher disp = Application.Current.Dispatcher;
 
             if (disp.CheckAccess())
             {
@@ -53,7 +55,7 @@ namespace Storm
             }
             else
             {
-                await disp.InvokeAsync(action, priority);
+                await disp.InvokeAsync(action, DispatcherPriority.Background);
             }
         }
 
@@ -97,13 +99,7 @@ namespace Storm
             sb.AppendLine(message);
             sb.AppendLine(Environment.NewLine);
 
-            using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, false))
-            {
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    sw.Write(sb.ToString());
-                }
-            }
+            WriteTextToFile(sb.ToString(), loggingRounds);
         }
 
         public static async Task LogMessageAsync(string message)
@@ -114,13 +110,7 @@ namespace Storm
             sb.AppendLine(message);
             sb.AppendLine(Environment.NewLine);
 
-            using (FileStream fsAsync = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, true))
-            {
-                using (StreamWriter sw = new StreamWriter(fsAsync))
-                {
-                    await sw.WriteAsync(sb.ToString()).ConfigureAwait(false);
-                }
-            }
+            await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
 
 
@@ -134,13 +124,7 @@ namespace Storm
             sb.AppendLine(e.StackTrace);
             sb.AppendLine(Environment.NewLine);
 
-            using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, false))
-            {
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    sw.Write(sb.ToString());
-                }
-            }
+            WriteTextToFile(sb.ToString(), loggingRounds);
         }
 
         public static void LogException(Exception e, string message)
@@ -153,13 +137,7 @@ namespace Storm
             sb.AppendLine(e.StackTrace);
             sb.AppendLine(Environment.NewLine);
 
-            using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, false))
-            {
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    sw.Write(sb.ToString());
-                }
-            }
+            WriteTextToFile(sb.ToString(), loggingRounds);
         }
 
         public static async Task LogExceptionAsync(Exception e)
@@ -171,13 +149,7 @@ namespace Storm
             sb.AppendLine(e.StackTrace);
             sb.AppendLine(Environment.NewLine);
 
-            using (FileStream fsAsync = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, true))
-            {
-                using (StreamWriter sw = new StreamWriter(fsAsync))
-                {
-                    await sw.WriteAsync(sb.ToString()).ConfigureAwait(false);
-                }
-            }
+            await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
 
         public static async Task LogExceptionAsync(Exception e, string message)
@@ -190,11 +162,114 @@ namespace Storm
             sb.AppendLine(e.StackTrace);
             sb.AppendLine(Environment.NewLine);
 
-            using (FileStream fsAsync = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 4096, true))
+            await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
+        }
+
+
+        private static void WriteTextToFile(string text, int rounds = 1)
+        {
+            if (rounds < 1) throw new ArgumentException("WriteTextToFile: rounds cannot be < 1");
+
+            bool tryAgain = false;
+
+            FileStream fs = null;
+            
+            try
             {
-                using (StreamWriter sw = new StreamWriter(fsAsync))
+                fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 1024, false);
+            }
+            catch (IOException)
+            {
+                tryAgain = (rounds > 1);
+
+                if (fs != null)
                 {
-                    await sw.WriteAsync(sb.ToString()).ConfigureAwait(false);
+                    fs.Close();
+                }
+            }
+
+            if (tryAgain)
+            {
+                int variation = DateTime.UtcNow.Millisecond;
+
+                /*
+                 * we want the delay to increase as the number of attempts left decreases
+                 * as rounds increases, (1 / rounds) decreases
+                 * => as (1 / rounds) decreases, (150 / (1 / rounds)) increases 
+                 * 
+                 * we convert rounds to decimal because otherwise it would do integer division
+                 * e.g. 1 / 3 = 0
+                 */
+                decimal fixedWait = 150 / (1 / Convert.ToDecimal(rounds));
+
+                int toWait = Convert.ToInt32(fixedWait) + variation;
+
+                Thread.Sleep(toWait);
+
+                WriteTextToFile(text, rounds - 1);
+            }
+            else
+            {
+                using (fs)
+                {
+                    using (StreamWriter sw = new StreamWriter(fs))
+                    {
+                        sw.Write(text);
+                    }
+                }
+            }
+        }
+
+        private static async Task WriteTextToFileAsync(string text, int rounds = 1)
+        {
+            if (rounds < 1) throw new ArgumentException("WriteTextToFile: rounds cannot be < 1");
+
+            bool tryAgain = false;
+
+            FileStream fsAsync = null;
+
+            try
+            {
+                fsAsync = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 1024, true);
+            }
+            catch (IOException)
+            {
+                tryAgain = (rounds > 1);
+
+                if (fsAsync != null)
+                {
+                    fsAsync.Close();
+                }
+            }
+
+            if (tryAgain)
+            {
+                int variation = DateTime.UtcNow.Millisecond;
+
+                /*
+                 * we want the delay to increase as the number of attempts left decreases
+                 * as rounds increases, (1 / rounds) decreases
+                 * => as (1 / rounds) decreases, (150 / (1 / rounds)) increases 
+                 * 
+                 * we convert rounds to decimal because otherwise it would do integer division
+                 * e.g. 1 / 3 = 0
+                 */
+                decimal fixedWait = 150 / (1 / Convert.ToDecimal(rounds));
+
+                int toWait = Convert.ToInt32(fixedWait) + variation;
+
+                await Task.Delay(toWait).ConfigureAwait(false);
+
+                await WriteTextToFileAsync(text, rounds - 1).ConfigureAwait(false);
+            }
+            else
+            {
+                using (fsAsync)
+                {
+                    using (StreamWriter sw = new StreamWriter(fsAsync))
+                    {
+                        await sw.WriteAsync(text).ConfigureAwait(false);
+                    }
                 }
             }
         }

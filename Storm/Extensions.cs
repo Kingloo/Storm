@@ -148,7 +148,7 @@ namespace Storm
                     webResp = e.Response;
                 }
 
-                string message = string.Format("Request uri: {0}, Method: {2}, Timeout: {3}", req.RequestUri, req.Method, req.Timeout);
+                string message = string.Format("Request uri: {0}, Method: {1}, Timeout: {2}", req.RequestUri, req.Method, req.Timeout);
 
                 Utils.LogException(e, message);
             }

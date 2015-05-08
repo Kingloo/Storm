@@ -18,12 +18,7 @@ namespace Storm
         [STAThread]
         public static int Main(string[] args)
         {
-            if (File.Exists(_stormUrlsFilePath) == false)
-            {
-                File.Create(_stormUrlsFilePath);
-            }
-
-            IEnumerable<string> loaded = LoadUrlsFromFile().Result;
+            IEnumerable<string> loaded = LoadUrlsFromFileAsync().Result;
 
             if (loaded == null)
             {
@@ -40,7 +35,7 @@ namespace Storm
             return app.Run();
         }
 
-        public static async Task<IEnumerable<string>> LoadUrlsFromFile()
+        public static async Task<IEnumerable<string>> LoadUrlsFromFileAsync()
         {
             List<string> toReturn = new List<string>();
 
@@ -50,28 +45,32 @@ namespace Storm
             {
                 fsAsync = new FileStream(_stormUrlsFilePath, FileMode.Open, FileAccess.Read, FileShare.None, 1024, true);
             }
-            catch (DirectoryNotFoundException) { return null; }
-            catch (FileNotFoundException) { return null; }
-            catch (UnauthorizedAccessException) { return null; }
-            catch (SecurityException) { return null; }
-            catch (IOException) { return null; }
-
-            using (StreamReader sr = new StreamReader(fsAsync))
+            catch (FileNotFoundException)
             {
-                string line = string.Empty;
-
-                while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
+                if (fsAsync != null)
                 {
-                    if (line.StartsWith("#") == false)
-                    {
-                        toReturn.Add(line);
-                    }
+                    fsAsync.Close();
                 }
+
+                File.Create(_stormUrlsFilePath);
+
+                return new List<string>(0);
             }
 
-            if (fsAsync != null)
+            using (fsAsync)
             {
-                fsAsync.Close();
+                using (StreamReader sr = new StreamReader(fsAsync))
+                {
+                    string line = string.Empty;
+
+                    while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
+                    {
+                        if (line.StartsWith("#") == false)
+                        {
+                            toReturn.Add(line);
+                        }
+                    }
+                }
             }
 
             return toReturn;

@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Storm
 {
-    class TwitchStream : StreamBase
+    class Twitch : StreamBase
     {
         private string _game = string.Empty;
         public string Game
@@ -48,7 +48,7 @@ namespace Storm
             }
         }
         
-        public TwitchStream(string s)
+        public Twitch(string s)
             : base(s)
         {
             this._apiUri = "https://api.twitch.tv/kraken";
@@ -190,8 +190,8 @@ namespace Storm
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(base.ToString());
-            sb.AppendLine(string.Format("Game: {0}", this.Game));
+            sb.Append(base.ToString());
+            sb.AppendLine(string.Format("Game: {0}", String.IsNullOrWhiteSpace(this.Game) ? "not set" : this.Game));
 
             return sb.ToString();
         }

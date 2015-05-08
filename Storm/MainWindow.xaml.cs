@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Text;
+using System.Windows;
 
 namespace Storm
 {
@@ -19,9 +20,19 @@ namespace Storm
             return maxHeight;
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            await streamManager.UpdateAllAsync();
+            if (e.Key == System.Windows.Input.Key.F1)
+            {
+                StringBuilder sb = new StringBuilder();
+
+                foreach (StreamBase each in streamManager.Streams)
+                {
+                    sb.AppendLine(each.ToString());
+                }
+
+                Utils.LogMessage(sb.ToString());
+            }
         }
     }
 }

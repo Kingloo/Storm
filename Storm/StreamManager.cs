@@ -81,6 +81,10 @@ namespace Storm
 
         private void OpenFeedsFile()
         {
+            // The FileNotFoundException will be for notepad.exe/wordpad.exe, NOT StormUrlsFilePath
+            // the file path is an argument
+            // notepad would be the one to notify that StormUrlsFilePath could not be found/opened
+
             try
             {
                 Process.Start("notepad.exe", Program.StormUrlsFilePath);
@@ -111,13 +115,13 @@ namespace Storm
 
             this.Streams.Clear();
 
-            IEnumerable<string> loaded = await Program.LoadUrlsFromFile();
+            IEnumerable<string> loaded = await Program.LoadUrlsFromFileAsync().ConfigureAwait(false);
 
-            CreateStreamBasesFromStrings(loaded);
+            Utils.SafeDispatcher(() => CreateStreamBasesFromStrings(loaded), DispatcherPriority.Background);
 
-            await UpdateAllAsync();
+            await UpdateAllAsync().ConfigureAwait(false);
 
-            this.Activity = false;
+            Utils.SafeDispatcher(() => this.Activity = false, DispatcherPriority.Background);
         }
 
         private void CreateStreamBasesFromStrings(IEnumerable<string> loaded)
@@ -148,21 +152,20 @@ namespace Storm
             
             MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
-            //if (appMainWindow.CheckAccess())
-            //{
-                VisualStateManager.GoToState(appMainWindow, "Updating", true);
-            //}
+            VisualStateManager.GoToState(appMainWindow, "Updating", false);
 
             await Task.WhenAll(from each in Streams
                                where (each != null) && (each.Updating == false)
-                               select each.UpdateAsync());
+                               select each.UpdateAsync()).ConfigureAwait(false);
 
-            //if (appMainWindow.CheckAccess())
-            //{
-                VisualStateManager.GoToState(appMainWindow, "Stable", true);
-            //}
+            Action setToInactive = new Action(() =>
+                {
+                    VisualStateManager.GoToState(appMainWindow, "Stable", false);
 
-            this.Activity = false;
+                    this.Activity = false;
+                });
+
+            Utils.SafeDispatcher(setToInactive, DispatcherPriority.Background);
         }
 
         private DelegateCommand _exitCommand = null;
@@ -198,14 +201,21 @@ namespace Storm
 
         public StreamManager()
         {
+            Application.Current.MainWindow.Loaded += MainWindow_Loaded;
+
             CreateStreamBasesFromStrings(Program.URLs);
 
             CreateAndStartTimer();
         }
 
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            await UpdateAllAsync().ConfigureAwait(false);
+        }
+
         private async void updateTimer_Tick(object sender, EventArgs e)
         {
-            await UpdateAllAsync();
+            await UpdateAllAsync().ConfigureAwait(false);
         }
 
         private void CreateAndStartTimer()
@@ -228,7 +238,7 @@ namespace Storm
             switch (service)
             {
                 case StreamingService.Twitch:
-                    sb = new TwitchStream(each);
+                    sb = new Twitch(each);
                     break;
                 case StreamingService.Ustream:
                     sb = new Ustream(each);
