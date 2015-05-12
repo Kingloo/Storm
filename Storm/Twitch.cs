@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using Newtonsoft.Json.Linq;
 
 namespace Storm
@@ -148,18 +149,22 @@ namespace Storm
 
         protected override void NotifyIsNowLive()
         {
-            string title = string.Format("{0} is live", this.DisplayName);
+            Action showNotification = null;
+
+            string title = string.Format("{0} is LIVE", this.DisplayName);
 
             if (String.IsNullOrWhiteSpace(this.Game))
             {
-                NotificationService.Send(title, this.Uri);
+                showNotification = new Action(() => NotificationService.Send(title, this.Uri));
             }
             else
             {
                 string description = string.Format("and playing {0}", this.Game);
 
-                NotificationService.Send(title, description, this.Uri);
+                showNotification = new Action(() => NotificationService.Send(title, description, this.Uri));
             }
+
+            Utils.SafeDispatcher(showNotification, DispatcherPriority.Background);
         }
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)

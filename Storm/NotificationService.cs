@@ -76,7 +76,6 @@ namespace Storm
 
         private class NotificationWindow : Window
         {
-            private DispatcherTimer _expirationTimer = null;
             private Notification _n = null;
 
             public NotificationWindow(Notification n)
@@ -132,20 +131,22 @@ namespace Storm
 
             private void BuildTimer()
             {
-                this._expirationTimer = new DispatcherTimer
+                DispatcherTimer _expirationTimer = new DispatcherTimer
                 {
                     Interval = new TimeSpan(0, 0, 15)
                 };
 
-                this._expirationTimer.Tick += Expiration_Tick;
-                this._expirationTimer.IsEnabled = true;
+                _expirationTimer.Tick += Expiration_Tick;
+                _expirationTimer.Start();
             }
 
             private void Expiration_Tick(object sender, EventArgs e)
             {
-                this._expirationTimer.Tick -= Expiration_Tick;
-                this._expirationTimer.IsEnabled = false;
-                this._expirationTimer = null;
+                DispatcherTimer timer = (DispatcherTimer)sender;
+
+                timer.Tick -= Expiration_Tick;
+                timer.Stop();
+                timer = null;
                 
                 this.Close();
             }

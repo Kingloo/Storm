@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -14,7 +15,10 @@ namespace Storm
     public class StreamManager : ViewModelBase
     {
         #region Fields
-        private DispatcherTimer updateTimer = null;
+        private readonly DispatcherTimer updateTimer = new DispatcherTimer
+        {
+            Interval = new TimeSpan(0, 4, 0)
+        };
         #endregion
 
         #region Properties
@@ -27,11 +31,14 @@ namespace Storm
             }
             set
             {
-                this._activity = value;
+                if (this._activity != value)
+                {
+                    this._activity = value;
 
-                OnNotifyPropertyChanged();
+                    OnNotifyPropertyChanged();
 
-                this.RaiseAllAsyncCanExecuteChangedEvents();
+                    RaiseAllAsyncCanExecuteChangedEvents();
+                }
             }
         }
 
@@ -41,7 +48,7 @@ namespace Storm
             this.UpdateAllCommandAsync.RaiseCanExecuteChanged();
         }
 
-        private ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
+        private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
         public ObservableCollection<StreamBase> Streams { get { return this._streams; } }
         #endregion
 
@@ -117,19 +124,13 @@ namespace Storm
 
             IEnumerable<string> loaded = await Program.LoadUrlsFromFileAsync().ConfigureAwait(false);
 
-            Utils.SafeDispatcher(() => CreateStreamBasesFromStrings(loaded), DispatcherPriority.Background);
+            IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(loaded);
+
+            Utils.SafeDispatcher(() => Streams.AddList<StreamBase>(streams), DispatcherPriority.Background);
 
             await UpdateAllAsync().ConfigureAwait(false);
 
-            Utils.SafeDispatcher(() => this.Activity = false, DispatcherPriority.Background);
-        }
-
-        private void CreateStreamBasesFromStrings(IEnumerable<string> loaded)
-        {
-            foreach (string each in loaded)
-            {
-                AddService(each);
-            }
+            this.Activity = false;
         }
 
         private DelegateCommandAsync _updateAllCommandAsync = null;
@@ -148,24 +149,31 @@ namespace Storm
 
         public async Task UpdateAllAsync()
         {
-            this.Activity = true;
-            
-            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
-
-            VisualStateManager.GoToState(appMainWindow, "Updating", false);
+            Utils.SafeDispatcher(SetToActive, DispatcherPriority.Background);
 
             await Task.WhenAll(from each in Streams
                                where (each != null) && (each.Updating == false)
                                select each.UpdateAsync()).ConfigureAwait(false);
 
-            Action setToInactive = new Action(() =>
-                {
-                    VisualStateManager.GoToState(appMainWindow, "Stable", false);
+            Utils.SafeDispatcher(SetToInactive, DispatcherPriority.Background);
+        }
 
-                    this.Activity = false;
-                });
+        private void SetToActive()
+        {
+            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
-            Utils.SafeDispatcher(setToInactive, DispatcherPriority.Background);
+            VisualStateManager.GoToState(appMainWindow, "Updating", false);
+
+            this.Activity = true;
+        }
+
+        private void SetToInactive()
+        {
+            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
+
+            VisualStateManager.GoToState(appMainWindow, "Stable", false);
+
+            this.Activity = false;
         }
 
         private DelegateCommand _exitCommand = null;
@@ -189,11 +197,10 @@ namespace Storm
 
         private bool canExecute(object _)
         {
-            // no need for any special logic, no reason to ever deny this
             return true;
         }
 
-        private bool canExecuteAsync(object parameter)
+        private bool canExecuteAsync(object _)
         {
             return !this.Activity;
         }
@@ -203,9 +210,12 @@ namespace Storm
         {
             Application.Current.MainWindow.Loaded += MainWindow_Loaded;
 
-            CreateStreamBasesFromStrings(Program.URLs);
+            IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(Program.URLs);
 
-            CreateAndStartTimer();
+            Streams.AddList<StreamBase>(streams);
+
+            this.updateTimer.Tick += updateTimer_Tick;
+            this.updateTimer.Start();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -218,19 +228,15 @@ namespace Storm
             await UpdateAllAsync().ConfigureAwait(false);
         }
 
-        private void CreateAndStartTimer()
+        private IEnumerable<StreamBase> CreateStreamBasesFromStrings(IEnumerable<string> loaded)
         {
-            this.updateTimer = new DispatcherTimer
+            foreach (string each in loaded)
             {
-                Interval = new TimeSpan(0, 4, 0),
-                IsEnabled = false
-            };
-
-            this.updateTimer.Tick += updateTimer_Tick;
-            this.updateTimer.IsEnabled = true;
+                yield return CreateService(each);
+            }
         }
 
-        private void AddService(string each)
+        private StreamBase CreateService(string each)
         {
             StreamingService service = DetermineStreamingService(each);
             StreamBase sb = null;
@@ -251,10 +257,7 @@ namespace Storm
                     break;
             }
 
-            if (sb != null)
-            {
-                this.Streams.Add(sb);
-            }
+            return sb;
         }
 
         private StreamingService DetermineStreamingService(string s)
