@@ -17,7 +17,7 @@ namespace Storm
         #region Fields
         private readonly DispatcherTimer updateTimer = new DispatcherTimer
         {
-            Interval = new TimeSpan(0, 4, 0)
+            Interval = new TimeSpan(0, 3, 15)
         };
         #endregion
 
@@ -49,7 +49,7 @@ namespace Storm
         }
 
         private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
-        public ObservableCollection<StreamBase> Streams { get { return this._streams; } }
+        public ObservableCollection<StreamBase> Streams { get { return _streams; } }
         #endregion
 
         #region Commands
@@ -58,12 +58,12 @@ namespace Storm
         {
             get
             {
-                if (this._goToStreamCommand == null)
+                if (_goToStreamCommand == null)
                 {
-                    this._goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
+                    _goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
                 }
 
-                return this._goToStreamCommand;
+                return _goToStreamCommand;
             }
         }
 
@@ -77,18 +77,18 @@ namespace Storm
         {
             get
             {
-                if (this._openFeedsFileCommand == null)
+                if (_openFeedsFileCommand == null)
                 {
-                    this._openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecute);
+                    _openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecute);
                 }
 
-                return this._openFeedsFileCommand;
+                return _openFeedsFileCommand;
             }
         }
 
         private void OpenFeedsFile()
         {
-            // The FileNotFoundException will be for notepad.exe/wordpad.exe, NOT StormUrlsFilePath
+            // The FileNotFoundException will be for notepad.exe, NOT StormUrlsFilePath
             // the file path is an argument
             // notepad would be the one to notify that StormUrlsFilePath could not be found/opened
 
@@ -98,7 +98,7 @@ namespace Storm
             }
             catch (FileNotFoundException)
             {
-                Process.Start("wordpad.exe", Program.StormUrlsFilePath);
+                Process.Start(Program.StormUrlsFilePath); // .txt default program
             }
         }
 
@@ -107,12 +107,12 @@ namespace Storm
         {
             get
             {
-                if (this._loadUrlsFromFileCommandAsync == null)
+                if (_loadUrlsFromFileCommandAsync == null)
                 {
-                    this._loadUrlsFromFileCommandAsync = new DelegateCommandAsync(LoadUrlsFromFileAsync, canExecuteAsync);
+                    _loadUrlsFromFileCommandAsync = new DelegateCommandAsync(LoadUrlsFromFileAsync, canExecuteAsync);
                 }
 
-                return this._loadUrlsFromFileCommandAsync;
+                return _loadUrlsFromFileCommandAsync;
             }
         }
 
@@ -122,11 +122,11 @@ namespace Storm
 
             this.Streams.Clear();
 
-            IEnumerable<string> loaded = await Program.LoadUrlsFromFileAsync().ConfigureAwait(false);
+            IEnumerable<string> stringsFromFile = await Program.LoadUrlsFromFileAsync();
 
-            IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(loaded);
+            IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(stringsFromFile);
 
-            Utils.SafeDispatcher(() => Streams.AddList<StreamBase>(streams), DispatcherPriority.Background);
+            Streams.AddList<StreamBase>(streams);
 
             await UpdateAllAsync().ConfigureAwait(false);
 
@@ -138,27 +138,29 @@ namespace Storm
         {
             get
             {
-                if (this._updateAllCommandAsync == null)
+                if (_updateAllCommandAsync == null)
                 {
-                    this._updateAllCommandAsync = new DelegateCommandAsync(UpdateAllAsync, canExecuteAsync);
+                    _updateAllCommandAsync = new DelegateCommandAsync(UpdateAllAsync, canExecuteAsync);
                 }
 
-                return this._updateAllCommandAsync;
+                return _updateAllCommandAsync;
             }
         }
 
         public async Task UpdateAllAsync()
         {
-            Utils.SafeDispatcher(SetToActive, DispatcherPriority.Background);
+            SetUIToUpdating();
 
-            await Task.WhenAll(from each in Streams
-                               where (each != null) && (each.Updating == false)
-                               select each.UpdateAsync()).ConfigureAwait(false);
+            IEnumerable<Task> updateTasks = from each in Streams
+                                            where !each.Updating
+                                            select each.UpdateAsync();
 
-            Utils.SafeDispatcher(SetToInactive, DispatcherPriority.Background);
+            await Task.WhenAll(updateTasks);
+
+            SetUIToStable();
         }
 
-        private void SetToActive()
+        private void SetUIToUpdating()
         {
             MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
@@ -167,7 +169,7 @@ namespace Storm
             this.Activity = true;
         }
 
-        private void SetToInactive()
+        private void SetUIToStable()
         {
             MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
@@ -181,12 +183,12 @@ namespace Storm
         {
             get
             {
-                if (this._exitCommand == null)
+                if (_exitCommand == null)
                 {
-                    this._exitCommand = new DelegateCommand(Exit, canExecute);
+                    _exitCommand = new DelegateCommand(Exit, canExecute);
                 }
 
-                return this._exitCommand;
+                return _exitCommand;
             }
         }
 

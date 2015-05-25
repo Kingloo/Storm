@@ -15,11 +15,11 @@ namespace Storm
         {
             get
             {
-                return this._game;
+                return _game;
             }
             set
             {
-                this._game = value;
+                _game = value;
 
                 OnNotifyPropertyChanged();
                 OnNotifyPropertyChanged("MouseOverTooltip");
@@ -92,7 +92,10 @@ namespace Storm
         protected async Task<bool> TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
-            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
+
+            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(
+                new Uri(apiAddressToQueryForDisplayName)
+                );
 
             JObject response = await GetApiResponseAsync(twitchRequest).ConfigureAwait(false);
 
@@ -112,7 +115,10 @@ namespace Storm
         protected async Task<string> DetermineGame()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}", this._apiUri, this._name);
-            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+
+            HttpWebRequest req = BuildTwitchHttpWebRequest(
+                new Uri(apiAddressToQuery)
+                );
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
 
@@ -130,7 +136,9 @@ namespace Storm
         protected async override Task<bool> DetermineIfLive()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", this._apiUri, this._name);
-            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest req = BuildTwitchHttpWebRequest(
+                new Uri(apiAddressToQuery)
+                );
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
 
@@ -156,16 +164,19 @@ namespace Storm
 
             if (String.IsNullOrWhiteSpace(this.Game))
             {
-                showNotification = new Action(() => NotificationService.Send(title, this.Uri));
+                showNotification = () => NotificationService.Send(title, this.Uri);
             }
             else
             {
                 string description = string.Format("and playing {0}", this.Game);
 
-                showNotification = new Action(() => NotificationService.Send(title, description, this.Uri));
+                showNotification = () => NotificationService.Send(title, description, this.Uri);
             }
 
-            Utils.SafeDispatcher(showNotification, DispatcherPriority.Background);
+            Utils.SafeDispatcher(
+                showNotification,
+                DispatcherPriority.Background
+                );
         }
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
