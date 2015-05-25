@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -57,31 +58,31 @@ namespace Storm
 
         public async override Task UpdateAsync()
         {
-            this.Updating = true;
+            Updating = true;
             
-            if (!this._hasUpdatedDisplayName)
+            if (!_hasUpdatedDisplayName)
             {
-                this._hasUpdatedDisplayName = await TrySetDisplayNameAsync();
+                _hasUpdatedDisplayName = await TrySetDisplayNameAsync();
             }
 
             bool isUserLive = await DetermineIfLive();
             
             if (isUserLive)
             {
-                this.Game = await DetermineGame();
+                Game = await DetermineGame();
 
-                if (this.IsLive == false)
+                if (IsLive == false)
                 {
-                    this.IsLive = true;
+                    IsLive = true;
 
-                    this.NotifyIsNowLive();
+                    NotifyIsNowLive();
                 }
             }
             else
             {
-                if (this.IsLive == true)
+                if (IsLive == true)
                 {
-                    this.IsLive = false;
+                    IsLive = false;
                 }
             }
 
@@ -171,10 +172,11 @@ namespace Storm
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
 
-            req.Accept = ("application/vnd.twitchtv.v2+json");
+            //req.Accept = ("application/vnd.twitchtv.v2+json");
+            req.Accept = "application/vnd.twitchtv.v3+json";
             req.AllowAutoRedirect = true;
-            req.AutomaticDecompression = DecompressionMethods.GZip;
-            req.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
             req.Host = uri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
@@ -186,7 +188,7 @@ namespace Storm
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-Encoding: gzip");
+            req.Headers.Add("Accept-Encoding", "gzip, deflate");
 
             return req;
         }
