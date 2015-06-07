@@ -9,7 +9,7 @@ namespace Storm
         {
             InitializeComponent();
 
-            this.MaxHeight = CalculateMaxHeight();
+            MaxHeight = CalculateMaxHeight();
         }
 
         private double CalculateMaxHeight()

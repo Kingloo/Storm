@@ -53,16 +53,16 @@ namespace Storm
         public Twitch(string s)
             : base(s)
         {
-            this._apiUri = "https://api.twitch.tv/kraken";
+            this.apiUri = "https://api.twitch.tv/kraken";
         }
 
         public async override Task UpdateAsync()
         {
             Updating = true;
             
-            if (!_hasUpdatedDisplayName)
+            if (!hasUpdatedDisplayName)
             {
-                _hasUpdatedDisplayName = await TrySetDisplayNameAsync();
+                hasUpdatedDisplayName = await TrySetDisplayNameAsync();
             }
 
             bool isUserLive = await DetermineIfLive();
@@ -91,7 +91,7 @@ namespace Storm
 
         protected async Task<bool> TrySetDisplayNameAsync()
         {
-            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this._apiUri, this._name);
+            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this.apiUri, this._name);
 
             HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(
                 new Uri(apiAddressToQueryForDisplayName)
@@ -114,7 +114,7 @@ namespace Storm
 
         protected async Task<string> DetermineGame()
         {
-            string apiAddressToQuery = string.Format("{0}/channels/{1}", this._apiUri, this._name);
+            string apiAddressToQuery = string.Format("{0}/channels/{1}", this.apiUri, this._name);
 
             HttpWebRequest req = BuildTwitchHttpWebRequest(
                 new Uri(apiAddressToQuery)
@@ -135,7 +135,7 @@ namespace Storm
 
         protected async override Task<bool> DetermineIfLive()
         {
-            string apiAddressToQuery = string.Format("{0}/streams/{1}", this._apiUri, this._name);
+            string apiAddressToQuery = string.Format("{0}/streams/{1}", this.apiUri, this._name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(
                 new Uri(apiAddressToQuery)
                 );

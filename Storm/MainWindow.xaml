@@ -147,15 +147,15 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
 
-            <Button Width="150"
+            <Button Width="120"
                     Height="40"
                     FontSize="13"
                     Margin="0,0,8,0"
-                    Content="Open Feeds File"
+                    Content="Open File"
                     ToolTip="{Binding Path=Key, ElementName=OpenFeedsFileCommandKeyBinding}"
                     Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
-            
-            <Button Width="50"
+
+            <Button Width="50" Name="btn"
                     Height="40"
                     Margin="8,0,0,0"
                     Content="q"

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
-using System.Text;
+using System.Net.Cache;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -35,7 +32,7 @@ namespace Storm
         public Ustream(string s)
             : base(s)
         {
-            this._apiUri = "https://api.ustream.tv";
+            this.apiUri = "https://api.ustream.tv";
         }
 
         public async override Task UpdateAsync()
@@ -71,7 +68,7 @@ namespace Storm
                 channelId = await DetermineChannelId();
             }
 
-            string apiAddressToQuery = string.Format("{0}/channels/{1}.json", this._apiUri, channelId);
+            string apiAddressToQuery = string.Format("{0}/channels/{1}.json", this.apiUri, channelId);
             HttpWebRequest req = BuildUstreamHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
@@ -80,7 +77,7 @@ namespace Storm
             {
                 if (resp["channel"].HasValues)
                 {
-                    if (this._hasUpdatedDisplayName == false)
+                    if (this.hasUpdatedDisplayName == false)
                     {
                         SetDisplayName(resp);
                     }
@@ -127,7 +124,7 @@ namespace Storm
             {
                 this.DisplayName = displayName;
 
-                this._hasUpdatedDisplayName = true;
+                this.hasUpdatedDisplayName = true;
             }
         }
 
@@ -159,13 +156,14 @@ namespace Storm
 
             req.Accept = "application/json; charset=UTF-8";
             req.AllowAutoRedirect = true;
-            req.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
             req.Host = uri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
             req.Referer = string.Format("{0}://{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
-            req.Timeout = 2000;
+            req.Timeout = 2500;
             req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 
             if (uri.Scheme.Equals("https"))
@@ -174,6 +172,7 @@ namespace Storm
             }
 
             req.Headers.Add("DNT", "1");
+            req.Headers.Add("Accept-Encoding", "gzip, deflate");
 
             return req;
         }

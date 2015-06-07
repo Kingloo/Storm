@@ -11,18 +11,22 @@ namespace Storm
     public abstract class StreamBase : ViewModelBase
     {
         #region Fields
-        protected string _apiUri = string.Empty;
-        protected bool _hasUpdatedDisplayName = false;
+        protected string apiUri = string.Empty;
+        protected bool hasUpdatedDisplayName = false;
         #endregion
 
         #region Properties
         protected Uri _uri = null;
         public Uri Uri
         {
-            get { return this._uri; }
+            get
+            {
+                return this._uri;
+            }
             set
             {
                 this._uri = value;
+
                 OnNotifyPropertyChanged();
             }
         }
@@ -30,10 +34,14 @@ namespace Storm
         protected string _name = string.Empty;
         public string Name
         {
-            get { return this._name; }
+            get
+            {
+                return this._name;
+            }
             set
             {
                 this._name = value;
+
                 OnNotifyPropertyChanged();
             }
         }
@@ -41,7 +49,10 @@ namespace Storm
         protected string _displayName = string.Empty;
         public string DisplayName
         {
-            get { return this._displayName; }
+            get
+            {
+                return this._displayName;
+            }
             set
             {
                 this._displayName = value;
@@ -53,10 +64,14 @@ namespace Storm
         protected bool _isLive = false;
         public bool IsLive
         {
-            get { return this._isLive; }
+            get
+            {
+                return this._isLive;
+            }
             set
             {
                 this._isLive = value;
+
                 OnNotifyPropertyChanged();
                 OnNotifyPropertyChanged("MouseOverTooltip");
             }
@@ -97,11 +112,11 @@ namespace Storm
             return s.Substring(s.LastIndexOf("/") + 1);
         }
 
-        protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
+        protected async Task<JObject> GetApiResponseAsync(HttpWebRequest req)
         {
             string jsonResponse = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt().ConfigureAwait(false)))
+            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt().ConfigureAwait(false)))
             {
                 if (resp != null)
                 {
@@ -111,6 +126,12 @@ namespace Storm
                         {
                             jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
                         }
+                    }
+                    else
+                    {
+                        string errorMessage = string.Format("Request for {0} failed: {1}", req.RequestUri.AbsoluteUri, resp.StatusCode);
+
+                        Utils.LogMessage(errorMessage);
                     }
                 }
             }
@@ -142,11 +163,11 @@ namespace Storm
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(this.GetType().ToString());
-            sb.AppendLine(string.Format("Uri: {0}", this.Uri));
-            sb.AppendLine(string.Format("Name: {0}", this.Name));
-            sb.AppendLine(string.Format("Display name: {0}", this.DisplayName));
-            sb.AppendLine(string.Format("Is Live: {0}", this.IsLive.ToString()));
-             sb.AppendLine(string.Format("MouseOverToolTip: {0}", this.MouseOverTooltip));
+            sb.AppendLine(string.Format("Uri: {0}", Uri));
+            sb.AppendLine(string.Format("Name: {0}", Name));
+            sb.AppendLine(string.Format("Display name: {0}", DisplayName));
+            sb.AppendLine(string.Format("Is Live: {0}", IsLive.ToString()));
+             sb.AppendLine(string.Format("MouseOverToolTip: {0}", MouseOverTooltip));
 
             return sb.ToString();
         }
