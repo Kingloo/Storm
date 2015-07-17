@@ -36,7 +36,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>69</ApplicationRevision>
+    <ApplicationRevision>70</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -152,6 +152,7 @@
     <Compile Include="StreamBase.cs" />
     <Compile Include="StreamManager.cs" />
     <Compile Include="Twitch.cs" />
+    <Compile Include="UnsupportedService.cs" />
     <Compile Include="Ustream.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="ViewModelBase.cs" />

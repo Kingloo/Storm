@@ -153,6 +153,7 @@ namespace Storm
 
             IEnumerable<Task> updateTasks = from each in Streams
                                             where !each.Updating
+                                            where each.UpdateAsync() != null
                                             select each.UpdateAsync();
 
             await Task.WhenAll(updateTasks);
@@ -234,7 +235,12 @@ namespace Storm
         {
             foreach (string each in loaded)
             {
-                yield return CreateService(each);
+                StreamBase sb = CreateService(each);
+
+                if (sb != null)
+                {
+                    yield return sb;
+                }
             }
         }
 
@@ -252,6 +258,7 @@ namespace Storm
                     sb = new Ustream(each);
                     break;
                 case StreamingService.UnsupportedService:
+                    sb = new UnsupportedService(each);
                     break;
                 case StreamingService.None:
                     break;
@@ -266,7 +273,11 @@ namespace Storm
         {
             StreamingService ss = StreamingService.None;
 
-            Uri uri = new Uri(s);
+            Uri uri = null;
+            if (Uri.TryCreate(s, UriKind.Absolute, out uri) == false)
+            {
+                return StreamingService.UnsupportedService;
+            }
 
             switch (uri.DnsSafeHost)
             {
@@ -283,7 +294,7 @@ namespace Storm
                     ss = StreamingService.Ustream;
                     break;
                 default:
-                    ss = StreamingService.UnsupportedService;
+                    ss = StreamingService.None;
                     break;
             }
 
