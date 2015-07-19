@@ -69,7 +69,7 @@ namespace Storm
 
         private void GoToStream(StreamBase stream)
         {
-            Utils.OpenUriInBrowser(stream.Uri);
+            OpenStream(stream);
         }
 
         private DelegateCommand _openFeedsFileCommand = null;
@@ -299,6 +299,20 @@ namespace Storm
             }
 
             return ss;
+        }
+
+        public static void OpenStream(StreamBase stream)
+        {
+            string args = string.Format("/C livestreamer.exe {0} best", stream.Uri.AbsoluteUri);
+
+            ProcessStartInfo pInfo = new ProcessStartInfo
+            {
+                Arguments = args,
+                FileName = "cmd.exe",
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            Process.Start(pInfo);
         }
 
         public override string ToString()

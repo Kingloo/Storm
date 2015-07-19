@@ -147,7 +147,7 @@ namespace Storm
         {
             string title = string.Format("{0} is now live", this.DisplayName);
 
-            NotificationService.Send(title, this.Uri);
+            NotificationService.Send(title, new Action(() => StreamManager.OpenStream(this)));
         }
 
         private static HttpWebRequest BuildUstreamHttpWebRequest(Uri uri)

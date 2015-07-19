@@ -164,26 +164,22 @@ namespace Storm
 
             if (String.IsNullOrWhiteSpace(this.Game))
             {
-                showNotification = () => NotificationService.Send(title, this.Uri);
+                showNotification = () => NotificationService.Send(title, new Action(() => StreamManager.OpenStream(this)));
             }
             else
             {
                 string description = string.Format("and playing {0}", this.Game);
 
-                showNotification = () => NotificationService.Send(title, description, this.Uri);
+                showNotification = () => NotificationService.Send(title, description, new Action(() => StreamManager.OpenStream(this)));
             }
 
-            Utils.SafeDispatcher(
-                showNotification,
-                DispatcherPriority.Background
-                );
+            Utils.SafeDispatcher(showNotification);
         }
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
 
-            //req.Accept = ("application/vnd.twitchtv.v2+json");
             req.Accept = "application/vnd.twitchtv.v3+json";
             req.AllowAutoRedirect = true;
             req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;

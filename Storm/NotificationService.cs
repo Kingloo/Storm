@@ -4,163 +4,100 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace Storm
 {
     public static class NotificationService
     {
-        public static void Send(string send)
+        public static void Send(string title, Action action)
         {
-            Notification n = new Notification(send);
-            n.Send();
+            NotificationWindow window = new NotificationWindow(title, string.Empty, action);
         }
 
-        public static void Send(string send, string description)
+        public static void Send(string title, string description, Action action)
         {
-            Notification n = new Notification(send, description);
-            n.Send();
-        }
-
-        public static void Send(string send, Uri uri)
-        {
-            Notification n = new Notification(send, uri);
-            n.Send();
-        }
-
-        public static void Send(string send, string description, Uri uri)
-        {
-            Notification n = new Notification(send, description, uri);
-            n.Send();
-        }
-
-        private class Notification
-        {
-            private string _title = string.Empty;
-            private string _description = string.Empty;
-            private Uri _uri = null;
-
-            public string Title { get { return this._title; } }
-            public string Description { get { return this._description; } }
-            public Uri Uri { get { return this._uri; } }
-
-            public Notification(string title)
-            {
-                this._title = title;
-            }
-
-            public Notification(string title, string description)
-            {
-                this._title = title;
-                this._description = description;
-            }
-
-            public Notification(string title, Uri doubleClickUri)
-            {
-                this._title = title;
-                this._uri = doubleClickUri;
-            }
-
-            public Notification(string title, string description, Uri doubleClickUri)
-            {
-                this._title = title;
-                this._description = description;
-                this._uri = doubleClickUri;
-            }
-
-            public void Send()
-            {
-                NotificationWindow notificationWindow = new NotificationWindow(this);
-            }
+            NotificationWindow window = new NotificationWindow(title, description, action);
         }
 
         private class NotificationWindow : Window
         {
-            private Notification _n = null;
+            private Action action = null;
 
-            public NotificationWindow(Notification n)
+            internal NotificationWindow(string title, string description, Action action)
             {
-                this._n = n;
+                this.action = action;
 
                 this.Owner = Application.Current.MainWindow;
-
                 this.Style = BuildWindowStyle();
 
-                BuildTimer();
-
-                Grid grid = new Grid { Style = BuildGridStyle() };
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-                Label labelTitle = new Label
+                Grid grid = new Grid
                 {
-                    Content = new TextBlock
-                    {
-                        Text = this._n.Title,
-                        TextTrimming = TextTrimming.CharacterEllipsis
-                    },
-                    Style = BuildLabelTitleStyle()
+                    Style = BuildGridStyle()
                 };
 
-                Grid.SetRow(labelTitle, 0);
-
-                grid.Children.Add(labelTitle);
-
-                if (!(String.IsNullOrEmpty(n.Description)))
+                grid.RowDefinitions.Add(new RowDefinition
                 {
-                    Label labelDescription = new Label
+                    Height = GridLength.Auto
+                });
+
+                Label lbl_Title = new Label
+                {
+                    Style = BuildLabelTitleStyle(),
+                    Content = new TextBlock
                     {
+                        Text = title,
+                        TextTrimming = TextTrimming.CharacterEllipsis
+                    }
+                };
+
+                Grid.SetRow(lbl_Title, 0);
+                grid.Children.Add(lbl_Title);
+
+                if (String.IsNullOrEmpty(description) == false)
+                {
+                    Label lbl_Description = new Label
+                    {
+                        Style = BuildLabelDescriptionStyle(),
                         Content = new TextBlock
                         {
-                            Text = this._n.Description,
+                            Text = description,
                             TextTrimming = TextTrimming.CharacterEllipsis,
                             FontStyle = FontStyles.Italic
-                        },
-                        Style = BuildLabelDescriptionStyle()
+                        }
                     };
 
-                    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                    Grid.SetRow(labelDescription, 1);
+                    grid.RowDefinitions.Add(new RowDefinition
+                    {
+                        Height = GridLength.Auto
+                    });
 
-                    grid.Children.Add(labelDescription);
+                    Grid.SetRow(lbl_Description, 1);
+                    grid.Children.Add(lbl_Description);
                 }
 
                 this.AddChild(grid);
 
+#if DEBUG
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close());
+#else
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close());
+#endif
+
                 DisplayThisWindow();
-            }
-
-            private void BuildTimer()
-            {
-                DispatcherTimer _expirationTimer = new DispatcherTimer
-                {
-                    Interval = new TimeSpan(0, 0, 15)
-                };
-
-                _expirationTimer.Tick += Expiration_Tick;
-                _expirationTimer.Start();
-            }
-
-            private void Expiration_Tick(object sender, EventArgs e)
-            {
-                DispatcherTimer timer = (DispatcherTimer)sender;
-
-                timer.Tick -= Expiration_Tick;
-                timer.Stop();
-                timer = null;
-                
-                this.Close();
             }
 
             private Style BuildWindowStyle()
             {
                 Style style = new Style(typeof(NotificationWindow));
 
-                style.Setters.Add(new EventSetter(MouseDoubleClickEvent, new MouseButtonEventHandler((sender, e) =>
+                if (action != null)
                 {
-                    // we deliberately avoid using Utils.OpenUriInBrowser to avoid the dependency
+                    MouseButtonEventHandler doubleClickAction = (sender, e) => { action(); };
 
-                    Process.Start(this._n.Uri.AbsoluteUri);
-                })));
+                    EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, doubleClickAction);
+
+                    style.Setters.Add(leftMouseDoubleClick);
+                }
 
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.Transparent));
@@ -209,7 +146,7 @@ namespace Storm
 
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
-                style.Setters.Add(new Setter(MarginProperty, new Thickness(15, 0, 0, 0)));
+                style.Setters.Add(new Setter(MarginProperty, new Thickness(15, 0, 15, 0)));
                 style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
                 style.Setters.Add(new Setter(FontSizeProperty, 22d));
                 style.Setters.Add(new Setter(HeightProperty, 75d));
