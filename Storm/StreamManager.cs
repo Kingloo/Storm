@@ -303,7 +303,7 @@ namespace Storm
 
         public static void OpenStream(StreamBase stream)
         {
-            string args = string.Format("/C livestreamer.exe {0} best", stream.Uri.AbsoluteUri);
+            string args = string.Format(@"/C livestreamer.exe {0} best --player C:\Users\k1ngl_000\Documents\Utils\vlc-2.2.1\vlc.exe", stream.Uri.AbsoluteUri);
 
             ProcessStartInfo pInfo = new ProcessStartInfo
             {

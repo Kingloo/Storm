@@ -86,7 +86,7 @@ namespace Storm
                 }
             }
 
-            this.Updating = false;
+            Updating = false;
         }
 
         protected async Task<bool> TrySetDisplayNameAsync()

@@ -36,7 +36,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>71</ApplicationRevision>
+    <ApplicationRevision>72</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
