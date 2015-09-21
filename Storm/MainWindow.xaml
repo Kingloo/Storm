@@ -4,10 +4,6 @@
         xmlns:this="clr-namespace:Storm"
         KeyDown="Window_KeyDown">
     
-    <Window.DataContext>
-        <this:StreamManager x:Name="streamManager" />
-    </Window.DataContext>
-    
     <Window.Style>
         <Style TargetType="{x:Type this:MainWindow}">
             <Setter Property="Title" Value="Storm" />
@@ -70,15 +66,15 @@
         <KeyBinding x:Name="ExitCommandKeyBinding"
                     Key="Escape"
                     Command="{Binding Path=ExitCommand, Mode=OneTime}" />
-        <KeyBinding x:Name="UpdateAllCommandAsyncKeyBinding"
+        <KeyBinding x:Name="UpdateAllAsyncCommandKeyBinding"
                     Key="F5"
-                    Command="{Binding Path=UpdateAllCommandAsync, Mode=OneTime}" />
-        <KeyBinding x:Name="OpenFeedsFileCommandKeyBinding"
+                    Command="{Binding Path=UpdateAllAsyncCommand, Mode=OneTime}" />
+        <KeyBinding x:Name="OpenUrlsFileCommandKeyBinding"
                     Key="F11"
-                    Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
-        <KeyBinding x:Name="LoadUrlsFromFileCommandAsyncKeyBinding"
+                    Command="{Binding Path=OpenUrlsFileCommand, Mode=OneTime}" />
+        <KeyBinding x:Name="ReloadUrlsAsyncCommandKeyBinding"
                     Key="F12"
-                    Command="{Binding Path=LoadUrlsFromFileCommandAsync, Mode=OneTime}" />
+                    Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />
     </Window.InputBindings>
     
     <Grid>
@@ -152,8 +148,8 @@
                     FontSize="13"
                     Margin="0,0,8,0"
                     Content="Open File"
-                    ToolTip="{Binding Path=Key, ElementName=OpenFeedsFileCommandKeyBinding}"
-                    Command="{Binding Path=OpenFeedsFileCommand, Mode=OneTime}" />
+                    ToolTip="{Binding Path=Key, ElementName=OpenUrlsFileCommandKeyBinding}"
+                    Command="{Binding Path=OpenUrlsFileCommand, Mode=OneTime}" />
 
             <Button Width="50" Name="btn"
                     Height="40"
@@ -161,8 +157,8 @@
                     Content="q"
                     FontFamily="WebDings"
                     FontSize="24"
-                    ToolTip="{Binding Path=Key, ElementName=LoadUrlsFromFileCommandAsyncKeyBinding}"
-                    Command="{Binding Path=LoadUrlsFromFileCommandAsync, Mode=OneTime}" />
+                    ToolTip="{Binding Path=Key, ElementName=ReloadUrlsAsyncCommandKeyBinding}"
+                    Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />
 
         </StackPanel>
     </Grid>

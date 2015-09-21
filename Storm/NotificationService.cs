@@ -27,7 +27,6 @@ namespace Storm
             {
                 this.action = action;
 
-                this.Owner = Application.Current.MainWindow;
                 this.Style = BuildWindowStyle();
 
                 Grid grid = new Grid
@@ -92,7 +91,7 @@ namespace Storm
 
                 if (action != null)
                 {
-                    MouseButtonEventHandler doubleClickAction = (sender, e) => { action(); };
+                    MouseButtonEventHandler doubleClickAction = (sender, e) => action();
 
                     EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, doubleClickAction);
 

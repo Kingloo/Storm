@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Storm.ViewModels;
 
 namespace Storm
 {
@@ -58,6 +59,7 @@ namespace Storm
                 this._displayName = value;
 
                 OnNotifyPropertyChanged();
+                OnNotifyPropertyChanged("MouseOverTooltip");
             }
         }
 
@@ -95,15 +97,11 @@ namespace Storm
         }
         #endregion
 
-        protected StreamBase(string streamerPageUri)
+        protected StreamBase(Uri accountUri)
         {
-            Uri tmp = null;
-            if (Uri.TryCreate(streamerPageUri, UriKind.Absolute, out tmp))
-            {
-                this.Uri = tmp;
-            }
+            this.Uri = accountUri;
 
-            this.Name = SetAccountName(streamerPageUri);
+            this.Name = SetAccountName(accountUri.AbsoluteUri);
             this.DisplayName = this.Name;
         }
 
@@ -134,6 +132,13 @@ namespace Storm
                         Utils.LogMessage(errorMessage);
                     }
                 }
+                else
+                {
+                    if (req != null)
+                    {
+                        req.Abort();
+                    }
+                }
             }
 
 
@@ -155,7 +160,7 @@ namespace Storm
         }
 
         public abstract Task UpdateAsync();
-        protected abstract Task<bool> DetermineIfLive();
+        protected abstract Task DetermineIfLive();
         protected abstract void NotifyIsNowLive();
 
         public override string ToString()

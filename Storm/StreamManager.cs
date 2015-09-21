@@ -1,333 +1,337 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Collections.ObjectModel;
+//using System.Diagnostics;
+//using System.IO;
+//using System.Linq;
+//using System.Text;
+//using System.Threading;
+//using System.Threading.Tasks;
+//using System.Windows;
+//using System.Windows.Threading;
 
-namespace Storm
-{
-    public class StreamManager : ViewModelBase
-    {
-        #region Fields
-        private readonly DispatcherTimer updateTimer = new DispatcherTimer
-        {
-            Interval = new TimeSpan(0, 3, 15)
-        };
-        #endregion
+//namespace Storm
+//{
+//    public class StreamManager : ViewModelBase
+//    {
+//        #region Fields
+//        private readonly DispatcherTimer updateTimer = new DispatcherTimer
+//        {
+//            Interval = new TimeSpan(0, 3, 15)
+//        };
+//        #endregion
 
-        #region Properties
-        private bool _activity = false;
-        public bool Activity
-        {
-            get
-            {
-                return this._activity;
-            }
-            set
-            {
-                if (this._activity != value)
-                {
-                    this._activity = value;
+//        #region Properties
+//        private bool _activity = false;
+//        public bool Activity
+//        {
+//            get
+//            {
+//                return this._activity;
+//            }
+//            set
+//            {
+//                if (this._activity != value)
+//                {
+//                    this._activity = value;
 
-                    OnNotifyPropertyChanged();
+//                    OnNotifyPropertyChanged();
 
-                    RaiseAllAsyncCanExecuteChangedEvents();
-                }
-            }
-        }
+//                    RaiseAllAsyncCanExecuteChangedEvents();
+//                }
+//            }
+//        }
 
-        private void RaiseAllAsyncCanExecuteChangedEvents()
-        {
-            this.LoadUrlsFromFileCommandAsync.RaiseCanExecuteChanged();
-            this.UpdateAllCommandAsync.RaiseCanExecuteChanged();
-        }
+//        private void RaiseAllAsyncCanExecuteChangedEvents()
+//        {
+//            this.LoadUrlsFromFileCommandAsync.RaiseCanExecuteChanged();
+//            this.UpdateAllCommandAsync.RaiseCanExecuteChanged();
+//        }
 
-        private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
-        public ObservableCollection<StreamBase> Streams { get { return _streams; } }
-        #endregion
+//        private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
+//        public ObservableCollection<StreamBase> Streams { get { return _streams; } }
+//        #endregion
 
-        #region Commands
-        private DelegateCommand<StreamBase> _goToStreamCommand = null;
-        public DelegateCommand<StreamBase> GoToStreamCommand
-        {
-            get
-            {
-                if (_goToStreamCommand == null)
-                {
-                    _goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
-                }
+//        #region Commands
+//        private DelegateCommand<StreamBase> _goToStreamCommand = null;
+//        public DelegateCommand<StreamBase> GoToStreamCommand
+//        {
+//            get
+//            {
+//                if (_goToStreamCommand == null)
+//                {
+//                    _goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
+//                }
 
-                return _goToStreamCommand;
-            }
-        }
+//                return _goToStreamCommand;
+//            }
+//        }
 
-        private void GoToStream(StreamBase stream)
-        {
-            OpenStream(stream);
-        }
+//        private void GoToStream(StreamBase stream)
+//        {
+//            OpenStream(stream);
+//        }
 
-        private DelegateCommand _openFeedsFileCommand = null;
-        public DelegateCommand OpenFeedsFileCommand
-        {
-            get
-            {
-                if (_openFeedsFileCommand == null)
-                {
-                    _openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecute);
-                }
+//        private DelegateCommand _openFeedsFileCommand = null;
+//        public DelegateCommand OpenFeedsFileCommand
+//        {
+//            get
+//            {
+//                if (_openFeedsFileCommand == null)
+//                {
+//                    _openFeedsFileCommand = new DelegateCommand(OpenFeedsFile, canExecute);
+//                }
 
-                return _openFeedsFileCommand;
-            }
-        }
+//                return _openFeedsFileCommand;
+//            }
+//        }
 
-        private void OpenFeedsFile()
-        {
-            // The FileNotFoundException will be for notepad.exe, NOT StormUrlsFilePath
-            // the file path is an argument
-            // notepad would be the one to notify that StormUrlsFilePath could not be found/opened
+//        //private void OpenFeedsFile()
+//        //{
+//        //    // The FileNotFoundException will be for notepad.exe, NOT StormUrlsFilePath
+//        //    // the file path is an argument
+//        //    // notepad would be the one to notify that StormUrlsFilePath could not be found/opened
 
-            try
-            {
-                Process.Start("notepad.exe", Program.StormUrlsFilePath);
-            }
-            catch (FileNotFoundException)
-            {
-                Process.Start(Program.StormUrlsFilePath); // .txt default program
-            }
-        }
+//        //    try
+//        //    {
+//        //        Process.Start("notepad.exe", Program.StormUrlsFilePath);
+//        //    }
+//        //    catch (FileNotFoundException)
+//        //    {
+//        //        Process.Start(Program.StormUrlsFilePath); // .txt default program
+//        //    }
+//        //}
 
-        private DelegateCommandAsync _loadUrlsFromFileCommandAsync = null;
-        public DelegateCommandAsync LoadUrlsFromFileCommandAsync
-        {
-            get
-            {
-                if (_loadUrlsFromFileCommandAsync == null)
-                {
-                    _loadUrlsFromFileCommandAsync = new DelegateCommandAsync(LoadUrlsFromFileAsync, canExecuteAsync);
-                }
+//        private DelegateCommandAsync _loadUrlsFromFileCommandAsync = null;
+//        public DelegateCommandAsync LoadUrlsFromFileCommandAsync
+//        {
+//            get
+//            {
+//                if (_loadUrlsFromFileCommandAsync == null)
+//                {
+//                    _loadUrlsFromFileCommandAsync = new DelegateCommandAsync(LoadUrlsFromFileAsync, canExecuteAsync);
+//                }
 
-                return _loadUrlsFromFileCommandAsync;
-            }
-        }
+//                return _loadUrlsFromFileCommandAsync;
+//            }
+//        }
 
-        public async Task LoadUrlsFromFileAsync()
-        {
-            this.Activity = true;
+//        //public async Task LoadUrlsFromFileAsync()
+//        //{
+//        //    this.Activity = true;
 
-            this.Streams.Clear();
+//        //    this.Streams.Clear();
 
-            IEnumerable<string> stringsFromFile = await Program.LoadUrlsFromFileAsync();
+//        //    IEnumerable<string> stringsFromFile = await Program.LoadUrlsFromFileAsync();
 
-            IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(stringsFromFile);
+//        //    IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(stringsFromFile);
 
-            Streams.AddList<StreamBase>(streams);
+//        //    Streams.AddList<StreamBase>(streams);
 
-            await UpdateAllAsync().ConfigureAwait(false);
+//        //    await UpdateAllAsync().ConfigureAwait(false);
 
-            this.Activity = false;
-        }
+//        //    this.Activity = false;
+//        //}
 
-        private DelegateCommandAsync _updateAllCommandAsync = null;
-        public DelegateCommandAsync UpdateAllCommandAsync
-        {
-            get
-            {
-                if (_updateAllCommandAsync == null)
-                {
-                    _updateAllCommandAsync = new DelegateCommandAsync(UpdateAllAsync, canExecuteAsync);
-                }
+//        private DelegateCommandAsync _updateAllCommandAsync = null;
+//        public DelegateCommandAsync UpdateAllCommandAsync
+//        {
+//            get
+//            {
+//                if (_updateAllCommandAsync == null)
+//                {
+//                    _updateAllCommandAsync = new DelegateCommandAsync(UpdateAllAsync, canExecuteAsync);
+//                }
 
-                return _updateAllCommandAsync;
-            }
-        }
+//                return _updateAllCommandAsync;
+//            }
+//        }
 
-        public async Task UpdateAllAsync()
-        {
-            SetUIToUpdating();
+//        public async Task UpdateAllAsync()
+//        {
+//            SetUIToUpdating();
 
-            IEnumerable<Task> updateTasks = from each in Streams
-                                            where !each.Updating
-                                            where each.UpdateAsync() != null
-                                            select each.UpdateAsync();
+//            //IEnumerable<Task> updateTasks = from each in Streams
+//            //                                where !each.Updating
+//            //                                where each.UpdateAsync() != null
+//            //                                select each.UpdateAsync();
 
-            await Task.WhenAll(updateTasks);
+//            IEnumerable<Task> updateTasks = from each in Streams
+//                                            where !each.Updating
+//                                            select each.UpdateAsync();
 
-            SetUIToStable();
-        }
+//            await Task.WhenAll(updateTasks);
 
-        private void SetUIToUpdating()
-        {
-            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
+//            SetUIToStable();
+//        }
 
-            VisualStateManager.GoToState(appMainWindow, "Updating", false);
+//        private void SetUIToUpdating()
+//        {
+//            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
-            this.Activity = true;
-        }
+//            VisualStateManager.GoToState(appMainWindow, "Updating", false);
 
-        private void SetUIToStable()
-        {
-            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
+//            this.Activity = true;
+//        }
 
-            VisualStateManager.GoToState(appMainWindow, "Stable", false);
+//        private void SetUIToStable()
+//        {
+//            MainWindow appMainWindow = (MainWindow)Application.Current.MainWindow;
 
-            this.Activity = false;
-        }
+//            VisualStateManager.GoToState(appMainWindow, "Stable", false);
 
-        private DelegateCommand _exitCommand = null;
-        public DelegateCommand ExitCommand
-        {
-            get
-            {
-                if (_exitCommand == null)
-                {
-                    _exitCommand = new DelegateCommand(Exit, canExecute);
-                }
+//            this.Activity = false;
+//        }
 
-                return _exitCommand;
-            }
-        }
+//        private DelegateCommand _exitCommand = null;
+//        public DelegateCommand ExitCommand
+//        {
+//            get
+//            {
+//                if (_exitCommand == null)
+//                {
+//                    _exitCommand = new DelegateCommand(Exit, canExecute);
+//                }
 
-        private void Exit()
-        {
-            Application.Current.MainWindow.Close();
-        }
+//                return _exitCommand;
+//            }
+//        }
 
-        private bool canExecute(object _)
-        {
-            return true;
-        }
+//        private void Exit()
+//        {
+//            Application.Current.MainWindow.Close();
+//        }
 
-        private bool canExecuteAsync(object _)
-        {
-            return !this.Activity;
-        }
-        #endregion
+//        private bool canExecute(object _)
+//        {
+//            return true;
+//        }
 
-        public StreamManager()
-        {
-            Application.Current.MainWindow.Loaded += MainWindow_Loaded;
+//        private bool canExecuteAsync(object _)
+//        {
+//            return !this.Activity;
+//        }
+//        #endregion
 
-            IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(Program.URLs);
+//        public StreamManager()
+//        {
+//            Application.Current.MainWindow.Loaded += MainWindow_Loaded;
 
-            Streams.AddList<StreamBase>(streams);
+//            IEnumerable<StreamBase> streams = CreateStreamBasesFromStrings(Program.URLs);
 
-            this.updateTimer.Tick += updateTimer_Tick;
-            this.updateTimer.Start();
-        }
+//            Streams.AddList<StreamBase>(streams);
 
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            await UpdateAllAsync().ConfigureAwait(false);
-        }
+//            this.updateTimer.Tick += updateTimer_Tick;
+//            this.updateTimer.Start();
+//        }
 
-        private async void updateTimer_Tick(object sender, EventArgs e)
-        {
-            await UpdateAllAsync().ConfigureAwait(false);
-        }
+//        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+//        {
+//            await UpdateAllAsync().ConfigureAwait(false);
+//        }
 
-        private IEnumerable<StreamBase> CreateStreamBasesFromStrings(IEnumerable<string> loaded)
-        {
-            foreach (string each in loaded)
-            {
-                StreamBase sb = CreateService(each);
+//        private async void updateTimer_Tick(object sender, EventArgs e)
+//        {
+//            await UpdateAllAsync().ConfigureAwait(false);
+//        }
 
-                if (sb != null)
-                {
-                    yield return sb;
-                }
-            }
-        }
+//        private IEnumerable<StreamBase> CreateStreamBasesFromStrings(IEnumerable<string> loaded)
+//        {
+//            foreach (string each in loaded)
+//            {
+//                StreamBase sb = CreateService(each);
 
-        private StreamBase CreateService(string each)
-        {
-            StreamingService service = DetermineStreamingService(each);
-            StreamBase sb = null;
+//                if (sb != null)
+//                {
+//                    yield return sb;
+//                }
+//            }
+//        }
 
-            switch (service)
-            {
-                case StreamingService.Twitch:
-                    sb = new Twitch(each);
-                    break;
-                case StreamingService.Ustream:
-                    sb = new Ustream(each);
-                    break;
-                case StreamingService.UnsupportedService:
-                    sb = new UnsupportedService(each);
-                    break;
-                case StreamingService.None:
-                    break;
-                default:
-                    break;
-            }
+//        private StreamBase CreateService(string each)
+//        {
+//            StreamingService service = DetermineStreamingService(each);
+//            StreamBase sb = null;
 
-            return sb;
-        }
+//            switch (service)
+//            {
+//                case StreamingService.Twitch:
+//                    sb = new Twitch(each);
+//                    break;
+//                case StreamingService.Ustream:
+//                    sb = new Ustream(each);
+//                    break;
+//                case StreamingService.UnsupportedService:
+//                    sb = new UnsupportedService(each);
+//                    break;
+//                case StreamingService.None:
+//                    break;
+//                default:
+//                    break;
+//            }
 
-        private StreamingService DetermineStreamingService(string s)
-        {
-            StreamingService ss = StreamingService.None;
+//            return sb;
+//        }
 
-            Uri uri = null;
-            if (Uri.TryCreate(s, UriKind.Absolute, out uri) == false)
-            {
-                return StreamingService.UnsupportedService;
-            }
+//        private StreamingService DetermineStreamingService(string s)
+//        {
+//            StreamingService ss = StreamingService.None;
 
-            switch (uri.DnsSafeHost)
-            {
-                case "twitch.tv":
-                    ss = StreamingService.Twitch;
-                    break;
-                case "www.twitch.tv":
-                    ss = StreamingService.Twitch;
-                    break;
-                case "ustream.tv":
-                    ss = StreamingService.Ustream;
-                    break;
-                case "www.ustream.tv":
-                    ss = StreamingService.Ustream;
-                    break;
-                default:
-                    ss = StreamingService.None;
-                    break;
-            }
+//            Uri uri = null;
+//            if (Uri.TryCreate(s, UriKind.Absolute, out uri) == false)
+//            {
+//                return StreamingService.UnsupportedService;
+//            }
 
-            return ss;
-        }
+//            switch (uri.DnsSafeHost)
+//            {
+//                case "twitch.tv":
+//                    ss = StreamingService.Twitch;
+//                    break;
+//                case "www.twitch.tv":
+//                    ss = StreamingService.Twitch;
+//                    break;
+//                case "ustream.tv":
+//                    ss = StreamingService.Ustream;
+//                    break;
+//                case "www.ustream.tv":
+//                    ss = StreamingService.Ustream;
+//                    break;
+//                default:
+//                    ss = StreamingService.None;
+//                    break;
+//            }
 
-        public static void OpenStream(StreamBase stream)
-        {
-            string args = string.Format(@"/C livestreamer.exe {0} best --player C:\Users\k1ngl_000\Documents\Utils\vlc-2.2.1\vlc.exe", stream.Uri.AbsoluteUri);
+//            return ss;
+//        }
 
-            ProcessStartInfo pInfo = new ProcessStartInfo
-            {
-                Arguments = args,
-                FileName = "cmd.exe",
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
+//        public static void OpenStream(StreamBase stream)
+//        {
+//            string args = string.Format(@"/C livestreamer.exe {0} best", stream.Uri.AbsoluteUri);
 
-            Process.Start(pInfo);
-        }
+//            ProcessStartInfo pInfo = new ProcessStartInfo
+//            {
+//                Arguments = args,
+//                FileName = "cmd.exe",
+//                WindowStyle = ProcessWindowStyle.Hidden
+//            };
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
+//            Process.Start(pInfo);
+//        }
 
-            sb.AppendLine(this.GetType().ToString());
-            sb.AppendLine(string.Format("URLs file: {0}", Program.StormUrlsFilePath));
+//        public override string ToString()
+//        {
+//            StringBuilder sb = new StringBuilder();
 
-            foreach (StreamBase each in Streams)
-            {
-                sb.AppendLine(each.ToString());
-            }
+//            sb.AppendLine(this.GetType().ToString());
+//            sb.AppendLine(string.Format("URLs file: {0}", Program.StormUrlsFilePath));
 
-            return sb.ToString();
-        }
-    }
-}
+//            foreach (StreamBase each in Streams)
+//            {
+//                sb.AppendLine(each.ToString());
+//            }
+
+//            return sb.ToString();
+//        }
+//    }
+//}

@@ -5,7 +5,7 @@ namespace Storm
     class UnsupportedService : StreamBase
     {
         public UnsupportedService(string malFormatted)
-            : base(string.Empty)
+            : base(null)
         {
             this.Name = malFormatted;
             this.DisplayName = malFormatted;
@@ -25,9 +25,9 @@ namespace Storm
             return null;
         }
 
-        protected override Task<bool> DetermineIfLive()
+        protected override Task DetermineIfLive()
         {
-            return null;
+            return new Task(null);
         }
 
         protected override void NotifyIsNowLive() { }

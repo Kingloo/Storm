@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Storm.ViewModels;
 
 namespace Storm
 {
@@ -29,8 +31,8 @@ namespace Storm
         }
         #endregion
 
-        public Ustream(string s)
-            : base(s)
+        public Ustream(Uri u)
+            : base(u)
         {
             this.apiUri = "https://api.ustream.tv";
         }
@@ -39,29 +41,25 @@ namespace Storm
         {
             this.Updating = true;
 
-            bool userIsLive = await DetermineIfLive();
-
-            if (userIsLive)
+            List<Task> updateTasks = new List<Task>
             {
-                if (this.IsLive == false)
-                {
-                    this.IsLive = true;
+                DetermineIfLive(),
+                DetermineChannelId()
+            };
 
-                    this.NotifyIsNowLive();
-                }
-            }
-            else
+            bool wasLive = IsLive;
+
+            await Task.WhenAll(updateTasks).ConfigureAwait(false);
+
+            if (wasLive == false && IsLive == true)
             {
-                if (this.IsLive == true)
-                {
-                    this.IsLive = false;
-                }
+                NotifyIsNowLive();
             }
 
             this.Updating = false;
         }
 
-        protected async override Task<bool> DetermineIfLive()
+        protected async override Task DetermineIfLive()
         {
             if (String.IsNullOrEmpty(channelId))
             {
@@ -82,18 +80,9 @@ namespace Storm
                         SetDisplayName(resp);
                     }
 
-                    return WasUserLive(resp);
+                    IsLive = WasUserLive(resp);
                 }
             }
-            else
-            {
-                if (req != null)
-                {
-                    req.Abort();
-                }
-            }
-
-            return false;
         }
 
         private async Task<string> DetermineChannelId()
@@ -147,7 +136,7 @@ namespace Storm
         {
             string title = string.Format("{0} is now live", this.DisplayName);
 
-            NotificationService.Send(title, new Action(() => StreamManager.OpenStream(this)));
+            NotificationService.Send(title, new Action(() => MainWindowViewModel.GoToStream(this)));
         }
 
         private static HttpWebRequest BuildUstreamHttpWebRequest(Uri uri)

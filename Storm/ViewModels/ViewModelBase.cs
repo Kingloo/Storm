@@ -2,19 +2,10 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Storm
+namespace Storm.ViewModels
 {
     public class ViewModelBase : INotifyPropertyChanged
     {
-        protected enum StreamingService
-        {
-            None,
-            Twitch,
-            Ustream,
-            Justin,
-            UnsupportedService
-        };
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnNotifyPropertyChanged([CallerMemberName] string propertyName = default(string))
@@ -28,6 +19,5 @@ namespace Storm
                 pceh(this, args);
             }
         }
-
     }
 }

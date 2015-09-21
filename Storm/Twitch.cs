@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using Newtonsoft.Json.Linq;
+using Storm.ViewModels;
 
 namespace Storm
 {
@@ -50,8 +52,8 @@ namespace Storm
             }
         }
         
-        public Twitch(string s)
-            : base(s)
+        public Twitch(Uri u)
+            : base(u)
         {
             this.apiUri = "https://api.twitch.tv/kraken";
         }
@@ -59,37 +61,30 @@ namespace Storm
         public async override Task UpdateAsync()
         {
             Updating = true;
-            
+
+            List<Task> updateTasks = new List<Task>();
+
             if (!hasUpdatedDisplayName)
             {
-                hasUpdatedDisplayName = await TrySetDisplayNameAsync();
+                updateTasks.Add(TrySetDisplayNameAsync());
             }
 
-            bool isUserLive = await DetermineIfLive();
-            
-            if (isUserLive)
-            {
-                Game = await DetermineGame();
+            updateTasks.Add(DetermineGame());
+            updateTasks.Add(DetermineIfLive());
 
-                if (IsLive == false)
-                {
-                    IsLive = true;
+            bool wasLive = IsLive;
 
-                    NotifyIsNowLive();
-                }
-            }
-            else
+            await Task.WhenAll(updateTasks).ConfigureAwait(false);
+
+            if (wasLive == false && IsLive == true)
             {
-                if (IsLive == true)
-                {
-                    IsLive = false;
-                }
+                NotifyIsNowLive();
             }
 
             Updating = false;
         }
 
-        protected async Task<bool> TrySetDisplayNameAsync()
+        protected async Task TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this.apiUri, this._name);
 
@@ -105,14 +100,12 @@ namespace Storm
                 {
                     this.DisplayName = (string)response["display_name"];
 
-                    return true;
+                    hasUpdatedDisplayName = true;
                 }
             }
-
-            return false;
         }
 
-        protected async Task<string> DetermineGame()
+        protected async Task DetermineGame()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}", this.apiUri, this._name);
 
@@ -126,14 +119,12 @@ namespace Storm
             {
                 if (resp["game"] is JToken)
                 {
-                    return (string)resp["game"];
+                    Game = (string)resp["game"];
                 }
             }
-
-            return string.Empty;
         }
 
-        protected async override Task<bool> DetermineIfLive()
+        protected async override Task DetermineIfLive()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", this.apiUri, this._name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(
@@ -144,16 +135,18 @@ namespace Storm
 
             if (resp != null)
             {
-                if (resp["stream"] is JToken)
+                if (resp["stream"] != null)
                 {
                     if (resp["stream"].HasValues)
                     {
-                        return true;
+                        IsLive = true;
+
+                        return;
                     }
                 }
             }
 
-            return false;
+            IsLive = false;
         }
 
         protected override void NotifyIsNowLive()
@@ -164,13 +157,13 @@ namespace Storm
 
             if (String.IsNullOrWhiteSpace(this.Game))
             {
-                showNotification = () => NotificationService.Send(title, new Action(() => StreamManager.OpenStream(this)));
+                showNotification = () => NotificationService.Send(title, new Action(() => MainWindowViewModel.GoToStream(this)));
             }
             else
             {
                 string description = string.Format("and playing {0}", this.Game);
 
-                showNotification = () => NotificationService.Send(title, description, new Action(() => StreamManager.OpenStream(this)));
+                showNotification = () => NotificationService.Send(title, description, new Action(() => MainWindowViewModel.GoToStream(this)));
             }
 
             Utils.SafeDispatcher(showNotification);

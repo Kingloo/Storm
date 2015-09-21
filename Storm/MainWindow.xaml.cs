@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Windows;
+using Storm.ViewModels;
 
 namespace Storm
 {
@@ -8,6 +9,8 @@ namespace Storm
         public MainWindow()
         {
             InitializeComponent();
+
+            DataContext = new MainWindowViewModel(this, ((App)App.Current).UrlsRepo);
 
             MaxHeight = CalculateMaxHeight();
         }
@@ -26,7 +29,7 @@ namespace Storm
             {
                 StringBuilder sb = new StringBuilder();
 
-                foreach (StreamBase each in streamManager.Streams)
+                foreach (StreamBase each in ((MainWindowViewModel)DataContext).Streams)
                 {
                     sb.AppendLine(each.ToString());
                 }

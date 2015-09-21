@@ -36,7 +36,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>72</ApplicationRevision>
+    <ApplicationRevision>78</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -140,14 +140,19 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
+    <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </ApplicationDefinition>
+    </Page>
     <Compile Include="CountdownDispatcherTimer.cs" />
+    <Compile Include="DataAccess\IRepository.cs" />
+    <Compile Include="DataAccess\TxtRepo.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Globals.cs" />
     <Compile Include="LiveColorConverter.cs" />
+    <Compile Include="Model\StreamBase.cs" />
+    <Compile Include="Model\Twitch.cs" />
     <Compile Include="NotificationService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="StreamBase.cs" />
@@ -156,7 +161,8 @@
     <Compile Include="UnsupportedService.cs" />
     <Compile Include="Ustream.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="ViewModelBase.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
