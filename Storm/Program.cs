@@ -8,7 +8,9 @@ namespace Storm
         [STAThread]
         public static int Main()
         {
-            TxtRepo urlsRepo = new TxtRepo(Globals.UrlsFilePath);
+            string filePath = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
+
+            TxtRepo urlsRepo = new TxtRepo(filePath);
 
             App app = new App(urlsRepo);
 

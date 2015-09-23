@@ -55,28 +55,28 @@ namespace Storm.Extensions
                 collection.Remove(obj);
             }
         }
-		
-		public static void AlternativeSort<T>(this ICollection<T> collection, T mustSortFirst, T mustSortLast) where T : IComparable<T>, IAlternativeSort
-		{
-			List<T> all = new List<T>(collection);
-			
-			all.Sort();
-			
-			foreach (T each in collection)
-			{
-				if (each.SortId != Int32.MinValue || each.SortId != Int32.MaxValue)
-				{
-					each.SortId = all.IndexOf(each) + 1;
-				}
-			}
-			
-			if (mustSortFirst == null) mustSortFirst.SortId = Int32.MinValue;
-			if (mustSortLast == null) mustSortLast.SortId = Int32.MaxValue;
-		}
+
+        public static void AlternativeSort<T>(this ICollection<T> collection, T mustSortFirst, T mustSortLast) where T : IComparable<T>, IAlternativeSort
+        {
+            List<T> all = new List<T>(collection);
+
+            all.Sort();
+
+            foreach (T each in collection)
+            {
+                if (each.SortId != Int32.MinValue || each.SortId != Int32.MaxValue)
+                {
+                    each.SortId = all.IndexOf(each) + 1;
+                }
+            }
+
+            if (mustSortFirst == null) mustSortFirst.SortId = Int32.MinValue;
+            if (mustSortLast == null) mustSortLast.SortId = Int32.MaxValue;
+        }
     }
-	
-	public interface IAlternativeSort
-	{
-		int SortId { get; set; }
-	}
+
+    public interface IAlternativeSort
+    {
+        int SortId { get; set; }
+    }
 }
