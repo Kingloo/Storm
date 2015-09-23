@@ -25,7 +25,7 @@ namespace Storm
             return null;
         }
 
-        protected override Task DetermineIfLive()
+        protected override Task DetermineIfLiveAsync()
         {
             return new Task(null);
         }

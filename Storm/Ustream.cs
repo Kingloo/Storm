@@ -43,7 +43,7 @@ namespace Storm
 
             List<Task> updateTasks = new List<Task>
             {
-                DetermineIfLive(),
+                DetermineIfLiveAsync(),
                 DetermineChannelId()
             };
 
@@ -59,7 +59,7 @@ namespace Storm
             this.Updating = false;
         }
 
-        protected async override Task DetermineIfLive()
+        protected async override Task DetermineIfLiveAsync()
         {
             if (String.IsNullOrEmpty(channelId))
             {

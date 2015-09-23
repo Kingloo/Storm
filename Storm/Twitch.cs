@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Cache;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Storm.ViewModels;
@@ -69,8 +70,8 @@ namespace Storm
                 updateTasks.Add(TrySetDisplayNameAsync());
             }
 
-            updateTasks.Add(DetermineGame());
-            updateTasks.Add(DetermineIfLive());
+            updateTasks.Add(DetermineGameAsync());
+            updateTasks.Add(DetermineIfLiveAsync());
 
             bool wasLive = IsLive;
 
@@ -105,7 +106,7 @@ namespace Storm
             }
         }
 
-        protected async Task DetermineGame()
+        protected async Task DetermineGameAsync()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}", this.apiUri, this._name);
 
@@ -124,7 +125,7 @@ namespace Storm
             }
         }
 
-        protected async override Task DetermineIfLive()
+        protected async override Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", this.apiUri, this._name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(
@@ -185,7 +186,10 @@ namespace Storm
             req.Timeout = 4000;
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            }
 
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-Encoding", "gzip, deflate");

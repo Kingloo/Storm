@@ -160,7 +160,7 @@ namespace Storm
         }
 
         public abstract Task UpdateAsync();
-        protected abstract Task DetermineIfLive();
+        protected abstract Task DetermineIfLiveAsync();
         protected abstract void NotifyIsNowLive();
 
         public override string ToString()

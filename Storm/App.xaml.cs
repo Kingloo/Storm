@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Net;
+using System.Windows;
 using System.Windows.Threading;
 using Storm.DataAccess;
 
@@ -12,6 +13,8 @@ namespace Storm
         public App(IRepository repo)
         {
             _urlsRepo = repo;
+
+            ServicePointManager.DefaultConnectionLimit = 12;
         }
 
         private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
