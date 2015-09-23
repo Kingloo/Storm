@@ -160,6 +160,7 @@ namespace Storm.ViewModels
 
             IEnumerable<Task> updateTasks = from each in Streams
                                             where each.Updating == false
+                                            where each.IsValid
                                             select each.UpdateAsync();
 
             await Task.WhenAll(updateTasks);

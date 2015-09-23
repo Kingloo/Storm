@@ -11,7 +11,6 @@ namespace Storm
             this.DisplayName = malFormatted;
         }
 
-        
         public override string MouseOverTooltip
         {
             get
@@ -22,12 +21,12 @@ namespace Storm
 
         public override Task UpdateAsync()
         {
-            return null;
+            return new Task(() => { return; });
         }
 
         protected override Task DetermineIfLiveAsync()
         {
-            return new Task(null);
+            return new Task(() => { return; });
         }
 
         protected override void NotifyIsNowLive() { }

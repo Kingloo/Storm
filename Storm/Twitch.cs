@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Configuration;
 using System.Net;
 using System.Net.Cache;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Storm.ViewModels;
@@ -57,6 +56,7 @@ namespace Storm
             : base(u)
         {
             this.apiUri = "https://api.twitch.tv/kraken";
+            this._isValid = true;
         }
 
         public async override Task UpdateAsync()
@@ -128,6 +128,7 @@ namespace Storm
         protected async override Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", this.apiUri, this._name);
+
             HttpWebRequest req = BuildTwitchHttpWebRequest(
                 new Uri(apiAddressToQuery)
                 );
@@ -182,9 +183,9 @@ namespace Storm
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format("{0}://{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
+            req.Referer = string.Format("{0}{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
             req.Timeout = 4000;
-            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
 
             if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
             {

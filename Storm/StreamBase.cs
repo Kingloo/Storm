@@ -95,14 +95,25 @@ namespace Storm
                 OnNotifyPropertyChanged();
             }
         }
+
+        protected bool _isValid = false;
+        public bool IsValid
+        {
+            get
+            {
+                return _isValid;
+            }
+        }
         #endregion
 
         protected StreamBase(Uri accountUri)
         {
-            this.Uri = accountUri;
-
-            this.Name = SetAccountName(accountUri.AbsoluteUri);
-            this.DisplayName = this.Name;
+            if (accountUri != null)
+            {
+                this.Uri = accountUri;
+                this.Name = SetAccountName(accountUri.AbsoluteUri);
+                this.DisplayName = this.Name;
+            }
         }
 
         private string SetAccountName(string s)

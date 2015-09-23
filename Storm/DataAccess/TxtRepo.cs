@@ -40,7 +40,7 @@ namespace Storm.DataAccess
                 {
                     string fileAsString = await sr.ReadToEndAsync().ConfigureAwait(false);
 
-                    streams = await ParseStringAsync(fileAsString);
+                    streams = await ParseStringAsync(fileAsString).ConfigureAwait(false);
                 }
             }
             catch (FileNotFoundException e)

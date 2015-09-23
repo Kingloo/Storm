@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
@@ -35,6 +36,7 @@ namespace Storm
             : base(u)
         {
             this.apiUri = "https://api.ustream.tv";
+            this._isValid = true;
         }
 
         public async override Task UpdateAsync()
@@ -151,11 +153,11 @@ namespace Storm
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format("{0}://{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
+            req.Referer = string.Format("{0}{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
             req.Timeout = 2500;
-            req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
 
-            if (uri.Scheme.Equals("https"))
+            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
             {
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             }
