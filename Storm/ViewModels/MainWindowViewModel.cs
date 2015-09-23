@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Storm.DataAccess;
+using Storm.Extensions;
 
 namespace Storm.ViewModels
 {

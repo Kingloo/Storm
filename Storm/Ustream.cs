@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Storm.Extensions;
 using Storm.ViewModels;
 
 namespace Storm
@@ -101,7 +102,14 @@ namespace Storm
                 string beginning = "<div class=\"viewer-bg\" data-content-id=\"";
                 string ending = "\" data-content-type=\"channel\"><div class=\"transparent-bg\"></div></div>";
 
-                string id = response.FromBetween(beginning, ending);
+                FromBetweenResult res = response.FromBetween(beginning, ending);
+
+                string id = string.Empty;
+
+                if (res.Result == Result.Success)
+                {
+                    id = res.ResultString;
+                }
 
                 return id;
             }

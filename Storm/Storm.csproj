@@ -36,7 +36,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>80</ApplicationRevision>
+    <ApplicationRevision>81</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -149,7 +149,9 @@
     <Compile Include="DataAccess\IRepository.cs" />
     <Compile Include="DataAccess\TxtRepo.cs" />
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="Extensions\HttpWebRequest.cs" />
+    <Compile Include="Extensions\ICollectionT.cs" />
+    <Compile Include="Extensions\String.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="LiveColorConverter.cs" />
     <Compile Include="Model\StreamBase.cs" />
