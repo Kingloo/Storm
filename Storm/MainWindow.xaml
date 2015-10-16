@@ -151,11 +151,19 @@
                     ToolTip="{Binding Path=Key, ElementName=OpenUrlsFileCommandKeyBinding}"
                     Command="{Binding Path=OpenUrlsFileCommand, Mode=OneTime}" />
 
-            <Button Width="50" Name="btn"
+            <!--<Button Width="50" Name="btn"
                     Height="40"
                     Margin="8,0,0,0"
                     Content="q"
                     FontFamily="WebDings"
+                    FontSize="24"
+                    ToolTip="{Binding Path=Key, ElementName=ReloadUrlsAsyncCommandKeyBinding}"
+                    Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />-->
+
+            <Button Width="50" Name="btn"
+                    Height="40"
+                    Margin="8,0,0,0"
+                    Content="&#x21d1;"
                     FontSize="24"
                     ToolTip="{Binding Path=Key, ElementName=ReloadUrlsAsyncCommandKeyBinding}"
                     Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />
