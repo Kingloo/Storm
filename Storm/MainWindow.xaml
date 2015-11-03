@@ -85,7 +85,7 @@
         </Grid.RowDefinitions>
 
         <ItemsControl Grid.Row="0"
-                      Margin="0,0,0,10"
+                      Margin="0,0,0,7"
                       ItemsSource="{Binding Path=Streams, Mode=OneWay}">
             
             <ItemsControl.Template>
@@ -98,7 +98,7 @@
             
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Margin="10,0,10,0" />
+                    <VirtualizingStackPanel Margin="7,0,7,0" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 
@@ -111,7 +111,7 @@
                                                  Default="{StaticResource Default}" />
                     </DataTemplate.Resources>
                     
-                    <Label Margin="0,10,0,0"
+                    <Label Margin="0,7,0,0"
                            Content="{Binding Path=DisplayName, Mode=OneWay}"
                            Background="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource liveColorConverter}}"
                            Height="50"
@@ -139,7 +139,7 @@
         </ItemsControl>
         
         <StackPanel Grid.Row="1"
-                    Margin="10,0,0,10"
+                    Margin="7,0,0,7"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
 
