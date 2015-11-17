@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Storm.Model;
 
 namespace Storm.DataAccess
 {
@@ -47,7 +48,9 @@ namespace Storm.DataAccess
                 Utils.LogException(e);
             }
 
-            return streams != null ? streams : Enumerable.Empty<StreamBase>();
+            return streams != null
+                ? streams
+                : Enumerable.Empty<StreamBase>();
         }
 
         private async Task<List<StreamBase>> ParseStringAsync(string fileAsString)
@@ -92,6 +95,9 @@ namespace Storm.DataAccess
                     break;
                 case "ustream.tv":
                     sb = new Ustream(tmp);
+                    break;
+                case "mixlr.com":
+                    sb = new Mixlr(tmp);
                     break;
                 default:
                     sb = new UnsupportedService(tmp.AbsoluteUri);

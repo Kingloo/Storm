@@ -36,7 +36,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>84</ApplicationRevision>
+    <ApplicationRevision>87</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -153,6 +153,7 @@
     <Compile Include="Extensions\ICollectionT.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="LiveColorConverter.cs" />
+    <Compile Include="Model\Mixlr.cs" />
     <Compile Include="Model\StreamBase.cs" />
     <Compile Include="Model\Twitch.cs" />
     <Compile Include="NotificationService.cs" />

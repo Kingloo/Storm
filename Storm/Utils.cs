@@ -98,7 +98,6 @@ namespace Storm
 
             sb.AppendLine(string.Format("{0} logged the following message at {1}", Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
-            sb.AppendLine(string.Empty);
 
             WriteTextToFile(sb.ToString(), loggingRounds);
         }
@@ -109,7 +108,6 @@ namespace Storm
 
             sb.AppendLine(string.Format("{0} logged the following message at {1}", Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
-            sb.AppendLine(string.Empty);
 
             await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
@@ -122,7 +120,6 @@ namespace Storm
             sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(string.Empty);
 
             WriteTextToFile(sb.ToString(), loggingRounds);
         }
@@ -135,7 +132,6 @@ namespace Storm
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(string.Empty);
 
             WriteTextToFile(sb.ToString(), loggingRounds);
         }
@@ -147,7 +143,6 @@ namespace Storm
             sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(string.Empty);
 
             await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
@@ -160,7 +155,6 @@ namespace Storm
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(string.Empty);
 
             await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
@@ -178,7 +172,7 @@ namespace Storm
                 {
                     using (StreamWriter sw = new StreamWriter(fs))
                     {
-                        sw.Write(text);
+                        sw.WriteLine(text);
                     }
                 }
             }
@@ -221,7 +215,7 @@ namespace Storm
                 {
                     using (StreamWriter sw = new StreamWriter(fsAsync))
                     {
-                        await sw.WriteAsync(text).ConfigureAwait(false);
+                        await sw.WriteLineAsync(text).ConfigureAwait(false);
                     }
                 }
             }
@@ -265,8 +259,6 @@ namespace Storm
                 {
                     if (req != null)
                     {
-                        sbLog.AppendLine(string.Format("Request for {0} was aborted", req.RequestUri.AbsoluteUri));
-
                         req.Abort();
                     }
                 }
@@ -282,7 +274,7 @@ namespace Storm
                             }
                             catch (IOException e)
                             {
-                                sbLog.AppendLine("Reading the response failed with IOException");
+                                sbLog.AppendLine(string.Format("Reading the response failed with IOException: {0}", req.RequestUri.AbsoluteUri));
                                 sbLog.AppendLine(e.Message);
                                 sbLog.AppendLine(e.StackTrace);
 
@@ -290,7 +282,7 @@ namespace Storm
                             }
                         }
                     }
-                    else
+                    else if (resp.StatusCode != HttpStatusCode.BadGateway)
                     {
                         sbLog.AppendLine(string.Format("Getting website {0} failed: {1}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString()));
                     }
@@ -317,8 +309,6 @@ namespace Storm
                 {
                     if (req != null)
                     {
-                        sbLog.AppendLine(string.Format("Request for {0} was aborted", req.RequestUri.AbsoluteUri));
-
                         req.Abort();
                     }
                 }
@@ -332,9 +322,9 @@ namespace Storm
                             {
                                 response = await sr.ReadToEndAsync().ConfigureAwait(false);
                             }
-                            catch (IOException e)
+                            catch (Exception e)
                             {
-                                sbLog.AppendLine("Reading the response failed with IOException");
+                                sbLog.AppendLine(string.Format("Reading the response failed with exception of type {0}", e.GetType().ToString()));
                                 sbLog.AppendLine(e.Message);
                                 sbLog.AppendLine(e.StackTrace);
 

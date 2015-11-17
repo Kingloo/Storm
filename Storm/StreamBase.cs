@@ -128,7 +128,14 @@ namespace Storm
 
             using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt().ConfigureAwait(false)))
             {
-                if (resp != null)
+                if (resp == null)
+                {
+                    if (req != null)
+                    {
+                        req.Abort();
+                    }
+                }
+                else
                 {
                     if (resp.StatusCode == HttpStatusCode.OK)
                     {
@@ -136,19 +143,6 @@ namespace Storm
                         {
                             jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
                         }
-                    }
-                    else
-                    {
-                        string errorMessage = string.Format("Request for {0} failed: {1}", req.RequestUri.AbsoluteUri, resp.StatusCode);
-
-                        Utils.LogMessage(errorMessage);
-                    }
-                }
-                else
-                {
-                    if (req != null)
-                    {
-                        req.Abort();
                     }
                 }
             }
@@ -162,9 +156,9 @@ namespace Storm
                 {
                     j = JObject.Parse(jsonResponse);
                 }
-                catch (JsonReaderException jre)
+                catch (JsonReaderException e)
                 {
-                    Utils.LogException(jre);
+                    Utils.LogException(e);
                 }
             }
 
