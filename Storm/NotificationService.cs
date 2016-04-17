@@ -26,7 +26,7 @@ namespace Storm
             {
                 this.action = action;
 
-                this.Style = BuildWindowStyle();
+                Style = BuildWindowStyle();
 
                 Grid grid = new Grid
                 {
@@ -73,12 +73,12 @@ namespace Storm
                     grid.Children.Add(lbl_Description);
                 }
 
-                this.AddChild(grid);
+                AddChild(grid);
 
 #if DEBUG
                 CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close());
 #else
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close());
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => Close());
 #endif
 
                 DisplayThisWindow();
@@ -176,7 +176,7 @@ namespace Storm
 
             private void DisplayThisWindow()
             {
-                this.Show();
+                Show();
 
                 System.Media.SystemSounds.Hand.Play();
             }

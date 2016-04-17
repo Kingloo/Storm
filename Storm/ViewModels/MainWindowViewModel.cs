@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Storm.DataAccess;
 using Storm.Extensions;
+using Storm.Model;
 
 namespace Storm.ViewModels
 {
@@ -131,7 +132,7 @@ namespace Storm.ViewModels
 
             IEnumerable<StreamBase> loaded = await urlsRepo.LoadAsync();
 
-            Streams.AddList<StreamBase>(loaded);
+            Streams.AddList(loaded);
         }
 
         private async Task ReloadUrlsAsync()
@@ -164,8 +165,11 @@ namespace Storm.ViewModels
                                             where each.IsValid
                                             select each.UpdateAsync();
 
-            await Task.WhenAll(updateTasks);
-
+            if (updateTasks.Count() > 0)
+            {
+                await Task.WhenAll(updateTasks);
+            }
+            
             SetUIToStable();
         }
 

@@ -1,115 +1,186 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Net;
-//using System.Text;
-//using System.Threading.Tasks;
-//using Newtonsoft.Json.Linq;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Storm.ViewModels;
+using Storm.Extensions;
 
-//namespace Storm.Model
-//{
-//    abstract class StreamBase : ViewModelBase
-//    {
-//        #region Fields
-//        protected static Uri apiUri = null;
-//        #endregion
+namespace Storm.Model
+{
+    public abstract class StreamBase : ViewModelBase
+    {
+        #region Fields
+        protected string apiUri = string.Empty;
+        protected bool hasUpdatedDisplayName = false;
+        #endregion
 
-//        #region Properties
-//        protected Uri _accountUri = null;
-//        public Uri AccountUri
-//        {
-//            get
-//            {
-//                return this._accountUri;
-//            }
-//            set
-//            {
-//                this._accountUri = value;
+        #region Properties
+        protected Uri _uri = null;
+        public Uri Uri
+        {
+            get
+            {
+                return this._uri;
+            }
+            set
+            {
+                this._uri = value;
 
-//                OnNotifyPropertyChanged();
-//            }
-//        }
+                OnNotifyPropertyChanged();
+            }
+        }
 
-//        protected string _name = string.Empty;
-//        public string Name
-//        {
-//            get
-//            {
-//                return _name;
-//            }
-//            set
-//            {
-//                _name = value;
+        protected string _name = string.Empty;
+        public string Name
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
 
-//                OnNotifyPropertyChanged();
-//            }
-//        }
+                OnNotifyPropertyChanged();
+            }
+        }
 
-//        protected string _displayName = string.Empty;
-//        public string DisplayName
-//        {
-//            get
-//            {
-//                return _displayName;
-//            }
-//            set
-//            {
-//                _displayName = value;
+        protected string _displayName = string.Empty;
+        public string DisplayName
+        {
+            get
+            {
+                return this._displayName;
+            }
+            set
+            {
+                this._displayName = value;
 
-//                OnNotifyPropertyChanged();
-//            }
-//        }
+                OnNotifyPropertyChanged();
+                OnNotifyPropertyChanged("MouseOverTooltip");
+            }
+        }
 
-//        protected bool _isLive = false;
-//        public bool IsLive
-//        {
-//            get
-//            {
-//                return this._isLive;
-//            }
-//            set
-//            {
-//                this._isLive = value;
+        protected bool _isLive = false;
+        public bool IsLive
+        {
+            get
+            {
+                return this._isLive;
+            }
+            set
+            {
+                this._isLive = value;
 
-//                OnNotifyPropertyChanged();
-//            }
-//        }
+                OnNotifyPropertyChanged();
+                OnNotifyPropertyChanged("MouseOverTooltip");
+            }
+        }
 
-//        private bool _updating = false;
-//        public bool Updating
-//        {
-//            get
-//            {
-//                return this._updating;
-//            }
-//            set
-//            {
-//                this._updating = value;
+        public abstract string MouseOverTooltip { get; }
 
-//                OnNotifyPropertyChanged();
-//            }
-//        }
-//        #endregion
+        private bool _updating = false;
+        public bool Updating
+        {
+            get
+            {
+                return _updating;
+            }
+            set
+            {
+                _updating = value;
 
-//        protected StreamBase(Uri accountUri)
-//        {
-//            _accountUri = accountUri;
-//        }
+                OnNotifyPropertyChanged();
+            }
+        }
 
-//        public abstract static HttpWebRequest CreateHttpWebRequest(Uri uri);
-//        public abstract static Task<JObject> GetApiResponseAsync(HttpWebRequest req);
-//        public abstract static Task UpdateAllAsync(IEnumerable<StreamBase> streams);
+        protected bool _isValid = false;
+        public bool IsValid
+        {
+            get
+            {
+                return _isValid;
+            }
+        }
+        #endregion
 
-//        public override string ToString()
-//        {
-//            StringBuilder sb = new StringBuilder();
+        protected StreamBase(Uri accountUri)
+        {
+            if (accountUri != null)
+            {
+                Uri = accountUri;
+                Name = SetAccountName(accountUri.AbsoluteUri);
+                DisplayName = Name;
+            }
+        }
 
-//            sb.AppendLine(this.GetType().ToString());
-//            sb.AppendLine(string.Format("Account uri: {0}", AccountUri));
-//            sb.AppendLine(string.Format("Name: {0}", Name));
-//            sb.AppendLine(string.Format("Display name: {0}", DisplayName));
-//            sb.AppendLine(string.Format("Is Live: {0}", IsLive.ToString()));
+        private string SetAccountName(string s)
+        {
+            return s.Substring(s.LastIndexOf("/") + 1);
+        }
 
-//            return sb.ToString();
-//        }
-//    }
-//}
+        protected async Task<JObject> GetApiResponseAsync(HttpWebRequest req)
+        {
+            string jsonResponse = string.Empty;
+
+            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt().ConfigureAwait(false)))
+            {
+                if (resp == null)
+                {
+                    if (req != null)
+                    {
+                        req.Abort();
+                    }
+                }
+                else
+                {
+                    if (resp.StatusCode == HttpStatusCode.OK)
+                    {
+                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                        {
+                            jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+
+
+            JObject j = null;
+
+            if (String.IsNullOrEmpty(jsonResponse) == false)
+            {
+                try
+                {
+                    j = JObject.Parse(jsonResponse);
+                }
+                catch (JsonReaderException e)
+                {
+                    Utils.LogException(e);
+                }
+            }
+
+            return j;
+        }
+
+        public abstract Task UpdateAsync();
+        protected abstract Task DetermineIfLiveAsync();
+        protected abstract void NotifyIsNowLive();
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(GetType().ToString());
+            sb.AppendLine(string.Format("Uri: {0}", Uri));
+            sb.AppendLine(string.Format("Name: {0}", Name));
+            sb.AppendLine(string.Format("Display name: {0}", DisplayName));
+            sb.AppendLine(string.Format("Is Live: {0}", IsLive.ToString()));
+            sb.AppendLine(string.Format("MouseOverToolTip: {0}", MouseOverTooltip));
+
+            return sb.ToString();
+        }
+    }
+}

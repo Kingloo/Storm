@@ -1,111 +1,211 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Net;
-//using System.Net.Cache;
-//using System.Text;
-//using System.Threading.Tasks;
-//using System.Linq;
-//using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Net;
+using System.Net.Cache;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using Storm.ViewModels;
 
-//namespace Storm.Model
-//{
-//    class Twitch : StreamBase
-//    {
-//        #region Properties
-//        private string _game = string.Empty;
-//        public string Game
-//        {
-//            get
-//            {
-//                return _game;
-//            }
-//            set
-//            {
-//                _game = value;
+namespace Storm.Model
+{
+    class Twitch : StreamBase
+    {
+        private string _game = string.Empty;
+        public string Game
+        {
+            get
+            {
+                return _game;
+            }
+            set
+            {
+                _game = value;
 
-//                OnNotifyPropertyChanged();
-//            }
-//        }
-//        #endregion
+                OnNotifyPropertyChanged();
+                OnNotifyPropertyChanged("MouseOverTooltip");
+            }
+        }
 
-//        public Twitch(Uri accountUri)
-//            : base(accountUri)
-//        {
-//            apiUri = new Uri("https://api.twitch.tv/kraken");
-//        }
+        public override string MouseOverTooltip
+        {
+            get
+            {
+                if (this.IsLive)
+                {
+                    StringBuilder sb = new StringBuilder();
 
-//        public static override async Task UpdateAllAsync(IEnumerable<StreamBase> streams)
-//        {
-//            foreach (Twitch each in streams)
-//            {
-//                each.Updating = true;
-//            }
-            
-//            StringBuilder sb = new StringBuilder();
+                    sb.Append(string.Format("{0} is live", this.DisplayName));
 
-//            foreach (Twitch each in streams)
-//            {
-//                sb.Append(string.Format("{0},", each.Name));
-//            }
+                    if (String.IsNullOrWhiteSpace(this.Game) == false)
+                    {
+                        sb.Append(string.Format(" and playing {0}", this.Game));
+                    }
 
-//            string uri = string.Format("{0}/streams?channel={1}", apiUri, sb.ToString());
+                    return sb.ToString();
+                }
+                else
+                {
+                    return string.Format("{0} is offline", this.DisplayName);
+                }
+            }
+        }
+        
+        public Twitch(Uri u)
+            : base(u)
+        {
+            this.apiUri = "https://api.twitch.tv/kraken";
+            this._isValid = true;
+        }
 
-//            HttpWebRequest req = CreateHttpWebRequest(new Uri(uri));
+        public async override Task UpdateAsync()
+        {
+            Updating = true;
 
-//            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
+            List<Task> updateTasks = new List<Task>();
 
-//            if (resp != null)
-//            {
-//                if (resp["streams"].HasValues)
-//                {
-//                    foreach (JToken each in resp["streams"])
-//                    {
-//                        if (each.HasValues)
-//                        {
-//                            StreamBase t = (from twitch in streams
-//                                            where twitch.Name.Equals((string)each["channel"]["name"])
-//                                            select twitch).First<StreamBase>();
-//                        }
-//                    }
-//                }
-//            }
+            if (!hasUpdatedDisplayName)
+            {
+                updateTasks.Add(TrySetDisplayNameAsync());
+            }
 
-//            foreach (Twitch each in streams)
-//            {
-//                each.Updating = false;
-//            }
-//        }
+            updateTasks.Add(DetermineGameAsync());
+            updateTasks.Add(DetermineIfLiveAsync());
 
-//        public override static HttpWebRequest CreateHttpWebRequest(Uri uri)
-//        {
-//            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
+            bool wasLive = IsLive;
 
-//            req.Accept = "application/vnd.twitchtv.v3+json";
-//            req.AllowAutoRedirect = true;
-//            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-//            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-//            req.Host = uri.DnsSafeHost;
-//            req.KeepAlive = false;
-//            req.Method = "GET";
-//            req.ProtocolVersion = HttpVersion.Version11;
-//            req.Referer = string.Format("{0}://{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
-//            req.Timeout = 4000;
-//            req.UserAgent = Globals.UserAgent;
+            await Task.WhenAll(updateTasks).ConfigureAwait(false);
 
-//            req.Headers.Add("DNT", "1");
-//            req.Headers.Add("Accept-Encoding", "gzip, deflate");
+            if (wasLive == false && IsLive == true)
+            {
+                NotifyIsNowLive();
+            }
 
-//            return req;
-//        }
+            Updating = false;
+        }
 
-//        public override string ToString()
-//        {
-//            StringBuilder sb = new StringBuilder();
+        protected async Task TrySetDisplayNameAsync()
+        {
+            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this.apiUri, this._name);
 
-//            sb.Append(base.ToString());
-//            sb.AppendLine(Game);
+            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(
+                new Uri(apiAddressToQueryForDisplayName)
+                );
 
-//            return sb.ToString();
-//        }
-//    }
-//}
+            JObject response = await GetApiResponseAsync(twitchRequest).ConfigureAwait(false);
+
+            if (response != null)
+            {
+                if (response["display_name"] != null)
+                {
+                    this.DisplayName = (string)response["display_name"];
+
+                    hasUpdatedDisplayName = true;
+                }
+            }
+        }
+
+        protected async Task DetermineGameAsync()
+        {
+            string apiAddressToQuery = string.Format("{0}/channels/{1}", this.apiUri, this._name);
+
+            HttpWebRequest req = BuildTwitchHttpWebRequest(
+                new Uri(apiAddressToQuery)
+                );
+
+            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
+
+            if (resp != null)
+            {
+                if (resp["game"] is JToken)
+                {
+                    Game = (string)resp["game"];
+                }
+            }
+        }
+
+        protected async override Task DetermineIfLiveAsync()
+        {
+            string apiAddressToQuery = string.Format("{0}/streams/{1}", this.apiUri, this._name);
+
+            HttpWebRequest req = BuildTwitchHttpWebRequest(
+                new Uri(apiAddressToQuery)
+                );
+
+            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
+
+            if (resp != null)
+            {
+                if (resp["stream"] != null)
+                {
+                    if (resp["stream"].HasValues)
+                    {
+                        IsLive = true;
+
+                        return;
+                    }
+                }
+            }
+
+            IsLive = false;
+        }
+
+        protected override void NotifyIsNowLive()
+        {
+            Action showNotification = null;
+
+            string title = string.Format("{0} is LIVE", DisplayName);
+
+            if (String.IsNullOrWhiteSpace(Game))
+            {
+                showNotification = () => NotificationService.Send(title, () => MainWindowViewModel.GoToStream(this));
+            }
+            else
+            {
+                string description = string.Format("and playing {0}", Game);
+
+                showNotification = () => NotificationService.Send(title, description, () => MainWindowViewModel.GoToStream(this));
+            }
+
+            Utils.SafeDispatcher(showNotification);
+        }
+
+        private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
+        {
+            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
+
+            req.Accept = "application/vnd.twitchtv.v3+json";
+            req.AllowAutoRedirect = true;
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+            req.Host = uri.DnsSafeHost;
+            req.KeepAlive = false;
+            req.Method = "GET";
+            req.ProtocolVersion = HttpVersion.Version11;
+            req.Referer = string.Format("{0}{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
+            req.Timeout = 4000;
+            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
+
+            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            }
+
+            req.Headers.Add("DNT", "1");
+            req.Headers.Add("Accept-Encoding", "gzip, deflate");
+
+            return req;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(base.ToString());
+            sb.AppendLine(string.Format("Game: {0}", String.IsNullOrWhiteSpace(this.Game) ? "not set" : this.Game));
+
+            return sb.ToString();
+        }
+    }
+}

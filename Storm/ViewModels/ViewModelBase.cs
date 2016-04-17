@@ -10,7 +10,7 @@ namespace Storm.ViewModels
 
         protected void OnNotifyPropertyChanged([CallerMemberName] string propertyName = default(string))
         {
-            PropertyChangedEventHandler pceh = this.PropertyChanged;
+            PropertyChangedEventHandler pceh = PropertyChanged;
 
             if ((pceh != null) && (String.IsNullOrWhiteSpace(propertyName) == false))
             {

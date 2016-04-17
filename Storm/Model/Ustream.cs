@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 using Storm.Extensions;
 using Storm.ViewModels;
 
-namespace Storm
+namespace Storm.Model
 {
     class Ustream : StreamBase
     {
@@ -36,8 +36,8 @@ namespace Storm
         public Ustream(Uri u)
             : base(u)
         {
-            this.apiUri = "https://api.ustream.tv";
-            this._isValid = true;
+            apiUri = "https://api.ustream.tv";
+            _isValid = true;
         }
 
         public async override Task UpdateAsync()

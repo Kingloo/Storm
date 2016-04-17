@@ -15,10 +15,7 @@ namespace Storm.Extensions
             }
             catch (WebException e)
             {
-                if (e.Response != null)
-                {
-                    webResp = e.Response;
-                }
+                webResp = e?.Response;
             }
 
             return webResp;
@@ -34,10 +31,7 @@ namespace Storm.Extensions
             }
             catch (WebException e)
             {
-                if (e.Response != null)
-                {
-                    webResp = e.Response;
-                }
+                webResp = e?.Response;
             }
 
             return webResp;

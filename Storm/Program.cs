@@ -3,17 +3,15 @@ using Storm.DataAccess;
 
 namespace Storm
 {
-    public class Program
+    public static class Program
     {
         [STAThread]
         public static int Main()
         {
             string filePath = string.Format(@"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
-
             TxtRepo urlsRepo = new TxtRepo(filePath);
 
             App app = new App(urlsRepo);
-
             app.InitializeComponent();
 
             int exitCode = app.Run();

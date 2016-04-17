@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Windows;
+using Storm.Model;
 using Storm.ViewModels;
 
 namespace Storm

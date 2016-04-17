@@ -47,10 +47,8 @@ namespace Storm.DataAccess
             {
                 Utils.LogException(e);
             }
-
-            return streams != null
-                ? streams
-                : Enumerable.Empty<StreamBase>();
+            
+            return streams == null ? Enumerable.Empty<StreamBase>() : streams;
         }
 
         private async Task<List<StreamBase>> ParseStringAsync(string fileAsString)
@@ -98,6 +96,9 @@ namespace Storm.DataAccess
                     break;
                 case "mixlr.com":
                     sb = new Mixlr(tmp);
+                    break;
+                case "hitbox.tv":
+                    sb = new Hitbox(tmp);
                     break;
                 default:
                     sb = new UnsupportedService(tmp.AbsoluteUri);
