@@ -138,8 +138,8 @@ namespace Storm.ViewModels
         private async Task ReloadUrlsAsync()
         {
             await LoadUrlsAsync();
-
-            await UpdateAllAsync().ConfigureAwait(false);
+            
+            await UpdateAllAsync();
         }
 
         private DelegateCommandAsync _updateAllAsyncCommand = null;
@@ -160,12 +160,13 @@ namespace Storm.ViewModels
         {
             SetUIToUpdating();
 
-            IEnumerable<Task> updateTasks = from each in Streams
-                                            where each.Updating == false
-                                            where each.IsValid
-                                            select each.UpdateAsync();
+            List<Task> updateTasks = (from each in Streams
+                                      where each.Updating == false
+                                      where each.IsValid
+                                      select each.UpdateAsync())
+                                      .ToList();
 
-            if (updateTasks.Count() > 0)
+            if (updateTasks.Count > 0)
             {
                 await Task.WhenAll(updateTasks);
             }
@@ -241,7 +242,7 @@ namespace Storm.ViewModels
 
         private async void updateTimer_Tick(object sender, EventArgs e)
         {
-            await UpdateAllAsync().ConfigureAwait(false);
+            await UpdateAllAsync();
         }
     }
 }
