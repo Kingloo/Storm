@@ -70,16 +70,7 @@ namespace Storm.ViewModels
 
         public static void GoToStream(StreamBase stream)
         {
-            string args = string.Format(@"/C livestreamer.exe {0} best", stream.Uri.AbsoluteUri);
-
-            ProcessStartInfo pInfo = new ProcessStartInfo
-            {
-                Arguments = args,
-                FileName = "cmd.exe",
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
-            Process.Start(pInfo);
+            stream.GoToStream();
         }
 
         private DelegateCommand _openUrlsFileCommand = null;
@@ -100,7 +91,7 @@ namespace Storm.ViewModels
         {
             // The FileNotFoundException will be for notepad.exe, NOT urlsRepo.FilePath
             // the file path is an argument
-            // notepad would be the one to notify that urlsRepo.FilePath could not be found/opened
+            // notepad will tell you if urlsRepo.FilePath could not be found/opened
 
             try
             {

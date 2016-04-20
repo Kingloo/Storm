@@ -105,5 +105,10 @@ namespace Storm.Model
 
             NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
         }
+
+        public override void GoToStream()
+        {
+            Utils.OpenUriInBrowser(Uri);
+        }
     }
 }

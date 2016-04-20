@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Storm.ViewModels;
 using Storm.Extensions;
+using System.Diagnostics;
 
 namespace Storm.Model
 {
@@ -168,6 +169,20 @@ namespace Storm.Model
         public abstract Task UpdateAsync();
         protected abstract Task DetermineIfLiveAsync();
         protected abstract void NotifyIsNowLive();
+
+        public virtual void GoToStream()
+        {
+            string args = string.Format(@"/C livestreamer.exe {0} best", Uri.AbsoluteUri);
+
+            ProcessStartInfo pInfo = new ProcessStartInfo
+            {
+                Arguments = args,
+                FileName = "cmd.exe",
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            Process.Start(pInfo);
+        }
 
         public override string ToString()
         {
