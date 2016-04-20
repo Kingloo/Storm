@@ -68,7 +68,7 @@ namespace Storm.ViewModels
             }
         }
 
-        public static void GoToStream(StreamBase stream)
+        private static void GoToStream(StreamBase stream)
         {
             stream.GoToStream();
         }

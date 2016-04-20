@@ -144,9 +144,10 @@ namespace Storm.Model
 
         protected override void NotifyIsNowLive()
         {
-            string title = string.Format("{0} is now live", this.DisplayName);
+            string title = string.Format("{0} is now live", DisplayName);
 
-            NotificationService.Send(title, new Action(() => MainWindowViewModel.GoToStream(this)));
+            //NotificationService.Send(title, new Action(() => MainWindowViewModel.GoToStream(this)));
+            NotificationService.Send(title, GoToStream);
         }
 
         private static HttpWebRequest BuildUstreamHttpWebRequest(Uri uri)

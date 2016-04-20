@@ -159,13 +159,15 @@ namespace Storm.Model
 
             if (String.IsNullOrWhiteSpace(Game))
             {
-                showNotification = () => NotificationService.Send(title, () => MainWindowViewModel.GoToStream(this));
+                //showNotification = () => NotificationService.Send(title, () => MainWindowViewModel.GoToStream(this));
+                showNotification = () => NotificationService.Send(title, GoToStream);
             }
             else
             {
                 string description = string.Format("and playing {0}", Game);
 
-                showNotification = () => NotificationService.Send(title, description, () => MainWindowViewModel.GoToStream(this));
+                //showNotification = () => NotificationService.Send(title, description, () => MainWindowViewModel.GoToStream(this));
+                showNotification = () => NotificationService.Send(title, description, GoToStream);
             }
 
             Utils.SafeDispatcher(showNotification);

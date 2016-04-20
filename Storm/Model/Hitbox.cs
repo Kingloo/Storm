@@ -82,8 +82,9 @@ namespace Storm.Model
         protected override void NotifyIsNowLive()
         {
             string title = string.Format("{0} is now LIVE", DisplayName);
-            
-            NotificationService.Send(title, () => MainWindowViewModel.GoToStream(this));
+
+            //NotificationService.Send(title, () => MainWindowViewModel.GoToStream(this));
+            NotificationService.Send(title, GoToStream);
         }
     }
 }
