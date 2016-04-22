@@ -33,20 +33,23 @@ namespace Storm.Model
 
             JObject apiResp = await GetApiResponseAsync(req);
 
-            if (apiResp.HasValues)
+            if (apiResp != null)
             {
-                bool wasLive = IsLive;
-
-                // apiResp["is_live"] -> "0" for offline, "1" for live
-                // Convert.ToBoolean(int) -> turns zero into false, non-zero into true
-                IsLive = Convert.ToBoolean((int)apiResp["is_live"]);
-
-                if (wasLive == false && IsLive == true)
+                if (apiResp.HasValues)
                 {
-                    NotifyIsNowLive();
+                    bool wasLive = IsLive;
+
+                    // apiResp["is_live"] -> "0" for offline, "1" for live
+                    // Convert.ToBoolean(int) -> turns zero into false, non-zero into true
+                    IsLive = Convert.ToBoolean((int)apiResp["is_live"]);
+
+                    if (wasLive == false && IsLive == true)
+                    {
+                        NotifyIsNowLive();
+                    }
                 }
             }
-
+            
             Updating = false;
         }
 
@@ -82,8 +85,7 @@ namespace Storm.Model
         protected override void NotifyIsNowLive()
         {
             string title = string.Format("{0} is now LIVE", DisplayName);
-
-            //NotificationService.Send(title, () => MainWindowViewModel.GoToStream(this));
+            
             NotificationService.Send(title, GoToStream);
         }
     }

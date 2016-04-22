@@ -40,22 +40,25 @@ namespace Storm.Model
 
             JObject apiResp = await GetApiResponseAsync(req);
 
-            if (apiResp.HasValues)
+            if (apiResp != null)
             {
-                if (!hasUpdatedDisplayName)
+                if (apiResp.HasValues)
                 {
-                    TrySetDisplayName(apiResp);
-                }
-                
-                bool wasLive = IsLive;
-                IsLive = apiResp["is_live"].Value<bool>();
+                    if (!hasUpdatedDisplayName)
+                    {
+                        TrySetDisplayName(apiResp);
+                    }
 
-                if (wasLive == false && IsLive == true)
-                {
-                    NotifyIsNowLive();
+                    bool wasLive = IsLive;
+                    IsLive = apiResp["is_live"].Value<bool>();
+
+                    if (wasLive == false && IsLive == true)
+                    {
+                        NotifyIsNowLive();
+                    }
                 }
             }
-
+            
             Updating = false;
         }
 
