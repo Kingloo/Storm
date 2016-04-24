@@ -31,22 +31,22 @@ namespace Storm.Model
         {
             get
             {
-                if (this.IsLive)
+                if (IsLive)
                 {
                     StringBuilder sb = new StringBuilder();
 
-                    sb.Append(string.Format("{0} is live", this.DisplayName));
+                    sb.Append(string.Format("{0} is live", DisplayName));
 
-                    if (String.IsNullOrWhiteSpace(this.Game) == false)
+                    if (String.IsNullOrWhiteSpace(Game) == false)
                     {
-                        sb.Append(string.Format(" and playing {0}", this.Game));
+                        sb.Append(string.Format(" and playing {0}", Game));
                     }
 
                     return sb.ToString();
                 }
                 else
                 {
-                    return string.Format("{0} is offline", this.DisplayName);
+                    return string.Format("{0} is offline", DisplayName);
                 }
             }
         }
@@ -64,6 +64,8 @@ namespace Storm.Model
 
             List<Task> updateTasks = new List<Task>();
 
+            bool wasLive = IsLive;
+
             if (!hasUpdatedDisplayName)
             {
                 updateTasks.Add(TrySetDisplayNameAsync());
@@ -71,9 +73,7 @@ namespace Storm.Model
 
             updateTasks.Add(DetermineGameAsync());
             updateTasks.Add(DetermineIfLiveAsync());
-
-            bool wasLive = IsLive;
-
+            
             await Task.WhenAll(updateTasks);
 
             if (wasLive == false && IsLive == true)
@@ -157,8 +157,7 @@ namespace Storm.Model
                 
                 showNotification = () => NotificationService.Send(title, description, GoToStream);
             }
-
-            //Utils.SafeDispatcher(showNotification);
+            
             showNotification();
         }
 

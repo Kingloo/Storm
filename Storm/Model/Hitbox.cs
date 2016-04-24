@@ -38,31 +38,7 @@ namespace Storm.Model
 
             Updating = false;
         }
-
-        private HttpWebRequest BuildHitboxHttpWebRequest(Uri uri)
-        {
-            HttpWebRequest req = WebRequest.CreateHttp(uri);
-
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-            req.Host = uri.DnsSafeHost;
-            req.KeepAlive = false;
-            req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version11;
-            req.Timeout = 2500;
-            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
-
-            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            }
-
-            req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-encoding", "gzip, deflate");
-
-            return req;
-        }
-
+        
         protected override async Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/user/{1}", apiUri, Name);
@@ -90,6 +66,30 @@ namespace Storm.Model
             string title = string.Format("{0} is now LIVE", DisplayName);
             
             NotificationService.Send(title, GoToStream);
+        }
+
+        private static HttpWebRequest BuildHitboxHttpWebRequest(Uri uri)
+        {
+            HttpWebRequest req = WebRequest.CreateHttp(uri);
+
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+            req.Host = uri.DnsSafeHost;
+            req.KeepAlive = false;
+            req.Method = "GET";
+            req.ProtocolVersion = HttpVersion.Version11;
+            req.Timeout = 2500;
+            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
+
+            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            }
+
+            req.Headers.Add("DNT", "1");
+            req.Headers.Add("Accept-encoding", "gzip, deflate");
+
+            return req;
         }
     }
 }

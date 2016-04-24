@@ -72,7 +72,7 @@ namespace Storm.Model
             }
         }
 
-        private HttpWebRequest BuildMixlrHttpWebRequest(Uri uri)
+        private static HttpWebRequest BuildMixlrHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = WebRequest.CreateHttp(uri.AbsoluteUri);
 

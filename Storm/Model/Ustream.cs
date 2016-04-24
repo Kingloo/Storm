@@ -44,7 +44,7 @@ namespace Storm.Model
 
             if (String.IsNullOrWhiteSpace(channelId))
             {
-                channelId = await DetermineChannelId();
+                channelId = await DetermineChannelIdAsync();
             }
             
             bool wasLive = IsLive;
@@ -80,7 +80,7 @@ namespace Storm.Model
             }
         }
 
-        private async Task<string> DetermineChannelId()
+        private async Task<string> DetermineChannelIdAsync()
         {
             HttpWebRequest req = BuildUstreamHttpWebRequest(Uri);
             string response = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
