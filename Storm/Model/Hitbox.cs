@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Storm.ViewModels;
 
 namespace Storm.Model
 {
@@ -27,29 +26,16 @@ namespace Storm.Model
         public override async Task UpdateAsync()
         {
             Updating = true;
-
-            string apiAddressToQuery = string.Format("{0}/user/{1}", apiUri, Name);
-            HttpWebRequest req = BuildHitboxHttpWebRequest(new Uri(apiAddressToQuery));
-
-            JObject apiResp = await GetApiResponseAsync(req);
-
-            if (apiResp != null)
-            {
-                if (apiResp.HasValues)
-                {
-                    bool wasLive = IsLive;
-
-                    // apiResp["is_live"] -> "0" for offline, "1" for live
-                    // Convert.ToBoolean(int) -> turns zero into false, non-zero into true
-                    IsLive = Convert.ToBoolean((int)apiResp["is_live"]);
-
-                    if (wasLive == false && IsLive == true)
-                    {
-                        NotifyIsNowLive();
-                    }
-                }
-            }
             
+            bool wasLive = IsLive;
+
+            await DetermineIfLiveAsync();
+
+            if (wasLive == false && IsLive == true)
+            {
+                NotifyIsNowLive();
+            }
+
             Updating = false;
         }
 
@@ -77,9 +63,26 @@ namespace Storm.Model
             return req;
         }
 
-        protected override Task DetermineIfLiveAsync()
+        protected override async Task DetermineIfLiveAsync()
         {
-            throw new NotImplementedException();
+            string apiAddressToQuery = string.Format("{0}/user/{1}", apiUri, Name);
+            HttpWebRequest req = BuildHitboxHttpWebRequest(new Uri(apiAddressToQuery));
+
+            JObject apiResp = await GetApiResponseAsync(req).ConfigureAwait(false);
+
+            if (apiResp != null)
+            {
+                if (apiResp.HasValues)
+                {
+                    bool wasLive = IsLive;
+
+                    IsLive = Convert.ToBoolean((int)apiResp["is_live"]);
+
+                    return;
+                }
+            }
+
+            IsLive = false;
         }
 
         protected override void NotifyIsNowLive()

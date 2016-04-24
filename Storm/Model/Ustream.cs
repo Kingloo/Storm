@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Storm.Extensions;
-using Storm.ViewModels;
 
 namespace Storm.Model
 {
@@ -42,34 +40,28 @@ namespace Storm.Model
 
         public async override Task UpdateAsync()
         {
-            this.Updating = true;
+            Updating = true;
 
-            List<Task> updateTasks = new List<Task>
+            if (String.IsNullOrWhiteSpace(channelId))
             {
-                DetermineIfLiveAsync(),
-                DetermineChannelId()
-            };
-
+                channelId = await DetermineChannelId();
+            }
+            
             bool wasLive = IsLive;
 
-            await Task.WhenAll(updateTasks).ConfigureAwait(false);
-
+            await DetermineIfLiveAsync();
+            
             if (wasLive == false && IsLive == true)
             {
                 NotifyIsNowLive();
             }
 
-            this.Updating = false;
+            Updating = false;
         }
 
         protected async override Task DetermineIfLiveAsync()
         {
-            if (String.IsNullOrEmpty(channelId))
-            {
-                channelId = await DetermineChannelId();
-            }
-
-            string apiAddressToQuery = string.Format("{0}/channels/{1}.json", this.apiUri, channelId);
+            string apiAddressToQuery = string.Format("{0}/channels/{1}.json", apiUri, channelId);
             HttpWebRequest req = BuildUstreamHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
@@ -78,7 +70,7 @@ namespace Storm.Model
             {
                 if (resp["channel"].HasValues)
                 {
-                    if (this.hasUpdatedDisplayName == false)
+                    if (hasUpdatedDisplayName == false)
                     {
                         SetDisplayName(resp);
                     }
@@ -90,29 +82,25 @@ namespace Storm.Model
 
         private async Task<string> DetermineChannelId()
         {
-            HttpWebRequest req = BuildUstreamHttpWebRequest(this.Uri);
+            HttpWebRequest req = BuildUstreamHttpWebRequest(Uri);
             string response = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
             if (String.IsNullOrWhiteSpace(response))
             {
-                return null;
+                return string.Empty;
             }
-            else
+
+            string beginning = "<div class=\"viewer-bg\" data-content-id=\"";
+            string ending = "\" data-content-type=\"channel\"><div class=\"transparent-bg\"></div></div>";
+
+            FromBetweenResult res = response.FromBetween(beginning, ending);
+            
+            if (res.Result == Result.Success)
             {
-                string beginning = "<div class=\"viewer-bg\" data-content-id=\"";
-                string ending = "\" data-content-type=\"channel\"><div class=\"transparent-bg\"></div></div>";
-
-                FromBetweenResult res = response.FromBetween(beginning, ending);
-
-                string id = string.Empty;
-
-                if (res.Result == Result.Success)
-                {
-                    id = res.ResultString;
-                }
-
-                return id;
+                return res.ResultString;
             }
+
+            return string.Empty;
         }
 
         private void SetDisplayName(JObject resp)

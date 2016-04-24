@@ -6,7 +6,6 @@ using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Storm.ViewModels;
 
 namespace Storm.Model
 {
@@ -75,7 +74,7 @@ namespace Storm.Model
 
             bool wasLive = IsLive;
 
-            await Task.WhenAll(updateTasks).ConfigureAwait(false);
+            await Task.WhenAll(updateTasks);
 
             if (wasLive == false && IsLive == true)
             {
@@ -87,11 +86,8 @@ namespace Storm.Model
 
         protected async Task TrySetDisplayNameAsync()
         {
-            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", this.apiUri, this._name);
-
-            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(
-                new Uri(apiAddressToQueryForDisplayName)
-                );
+            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", apiUri, _name);
+            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
 
             JObject response = await GetApiResponseAsync(twitchRequest).ConfigureAwait(false);
 
@@ -99,7 +95,7 @@ namespace Storm.Model
             {
                 if (response["display_name"] != null)
                 {
-                    this.DisplayName = (string)response["display_name"];
+                    DisplayName = (string)response["display_name"];
 
                     hasUpdatedDisplayName = true;
                 }
@@ -108,11 +104,8 @@ namespace Storm.Model
 
         protected async Task DetermineGameAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/channels/{1}", this.apiUri, this._name);
-
-            HttpWebRequest req = BuildTwitchHttpWebRequest(
-                new Uri(apiAddressToQuery)
-                );
+            string apiAddressToQuery = string.Format("{0}/channels/{1}", apiUri, _name);
+            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
 
@@ -127,11 +120,8 @@ namespace Storm.Model
 
         protected async override Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/streams/{1}", this.apiUri, this._name);
-
-            HttpWebRequest req = BuildTwitchHttpWebRequest(
-                new Uri(apiAddressToQuery)
-                );
+            string apiAddressToQuery = string.Format("{0}/streams/{1}", apiUri, _name);
+            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
 
@@ -159,18 +149,17 @@ namespace Storm.Model
 
             if (String.IsNullOrWhiteSpace(Game))
             {
-                //showNotification = () => NotificationService.Send(title, () => MainWindowViewModel.GoToStream(this));
                 showNotification = () => NotificationService.Send(title, GoToStream);
             }
             else
             {
                 string description = string.Format("and playing {0}", Game);
-
-                //showNotification = () => NotificationService.Send(title, description, () => MainWindowViewModel.GoToStream(this));
+                
                 showNotification = () => NotificationService.Send(title, description, GoToStream);
             }
 
-            Utils.SafeDispatcher(showNotification);
+            //Utils.SafeDispatcher(showNotification);
+            showNotification();
         }
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
