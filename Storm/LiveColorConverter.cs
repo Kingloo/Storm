@@ -15,22 +15,15 @@ namespace Storm
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool islive = (bool)value;
-            SolidColorBrush brush = null;
-
-            switch (islive)
+            
+            if (islive)
             {
-                case true:
-                    brush = this.Online;
-                    break;
-                case false:
-                    brush = this.Offline;
-                    break;
-                default:
-                    brush = this.Default;
-                    break;
+                return Online;
             }
-
-            return brush;
+            else
+            {
+                return Offline;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

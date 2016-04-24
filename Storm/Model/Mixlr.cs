@@ -34,31 +34,16 @@ namespace Storm.Model
         public override async Task UpdateAsync()
         {
             Updating = true;
-
-            string apiAddressToQuery = string.Format("{0}/{1}", apiUri, Name);
-            HttpWebRequest req = BuildMixlrHttpWebRequest(new Uri(apiAddressToQuery));
-
-            JObject apiResp = await GetApiResponseAsync(req);
-
-            if (apiResp != null)
-            {
-                if (apiResp.HasValues)
-                {
-                    if (!hasUpdatedDisplayName)
-                    {
-                        TrySetDisplayName(apiResp);
-                    }
-
-                    bool wasLive = IsLive;
-                    IsLive = apiResp["is_live"].Value<bool>();
-
-                    if (wasLive == false && IsLive == true)
-                    {
-                        NotifyIsNowLive();
-                    }
-                }
-            }
             
+            bool wasLive = IsLive;
+
+            await DetermineIfLiveAsync();
+
+            if (wasLive == false && IsLive == true)
+            {
+                NotifyIsNowLive();
+            }
+
             Updating = false;
         }
 
@@ -70,6 +55,41 @@ namespace Storm.Model
             {
                 hasUpdatedDisplayName = true;
             }
+        }
+        
+        protected override async Task DetermineIfLiveAsync()
+        {
+            string apiAddressToQuery = string.Format("{0}/{1}", apiUri, Name);
+            HttpWebRequest req = BuildMixlrHttpWebRequest(new Uri(apiAddressToQuery));
+
+            JObject apiResp = await GetApiResponseAsync(req).ConfigureAwait(false);
+
+            if (apiResp != null)
+            {
+                if (apiResp.HasValues)
+                {
+                    if (hasUpdatedDisplayName == false)
+                    {
+                        TrySetDisplayName(apiResp);
+                    }
+
+                    IsLive = (bool)apiResp["is_live"];
+                }
+            }
+
+            IsLive = false;
+        }
+
+        protected override void NotifyIsNowLive()
+        {
+            string title = string.Format("{0} is now LIVE", DisplayName);
+
+            NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
+        }
+
+        public override void GoToStream()
+        {
+            Utils.OpenUriInBrowser(Uri);
         }
 
         private static HttpWebRequest BuildMixlrHttpWebRequest(Uri uri)
@@ -95,23 +115,6 @@ namespace Storm.Model
             req.Headers.Add("Accept-encoding", "gzip, deflate");
 
             return req;
-        }
-
-        protected override Task DetermineIfLiveAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void NotifyIsNowLive()
-        {
-            string title = string.Format("{0} is now LIVE", DisplayName);
-
-            NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
-        }
-
-        public override void GoToStream()
-        {
-            Utils.OpenUriInBrowser(Uri);
         }
     }
 }

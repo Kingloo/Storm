@@ -110,12 +110,11 @@ namespace Storm.Model
 
         protected StreamBase(Uri accountUri)
         {
-            if (accountUri != null)
-            {
-                Uri = accountUri;
-                Name = SetAccountName(accountUri.AbsoluteUri);
-                DisplayName = Name;
-            }
+            if (accountUri == null) throw new ArgumentNullException(nameof(accountUri), "StreamBase ctor was passed a null uri");
+
+            Uri = accountUri;
+            Name = SetAccountName(accountUri.AbsoluteUri);
+            DisplayName = Name;
         }
 
         private string SetAccountName(string s)

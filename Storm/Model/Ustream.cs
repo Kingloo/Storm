@@ -74,10 +74,14 @@ namespace Storm.Model
                     {
                         SetDisplayName(resp);
                     }
-
+                    
                     IsLive = WasUserLive(resp);
+
+                    return;
                 }
             }
+
+            IsLive = false;
         }
 
         private async Task<string> DetermineChannelIdAsync()
@@ -115,7 +119,7 @@ namespace Storm.Model
             }
         }
 
-        private bool WasUserLive(JObject resp)
+        private static bool WasUserLive(JObject resp)
         {
             string statusValue = (string)resp["channel"]["status"];
 
