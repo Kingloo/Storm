@@ -19,13 +19,13 @@ namespace Storm.Model
         {
             get
             {
-                if (this.IsLive)
+                if (IsLive)
                 {
-                    return string.Format("{0} is live", this.DisplayName);
+                    return string.Format("{0} is live", DisplayName);
                 }
                 else
                 {
-                    return string.Format("{0} is offline", this.DisplayName);
+                    return string.Format("{0} is offline", DisplayName);
                 }
             }
         }

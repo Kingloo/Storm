@@ -27,7 +27,7 @@ namespace Storm.Model
         public Mixlr(Uri userUrl)
             : base(userUrl)
         {
-            apiUri = "http://api.mixlr.com/users";
+            apiUri = "https://api.mixlr.com/users";
             _isValid = true;
         }
 
@@ -36,9 +36,9 @@ namespace Storm.Model
             Updating = true;
             
             bool wasLive = IsLive;
-
+            
             await DetermineIfLiveAsync();
-
+            
             if (wasLive == false && IsLive == true)
             {
                 NotifyIsNowLive();
@@ -63,7 +63,7 @@ namespace Storm.Model
             HttpWebRequest req = BuildMixlrHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject apiResp = await GetApiResponseAsync(req).ConfigureAwait(false);
-
+            
             if (apiResp != null)
             {
                 if (apiResp.HasValues)
@@ -74,6 +74,8 @@ namespace Storm.Model
                     }
 
                     IsLive = (bool)apiResp["is_live"];
+
+                    return;
                 }
             }
 

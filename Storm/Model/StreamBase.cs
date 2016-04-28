@@ -70,11 +70,11 @@ namespace Storm.Model
         {
             get
             {
-                return this._isLive;
+                return _isLive;
             }
             set
             {
-                this._isLive = value;
+                _isLive = value;
 
                 OnNotifyPropertyChanged();
                 OnNotifyPropertyChanged("MouseOverTooltip");
