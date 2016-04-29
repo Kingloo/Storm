@@ -14,65 +14,88 @@ namespace Storm.Model
     public abstract class StreamBase : ViewModelBase
     {
         #region Fields
-        protected string apiUri = string.Empty;
-        protected bool hasUpdatedDisplayName = false;
+        private string _apiUri = string.Empty;
+        protected string ApiUri
+        {
+            get
+            {
+                return _apiUri;
+            }
+            set
+            {
+                _apiUri = value;
+            }
+        }
+
+        private bool _hasUpdatedDisplayName = false;
+        protected bool HasUpdatedDisplayName
+        {
+            get
+            {
+                return _hasUpdatedDisplayName;
+            }
+            set
+            {
+                _hasUpdatedDisplayName = value;
+            }
+        }
         #endregion
 
         #region Properties
-        protected Uri _uri = null;
+        private Uri _uri = null;
         public Uri Uri
         {
             get
             {
-                return this._uri;
+                return _uri;
             }
-            set
+            protected set
             {
-                this._uri = value;
+                _uri = value;
 
                 OnNotifyPropertyChanged();
             }
         }
 
-        protected string _name = string.Empty;
+        private string _name = string.Empty;
         public string Name
         {
             get
             {
-                return this._name;
+                return _name;
             }
-            set
+            protected set
             {
-                this._name = value;
+                _name = value;
 
                 OnNotifyPropertyChanged();
             }
         }
 
-        protected string _displayName = string.Empty;
+        private string _displayName = string.Empty;
         public string DisplayName
         {
             get
             {
-                return this._displayName;
+                return _displayName;
             }
-            set
+            protected set
             {
-                this._displayName = value;
+                _displayName = value;
 
                 OnNotifyPropertyChanged();
                 OnNotifyPropertyChanged("MouseOverTooltip");
             }
         }
 
-        protected bool _isLive = false;
+        private bool _isLive = false;
         public bool IsLive
         {
             get
             {
                 return _isLive;
             }
-            set
+            protected set
             {
                 _isLive = value;
 
@@ -98,12 +121,16 @@ namespace Storm.Model
             }
         }
 
-        protected bool _isValid = false;
+        private bool _isValid = false;
         public bool IsValid
         {
             get
             {
                 return _isValid;
+            }
+            protected set
+            {
+                _isValid = value;
             }
         }
         #endregion
@@ -117,23 +144,22 @@ namespace Storm.Model
             DisplayName = Name;
         }
 
-        private string SetAccountName(string s)
+        private static string SetAccountName(string text)
         {
-            return s.Substring(s.LastIndexOf("/") + 1);
+            if (text == null) { throw new ArgumentNullException(nameof(text)); }
+
+            return text.Substring(text.LastIndexOf("/") + 1);
         }
 
-        protected async Task<JObject> GetApiResponseAsync(HttpWebRequest req)
+        protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt().ConfigureAwait(false)))
+            using (HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt().ConfigureAwait(false)))
             {
                 if (resp == null)
                 {
-                    if (req != null)
-                    {
-                        req.Abort();
-                    }
+                    request?.Abort();
                 }
                 else
                 {

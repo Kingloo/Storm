@@ -379,10 +379,7 @@ namespace Storm
             {
                 if (resp == null)
                 {
-                    if (request != null)
-                    {
-                        request.Abort();
-                    }
+                    request?.Abort();
                 }
                 else
                 {

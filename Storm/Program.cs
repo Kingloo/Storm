@@ -1,6 +1,7 @@
 ﻿using System;
 using Storm.DataAccess;
 
+[assembly:CLSCompliant(true)]
 namespace Storm
 {
     public static class Program

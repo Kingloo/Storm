@@ -19,8 +19,8 @@ namespace Storm.Model
 
         public Hitbox(Uri accountUri) : base(accountUri)
         {
-            apiUri = "https://api.hitbox.tv";
-            _isValid = true;
+            ApiUri = "https://api.hitbox.tv";
+            IsValid = true;
         }
         
         public override async Task UpdateAsync()
@@ -41,7 +41,7 @@ namespace Storm.Model
         
         protected override async Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/user/{1}", apiUri, Name);
+            string apiAddressToQuery = string.Format("{0}/user/{1}", ApiUri, Name);
             HttpWebRequest req = BuildHitboxHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject apiResp = await GetApiResponseAsync(req).ConfigureAwait(false);

@@ -16,7 +16,7 @@ namespace Storm
             MaxHeight = CalculateMaxHeight();
         }
 
-        private double CalculateMaxHeight()
+        private static double CalculateMaxHeight()
         {
             double screenHeight = SystemParameters.WorkArea.Bottom;
             double maxHeight = screenHeight - 150;

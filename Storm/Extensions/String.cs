@@ -18,19 +18,19 @@ namespace Storm.Extensions
             }
         }
 
-        private string _resultString = string.Empty;
-        public string ResultString
+        private string _resultValue = string.Empty;
+        public string ResultValue
         {
             get
             {
-                return _resultString;
+                return _resultValue;
             }
         }
 
-        public FromBetweenResult(Result result, string resultString)
+        public FromBetweenResult(Result result, string resultValue)
         {
-            this._result = result;
-            this._resultString = resultString;
+            _result = result;
+            _resultValue = resultValue;
         }
     }
 
@@ -38,12 +38,17 @@ namespace Storm.Extensions
     {
         public static bool ContainsExt(this string target, string toFind, StringComparison comparison)
         {
+            if (target == null) { throw new ArgumentNullException(nameof(target)); }
+            if (toFind == null) { throw new ArgumentNullException(nameof(toFind)); }
+
             return (target.IndexOf(toFind, comparison) > -1);
         }
 
-        public static string RemoveNewLines(this string s)
+        public static string RemoveNewLines(this string text)
         {
-            string toReturn = s;
+            if (text == null) { throw new ArgumentNullException(nameof(text)); }
+
+            string toReturn = text;
 
             if (toReturn.Contains("\r\n"))
             {
@@ -70,6 +75,10 @@ namespace Storm.Extensions
 
         public static FromBetweenResult FromBetween(this string whole, string beginning, string ending)
         {
+            if (whole == null) { throw new ArgumentNullException(nameof(whole)); }
+            if (beginning == null) { throw new ArgumentNullException(nameof(beginning)); }
+            if (ending == null) { throw new ArgumentNullException(nameof(ending)); }
+
             if (whole.Contains(beginning) == false)
             {
                 return new FromBetweenResult(Result.BeginningNotFound, string.Empty);
@@ -109,11 +118,13 @@ namespace Storm.Extensions
             return new FromBetweenResult(Result.Success, result);
         }
 
-        public static string RemoveUnicodeCategories(this string orig, IEnumerable<UnicodeCategory> categories)
+        public static string RemoveUnicodeCategories(this string original, IEnumerable<UnicodeCategory> categories)
         {
+            if (original == null) { throw new ArgumentNullException(nameof(original)); }
+
             StringBuilder sb = new StringBuilder();
 
-            foreach (char c in orig)
+            foreach (char c in original)
             {
                 if (IsCharInCatergories(c, categories) == false)
                 {

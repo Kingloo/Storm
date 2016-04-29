@@ -34,8 +34,8 @@ namespace Storm.Model
         public Ustream(Uri u)
             : base(u)
         {
-            apiUri = "https://api.ustream.tv";
-            _isValid = true;
+            ApiUri = "https://api.ustream.tv";
+            IsValid = true;
         }
 
         public async override Task UpdateAsync()
@@ -61,7 +61,7 @@ namespace Storm.Model
 
         protected async override Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/channels/{1}.json", apiUri, channelId);
+            string apiAddressToQuery = string.Format("{0}/channels/{1}.json", ApiUri, channelId);
             HttpWebRequest req = BuildUstreamHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
@@ -70,7 +70,7 @@ namespace Storm.Model
             {
                 if (resp["channel"].HasValues)
                 {
-                    if (hasUpdatedDisplayName == false)
+                    if (HasUpdatedDisplayName == false)
                     {
                         SetDisplayName(resp);
                     }
@@ -101,7 +101,7 @@ namespace Storm.Model
             
             if (res.Result == Result.Success)
             {
-                return res.ResultString;
+                return res.ResultValue;
             }
 
             return string.Empty;
@@ -113,9 +113,9 @@ namespace Storm.Model
 
             if (String.IsNullOrEmpty(displayName) == false)
             {
-                this.DisplayName = displayName;
+                DisplayName = displayName;
 
-                this.hasUpdatedDisplayName = true;
+                HasUpdatedDisplayName = true;
             }
         }
 

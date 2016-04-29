@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text;
 using System.Windows.Threading;
 
@@ -41,8 +42,8 @@ namespace Storm
 
         public CountdownDispatcherTimer(DateTime time, Action tick)
         {
-            if (time < DateTime.Now) throw new ArgumentException(string.Format("{0} is in the past, it must be in the future", time.ToString()));
-            if (tick == null) throw new ArgumentNullException("tick event is null");
+            if (time < DateTime.Now) throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "{0} is in the past, it must be in the future", time.ToString()));
+            if (tick == null) throw new ArgumentNullException(nameof(tick));
 
             this.tick = tick;
 
@@ -54,8 +55,9 @@ namespace Storm
 
         public CountdownDispatcherTimer(TimeSpan span, Action tick)
         {
-            if (span.Ticks < 10000000L) throw new ArgumentException("span cannot be less than 1 second"); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
-            if (tick == null) throw new ArgumentNullException("tick event is null");
+            // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
+            if (span.Ticks < (10000 * 1000)) throw new ArgumentException("span.Ticks cannot be less than 1 second", nameof(span));
+            if (tick == null) throw new ArgumentNullException(nameof(tick));
 
             this.tick = tick;
 
@@ -69,7 +71,10 @@ namespace Storm
         {
             tick();
 
-            Stop();
+            if (IsActive)
+            {
+                Stop();
+            }
         }
 
         public void Stop()
@@ -87,10 +92,10 @@ namespace Storm
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(this.GetType().ToString());
-            sb.AppendLine(string.Format("Created at: {0}", created.ToString()));
-            sb.AppendLine(string.Format("Active: {0}", IsActive));
-            sb.AppendLine(string.Format("Time left: {0}", TimeLeft.ToString()));
+            sb.AppendLine(GetType().ToString());
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created at: {0}", created.ToString()));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Active: {0}", IsActive));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time left: {0}", TimeLeft.ToString()));
 
             return sb.ToString();
         }

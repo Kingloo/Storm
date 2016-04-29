@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace Storm
 {
-    public abstract class Command : System.Windows.Input.ICommand
+    public abstract class Command : ICommand
     {
         public event EventHandler CanExecuteChanged;
 
@@ -12,11 +13,7 @@ namespace Storm
 
         public void RaiseCanExecuteChanged()
         {
-            EventHandler handler = this.CanExecuteChanged;
-            if (handler != null)
-            {
-                handler(this, new EventArgs());
-            }
+            CanExecuteChanged?.Invoke(this, new EventArgs());
         }
     }
 
@@ -27,28 +24,21 @@ namespace Storm
 
         public DelegateCommand(Action execute, Predicate<object> canExecute)
         {
-            if (execute == null)
-            {
-                throw new ArgumentNullException("execute", "execute was null");
-            }
+            if (execute == null) throw new ArgumentNullException(nameof(execute));
+            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
 
-            if (canExecute == null)
-            {
-                throw new ArgumentNullException("canExecute", "canExecute was null");
-            }
-
-            this._execute = execute;
-            this._canExecute = canExecute;
+            _execute = execute;
+            _canExecute = canExecute;
         }
 
-        public override void Execute(object _)
+        public override void Execute(object parameter)
         {
-            this._execute();
+            _execute();
         }
 
         public override bool CanExecute(object parameter)
         {
-            return this._canExecute(parameter);
+            return _canExecute(parameter);
         }
     }
 
@@ -59,28 +49,21 @@ namespace Storm
 
         public DelegateCommand(Action<T> execute, Predicate<T> canExecute)
         {
-            if (execute == null)
-            {
-                throw new ArgumentNullException("execute", "execute was null");
-            }
+            if (execute == null) throw new ArgumentNullException(nameof(execute));
+            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
 
-            if (canExecute == null)
-            {
-                throw new ArgumentNullException("canExecute", "canExecute was null");
-            }
-
-            this._execute = execute;
-            this._canExecute = canExecute;
+            _execute = execute;
+            _canExecute = canExecute;
         }
 
         public override void Execute(object parameter)
         {
-            this._execute((T)parameter);
+            _execute((T)parameter);
         }
 
         public override bool CanExecute(object parameter)
         {
-            return this._canExecute((T)parameter);
+            return _canExecute((T)parameter);
         }
     }
 
@@ -92,18 +75,11 @@ namespace Storm
 
         public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object> canExecute)
         {
-            if (executeAsync == null)
-            {
-                throw new ArgumentNullException("executeAsync is null");
-            }
+            if (executeAsync == null) throw new ArgumentNullException(nameof(executeAsync));
+            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
 
-            if (canExecute == null)
-            {
-                throw new ArgumentNullException("canExecute is null");
-            }
-
-            this._executeAsync = executeAsync;
-            this._canExecute = canExecute;
+            _executeAsync = executeAsync;
+            _canExecute = canExecute;
         }
 
         public async override void Execute(object parameter)
@@ -113,24 +89,24 @@ namespace Storm
 
         private async Task ExecuteAsync()
         {
-            this._isExecuting = true;
-            this.RaiseCanExecuteChanged();
+            _isExecuting = true;
+            RaiseCanExecuteChanged();
 
-            await this._executeAsync();
+            await _executeAsync();
 
-            this._isExecuting = false;
-            this.RaiseCanExecuteChanged();
+            _isExecuting = false;
+            RaiseCanExecuteChanged();
         }
 
         public override bool CanExecute(object parameter)
         {
-            if (this._isExecuting == true)
+            if (_isExecuting == true)
             {
                 return false;
             }
             else
             {
-                return this._canExecute(parameter);
+                return _canExecute(parameter);
             }
         }
     }
@@ -143,45 +119,38 @@ namespace Storm
 
         public DelegateCommandAsync(Func<T, Task> executeAsync, Predicate<T> canExecute)
         {
-            if (executeAsync == null)
-            {
-                throw new ArgumentNullException("executeAsync is null");
-            }
+            if (executeAsync == null) throw new ArgumentNullException(nameof(executeAsync));
+            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
 
-            if (canExecute == null)
-            {
-                throw new ArgumentNullException("canExecute is null");
-            }
-
-            this._executeAsync = executeAsync;
-            this._canExecute = canExecute;
+            _executeAsync = executeAsync;
+            _canExecute = canExecute;
         }
 
         public override async void Execute(object parameter)
         {
-            await this.ExecuteAsync((T)parameter);
+            await ExecuteAsync((T)parameter);
         }
 
         private async Task ExecuteAsync(T parameter)
         {
-            this._isExecuting = true;
-            this.RaiseCanExecuteChanged();
+            _isExecuting = true;
+            RaiseCanExecuteChanged();
 
-            await this._executeAsync(parameter);
+            await _executeAsync(parameter);
 
-            this._isExecuting = false;
-            this.RaiseCanExecuteChanged();
+            _isExecuting = false;
+            RaiseCanExecuteChanged();
         }
 
         public override bool CanExecute(object parameter)
         {
-            if (this._isExecuting == true)
+            if (_isExecuting == true)
             {
                 return false;
             }
             else
             {
-                return this._canExecute((T)parameter);
+                return _canExecute((T)parameter);
             }
         }
     }

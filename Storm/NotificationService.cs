@@ -11,11 +11,22 @@ namespace Storm
         public static void Send(string title, Action action)
         {
             NotificationWindow window = new NotificationWindow(title, string.Empty, action);
-        }
 
+            Display(window);
+        }
+        
         public static void Send(string title, string description, Action action)
         {
             NotificationWindow window = new NotificationWindow(title, description, action);
+
+            Display(window);
+        }
+
+        private static void Display(NotificationWindow window)
+        {
+            window.Show();
+
+            System.Media.SystemSounds.Hand.Play();
         }
 
         private class NotificationWindow : Window
@@ -76,12 +87,10 @@ namespace Storm
                 AddChild(grid);
 
 #if DEBUG
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close());
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => Close());
 #else
                 CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => Close());
 #endif
-
-                DisplayThisWindow();
             }
 
             private Style BuildWindowStyle()
@@ -90,7 +99,7 @@ namespace Storm
 
                 if (action != null)
                 {
-                    MouseButtonEventHandler doubleClickAction = (sender, e) => action();
+                    MouseButtonEventHandler doubleClickAction = (s, e) => action();
 
                     EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, doubleClickAction);
 
@@ -121,7 +130,7 @@ namespace Storm
                 return style;
             }
 
-            private Style BuildGridStyle()
+            private static Style BuildGridStyle()
             {
                 Style style = new Style(typeof(Grid));
 
@@ -138,7 +147,7 @@ namespace Storm
                 return style;
             }
 
-            private Style BuildLabelTitleStyle()
+            private static Style BuildLabelTitleStyle()
             {
                 Style style = new Style(typeof(Label));
 
@@ -156,7 +165,7 @@ namespace Storm
                 return style;
             }
 
-            private Style BuildLabelDescriptionStyle()
+            private static Style BuildLabelDescriptionStyle()
             {
                 Style style = new Style(typeof(Label));
 
@@ -172,13 +181,6 @@ namespace Storm
                 style.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
 
                 return style;
-            }
-
-            private void DisplayThisWindow()
-            {
-                Show();
-
-                System.Media.SystemSounds.Hand.Play();
             }
         }
     }

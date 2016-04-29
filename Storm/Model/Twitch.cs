@@ -54,8 +54,9 @@ namespace Storm.Model
         public Twitch(Uri u)
             : base(u)
         {
-            this.apiUri = "https://api.twitch.tv/kraken";
-            this._isValid = true;
+            //this.apiUri = "https://api.twitch.tv/kraken";
+            ApiUri = "https://api.twitch.tv/kraken";
+            IsValid = true;
         }
 
         public async override Task UpdateAsync()
@@ -66,7 +67,7 @@ namespace Storm.Model
 
             bool wasLive = IsLive;
 
-            if (!hasUpdatedDisplayName)
+            if (!HasUpdatedDisplayName)
             {
                 updateTasks.Add(TrySetDisplayNameAsync());
             }
@@ -86,7 +87,7 @@ namespace Storm.Model
 
         protected async Task TrySetDisplayNameAsync()
         {
-            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", apiUri, _name);
+            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", ApiUri, Name);
             HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
 
             JObject response = await GetApiResponseAsync(twitchRequest).ConfigureAwait(false);
@@ -97,14 +98,14 @@ namespace Storm.Model
                 {
                     DisplayName = (string)response["display_name"];
 
-                    hasUpdatedDisplayName = true;
+                    HasUpdatedDisplayName = true;
                 }
             }
         }
 
         protected async Task DetermineGameAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/channels/{1}", apiUri, _name);
+            string apiAddressToQuery = string.Format("{0}/channels/{1}", ApiUri, Name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
@@ -120,7 +121,7 @@ namespace Storm.Model
 
         protected async override Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/streams/{1}", apiUri, _name);
+            string apiAddressToQuery = string.Format("{0}/streams/{1}", ApiUri, Name);
             HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);

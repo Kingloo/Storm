@@ -16,12 +16,12 @@ namespace Storm.ViewModels
     class MainWindowViewModel : ViewModelBase
     {
         #region Fields
-        MainWindow mainWindow = null;
-        IEnumerable<StreamBase> activeTasks = null;
-        private IRepository urlsRepo = null;
+        private readonly MainWindow mainWindow = null;
+        private readonly IRepository urlsRepo = null;
+
         private readonly DispatcherTimer updateTimer = new DispatcherTimer
         {
-            Interval = new TimeSpan(0, 3, 15)
+            Interval = new TimeSpan(0, 3, 0)
         };
         #endregion
 
@@ -49,7 +49,7 @@ namespace Storm.ViewModels
             UpdateAllAsyncCommand.RaiseCanExecuteChanged();
         }
 
-        private ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
+        private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
         public ObservableCollection<StreamBase> Streams { get { return _streams; } }
         #endregion
 
@@ -215,11 +215,7 @@ namespace Storm.ViewModels
 
             this.mainWindow = mainWindow;
             mainWindow.Loaded += mainWindow_Loaded;
-
-            activeTasks = from each in Streams
-                          where each.Updating
-                          select each;
-
+            
             updateTimer.Tick += updateTimer_Tick;
             updateTimer.Start();
         }

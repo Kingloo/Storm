@@ -24,6 +24,7 @@ namespace Storm.DataAccess
 
         public TxtRepo(string filePath)
         {
+            if (filePath == null) throw new ArgumentNullException(nameof(filePath));
             if (String.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("filePath was null or whitespace");
 
             _filePath = filePath;
@@ -82,7 +83,7 @@ namespace Storm.DataAccess
             return toReturn;
         }
 
-        private StreamBase DetermineStreamingService(Uri tmp)
+        private static StreamBase DetermineStreamingService(Uri tmp)
         {
             StreamBase sb = null;
 
