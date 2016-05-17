@@ -10,8 +10,12 @@ Paste in the user's account page URL - e.g. http://twitch.tv/purgegamers - only 
 
 Close and relaunch.
 
-Now every 3m 15s it will poll to see if they have started streaming.
+Every 3 minutes it will poll to see if they have started streaming.
 
 When it detects that a stream has started, a notification will pop up in the upper right of the screen accompanied by a familiar Windows noise.
 
 Requires livestreamer installed.
+
+F5 to refresh
+F11 to open the streams file
+F12 to reload streams and automatically refreshes
