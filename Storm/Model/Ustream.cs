@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
@@ -21,11 +22,11 @@ namespace Storm.Model
             {
                 if (IsLive)
                 {
-                    return string.Format("{0} is live", DisplayName);
+                    return string.Format(CultureInfo.CurrentCulture, "{0} is live", DisplayName);
                 }
                 else
                 {
-                    return string.Format("{0} is offline", DisplayName);
+                    return string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
                 }
             }
         }
@@ -136,9 +137,8 @@ namespace Storm.Model
 
         protected override void NotifyIsNowLive()
         {
-            string title = string.Format("{0} is now live", DisplayName);
-
-            //NotificationService.Send(title, new Action(() => MainWindowViewModel.GoToStream(this)));
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is now live", DisplayName);
+            
             NotificationService.Send(title, GoToStream);
         }
 
@@ -154,7 +154,6 @@ namespace Storm.Model
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format("{0}{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
             req.Timeout = 2500;
             req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
 

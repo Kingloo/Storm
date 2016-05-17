@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Storm.Model
 {
@@ -7,15 +8,15 @@ namespace Storm.Model
         public UnsupportedService(string malFormatted)
             : base(null)
         {
-            this.Name = malFormatted;
-            this.DisplayName = malFormatted;
+            Name = malFormatted;
+            DisplayName = malFormatted;
         }
 
         public override string MouseOverTooltip
         {
             get
             {
-                return string.Format("{0} is malformatted", this.Name);
+                return string.Format(CultureInfo.CurrentCulture, "{0} is malformatted", Name);
             }
         }
 

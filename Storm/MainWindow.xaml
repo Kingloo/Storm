@@ -2,9 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:this="clr-namespace:Storm"
-        xmlns:model="clr-namespace:Storm.Model"
-        KeyDown="Window_KeyDown">
-    
+        xmlns:model="clr-namespace:Storm.Model">
+
     <Window.Style>
         <Style TargetType="{x:Type this:MainWindow}">
             <Setter Property="Title" Value="Storm" />
@@ -62,7 +61,7 @@
             </Setter>
         </Style>
     </Window.Style>
-    
+
     <Window.InputBindings>
         <KeyBinding x:Name="ExitCommandKeyBinding"
                     Key="Escape"
@@ -77,98 +76,56 @@
                     Key="F12"
                     Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />
     </Window.InputBindings>
-    
-    <Grid>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="50" />
-        </Grid.RowDefinitions>
+    <ItemsControl Margin="0,0,0,7"
+                  ItemsSource="{Binding Path=Streams, Mode=OneWay}">
 
-        <ItemsControl Grid.Row="0"
-                      Margin="0,0,0,7"
-                      ItemsSource="{Binding Path=Streams, Mode=OneWay}">
-            
-            <ItemsControl.Template>
-                <ControlTemplate>
-                    <ScrollViewer CanContentScroll="True">
-                        <ItemsPresenter />
-                    </ScrollViewer>
-                </ControlTemplate>
-            </ItemsControl.Template>
-            
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Margin="7,0,7,0" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+        <ItemsControl.Template>
+            <ControlTemplate>
+                <ScrollViewer CanContentScroll="True">
+                    <ItemsPresenter />
+                </ScrollViewer>
+            </ControlTemplate>
+        </ItemsControl.Template>
 
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type model:StreamBase}">
-                    <DataTemplate.Resources>
-                        <this:LiveColorConverter x:Key="liveColorConverter"
-                                                 Online="{StaticResource Online}"
-                                                 Offline="{StaticResource Offline}"
-                                                 Default="{StaticResource Default}" />
-                    </DataTemplate.Resources>
-                    
-                    <Label Margin="0,7,0,0"
-                           Content="{Binding Path=DisplayName, Mode=OneWay}"
-                           Background="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource liveColorConverter}}"
-                           Height="50"
-                           ToolTipService.InitialShowDelay="510"
-                           ToolTipService.ShowDuration="3000"
-                           ToolTipService.HasDropShadow="True"
-                           ToolTipService.VerticalOffset="5"
-                           ToolTipService.HorizontalOffset="10">
-                        <Label.ToolTip>
-                            <ToolTip>
-                                <TextBlock DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource TemplatedParent}}"
-                                           Text="{Binding Path=MouseOverTooltip, Mode=OneWay}"
-                                           FontSize="14" />
-                            </ToolTip>
-                        </Label.ToolTip>
-                        <Label.InputBindings>
-                            <MouseBinding MouseAction="LeftDoubleClick"
-                                          Command="{Binding Path=DataContext.GoToStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type this:MainWindow}}}"
-                                          CommandParameter="{Binding}" />
-                        </Label.InputBindings>
-                    </Label>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <VirtualizingStackPanel Margin="7,0,7,0" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
 
-        </ItemsControl>
-        
-        <StackPanel Grid.Row="1"
-                    Margin="7,0,0,7"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type model:StreamBase}">
+                <DataTemplate.Resources>
+                    <this:LiveColorConverter x:Key="liveColorConverter"
+                                             Online="{StaticResource Online}"
+                                             Offline="{StaticResource Offline}"
+                                             Default="{StaticResource Default}" />
+                </DataTemplate.Resources>
 
-            <Button Width="120"
-                    Height="40"
-                    FontSize="13"
-                    Margin="0,0,8,0"
-                    Content="Open File"
-                    ToolTip="{Binding Path=Key, ElementName=OpenUrlsFileCommandKeyBinding}"
-                    Command="{Binding Path=OpenUrlsFileCommand, Mode=OneTime}" />
-
-            <!--<Button Width="50" Name="btn"
-                    Height="40"
-                    Margin="8,0,0,0"
-                    Content="q"
-                    FontFamily="WebDings"
-                    FontSize="24"
-                    ToolTip="{Binding Path=Key, ElementName=ReloadUrlsAsyncCommandKeyBinding}"
-                    Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />-->
-
-            <Button Width="50" Name="btn"
-                    Height="40"
-                    Margin="8,0,0,0"
-                    Content="&#x21d1;"
-                    FontSize="24"
-                    ToolTip="{Binding Path=Key, ElementName=ReloadUrlsAsyncCommandKeyBinding}"
-                    Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />
-
-        </StackPanel>
-    </Grid>
+                <Label Margin="0,7,0,0"
+                       Content="{Binding Path=DisplayName, Mode=OneWay}"
+                       Background="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource liveColorConverter}}"
+                       Height="50"
+                       ToolTipService.InitialShowDelay="510"
+                       ToolTipService.ShowDuration="3000"
+                       ToolTipService.HasDropShadow="True"
+                       ToolTipService.VerticalOffset="5"
+                       ToolTipService.HorizontalOffset="10">
+                    <Label.ToolTip>
+                        <ToolTip>
+                            <TextBlock DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Text="{Binding Path=MouseOverTooltip, Mode=OneWay}"
+                                       FontSize="14" />
+                        </ToolTip>
+                    </Label.ToolTip>
+                    <Label.InputBindings>
+                        <MouseBinding MouseAction="LeftDoubleClick"
+                                      Command="{Binding Path=DataContext.GoToStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type this:MainWindow}}}"
+                                      CommandParameter="{Binding}" />
+                    </Label.InputBindings>
+                </Label>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
 </Window>

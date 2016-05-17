@@ -1,11 +1,9 @@
-﻿using System.Linq;
-using System;
+﻿using System;
 using System.Configuration;
-using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Storm.Model
@@ -18,11 +16,11 @@ namespace Storm.Model
             {
                 if (IsLive)
                 {
-                    return string.Format("{0} is live", DisplayName);
+                    return string.Format(CultureInfo.CurrentCulture, "{0} is live", DisplayName);
                 }
                 else
                 {
-                    return string.Format("{0} is offline", DisplayName);
+                    return string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
                 }
             }
         }
@@ -90,7 +88,7 @@ namespace Storm.Model
 
         protected override void NotifyIsNowLive()
         {
-            string title = string.Format("{0} is now LIVE", DisplayName);
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is now LIVE", DisplayName);
 
             NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
         }

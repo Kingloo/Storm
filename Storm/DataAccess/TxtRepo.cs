@@ -34,11 +34,14 @@ namespace Storm.DataAccess
         {
             List<StreamBase> streams = null;
 
+            FileStream fsAsync = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.None, 2048, true);
+
             try
             {
-                using (FileStream fsAsync = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.None, 2048, true))
                 using (StreamReader sr = new StreamReader(fsAsync))
                 {
+                    fsAsync = null;
+
                     string fileAsString = await sr.ReadToEndAsync().ConfigureAwait(false);
 
                     streams = await ParseStringAsync(fileAsString).ConfigureAwait(false);
@@ -48,11 +51,15 @@ namespace Storm.DataAccess
             {
                 Utils.LogException(e);
             }
+            finally
+            {
+                fsAsync?.Dispose();
+            }
             
             return streams == null ? Enumerable.Empty<StreamBase>() : streams;
         }
 
-        private async Task<List<StreamBase>> ParseStringAsync(string fileAsString)
+        private static async Task<List<StreamBase>> ParseStringAsync(string fileAsString)
         {
             List<StreamBase> toReturn = new List<StreamBase>();
 

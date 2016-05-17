@@ -42,8 +42,8 @@ namespace Storm
 
         public CountdownDispatcherTimer(DateTime time, Action tick)
         {
-            if (time < DateTime.Now) throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "{0} is in the past, it must be in the future", time.ToString()));
-            if (tick == null) throw new ArgumentNullException(nameof(tick));
+            if (time < DateTime.Now) { throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "{0} is in the past, it must be in the future", time.ToString(CultureInfo.CurrentCulture))); }
+            if (tick == null) { throw new ArgumentNullException(nameof(tick)); }
 
             this.tick = tick;
 
@@ -93,7 +93,7 @@ namespace Storm
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(GetType().ToString());
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created at: {0}", created.ToString()));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created at: {0}", created.ToString(CultureInfo.CurrentCulture)));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Active: {0}", IsActive));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time left: {0}", TimeLeft.ToString()));
 

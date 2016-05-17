@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using Storm.ViewModels;
 using Storm.Extensions;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Storm.Model
 {
@@ -151,7 +152,7 @@ namespace Storm.Model
             return text.Substring(text.LastIndexOf("/") + 1);
         }
 
-        protected async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
+        protected static async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
 
@@ -197,7 +198,7 @@ namespace Storm.Model
 
         public virtual void GoToStream()
         {
-            string args = string.Format(@"/C livestreamer.exe {0} best", Uri.AbsoluteUri);
+            string args = string.Format(CultureInfo.InvariantCulture, @"/C livestreamer.exe {0} best", Uri.AbsoluteUri);
 
             ProcessStartInfo pInfo = new ProcessStartInfo
             {
@@ -214,11 +215,11 @@ namespace Storm.Model
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(GetType().ToString());
-            sb.AppendLine(string.Format("Uri: {0}", Uri));
-            sb.AppendLine(string.Format("Name: {0}", Name));
-            sb.AppendLine(string.Format("Display name: {0}", DisplayName));
-            sb.AppendLine(string.Format("Is Live: {0}", IsLive.ToString()));
-            sb.AppendLine(string.Format("MouseOverToolTip: {0}", MouseOverTooltip));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Uri: {0}", Uri));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Name: {0}", Name));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Display name: {0}", DisplayName));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Is Live: {0}", IsLive.ToString()));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "MouseOverToolTip: {0}", MouseOverTooltip));
 
             return sb.ToString();
         }

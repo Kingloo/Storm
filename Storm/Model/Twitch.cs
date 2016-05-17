@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Text;
@@ -35,18 +36,18 @@ namespace Storm.Model
                 {
                     StringBuilder sb = new StringBuilder();
 
-                    sb.Append(string.Format("{0} is live", DisplayName));
+                    sb.Append(string.Format(CultureInfo.CurrentCulture, "{0} is live", DisplayName));
 
                     if (String.IsNullOrWhiteSpace(Game) == false)
                     {
-                        sb.Append(string.Format(" and playing {0}", Game));
+                        sb.Append(string.Format(CultureInfo.CurrentCulture, " and playing {0}", Game));
                     }
 
                     return sb.ToString();
                 }
                 else
                 {
-                    return string.Format("{0} is offline", DisplayName);
+                    return string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
                 }
             }
         }
@@ -146,7 +147,7 @@ namespace Storm.Model
         {
             Action showNotification = null;
 
-            string title = string.Format("{0} is LIVE", DisplayName);
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
 
             if (String.IsNullOrWhiteSpace(Game))
             {
@@ -154,7 +155,7 @@ namespace Storm.Model
             }
             else
             {
-                string description = string.Format("and playing {0}", Game);
+                string description = string.Format(CultureInfo.CurrentCulture, "and playing {0}", Game);
                 
                 showNotification = () => NotificationService.Send(title, description, GoToStream);
             }
@@ -174,7 +175,7 @@ namespace Storm.Model
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format("{0}{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
+            req.Referer = string.Format(CultureInfo.InvariantCulture, "{0}{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
             req.Timeout = 4000;
             req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
 
@@ -194,7 +195,7 @@ namespace Storm.Model
             StringBuilder sb = new StringBuilder();
 
             sb.Append(base.ToString());
-            sb.AppendLine(string.Format("Game: {0}", String.IsNullOrWhiteSpace(this.Game) ? "not set" : this.Game));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Game: {0}", String.IsNullOrWhiteSpace(Game) ? "not set" : Game));
 
             return sb.ToString();
         }

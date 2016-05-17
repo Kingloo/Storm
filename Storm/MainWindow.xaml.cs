@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Windows;
+using System.Windows.Input;
 using Storm.Model;
 using Storm.ViewModels;
 
@@ -11,22 +12,16 @@ namespace Storm
         {
             InitializeComponent();
 
+            MaxHeight = SystemParameters.WorkArea.Bottom - 200;
+
             DataContext = new MainWindowViewModel(this, ((App)App.Current).UrlsRepo);
 
-            MaxHeight = CalculateMaxHeight();
+            KeyUp += MainWindow_KeyUp;
         }
 
-        private static double CalculateMaxHeight()
+        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
         {
-            double screenHeight = SystemParameters.WorkArea.Bottom;
-            double maxHeight = screenHeight - 150;
-
-            return maxHeight;
-        }
-
-        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.F1)
+            if (e.Key == Key.F1)
             {
                 StringBuilder sb = new StringBuilder();
 
