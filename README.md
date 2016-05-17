@@ -17,5 +17,7 @@ When it detects that a stream has started, a notification will pop up in the upp
 Requires livestreamer installed.
 
 F5 to refresh
+
 F11 to open the streams file
+
 F12 to reload streams and automatically refreshes
