@@ -94,9 +94,9 @@ namespace Storm.Model
             {
                 return string.Empty;
             }
-
-            string beginning = "<div class=\"viewer-bg\" data-content-id=\"";
-            string ending = "\" data-content-type=\"channel\"><div class=\"transparent-bg\"></div></div>";
+            
+            string beginning = "\"channelId\":";
+            string ending = ",";
 
             FromBetweenResult res = response.FromBetween(beginning, ending);
             
