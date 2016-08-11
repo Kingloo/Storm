@@ -55,7 +55,6 @@ namespace Storm.Model
         public Twitch(Uri u)
             : base(u)
         {
-            //this.apiUri = "https://api.twitch.tv/kraken";
             ApiUri = "https://api.twitch.tv/kraken";
             IsValid = true;
         }

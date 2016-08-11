@@ -36,11 +36,11 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>106</ApplicationRevision>
+    <ApplicationRevision>108</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>false</BootstrapperEnabled>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -157,6 +157,7 @@
     <Compile Include="Extensions\ICollectionT.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="LiveColorConverter.cs" />
+    <Compile Include="Model\Beam.cs" />
     <Compile Include="Model\Hitbox.cs" />
     <Compile Include="Model\Mixlr.cs" />
     <Compile Include="NotificationService.cs" />

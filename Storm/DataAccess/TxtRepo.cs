@@ -108,6 +108,9 @@ namespace Storm.DataAccess
                 case "hitbox.tv":
                     sb = new Hitbox(tmp);
                     break;
+                case "beam.pro":
+                    sb = new Beam(tmp);
+                    break;
                 default:
                     sb = new UnsupportedService(tmp.AbsoluteUri);
                     break;
