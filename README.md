@@ -3,21 +3,16 @@ Storm
 
 A programme that notifies you when a live stream begins.
 
-Supports: Twitch, Mixlr, Ustream, Hitbox.
+Supports: Twitch, Mixlr, Ustream, Hitbox, Beam.pro
 
-Run the programme and StormUrls.txt will appear in your Documents directory.
-Paste in the user's account page URL - e.g. http://twitch.tv/purgegamers - only one per line.
+F11 opens the file where stream URLs are stored.
 
-Close and relaunch.
+Paste in the user's account page URL - e.g. http://twitch.tv/purgegamers - one per line.
 
-Every 3 minutes it will poll to see if they have started streaming.
+F12 will reload the file.
 
-When it detects that a stream has started, a notification will pop up in the upper right of the screen accompanied by a familiar Windows noise.
+Polls every 3 minutes.
 
-Requires livestreamer installed.
+When it detects that a stream has started, a notification will pop up in the upper right of the screen accompanied by a familiar Windows noise. Double click to open in browser (Twitch will attempt to launch livestreamer).
 
 F5 to refresh
-
-F11 to open the streams file
-
-F12 to reload streams and automatically refreshes
