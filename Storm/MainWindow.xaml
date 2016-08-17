@@ -104,7 +104,6 @@
                 </DataTemplate.Resources>
 
                 <Label Margin="0,7,0,0"
-                       Content="{Binding Path=DisplayName, Mode=OneWay}"
                        Background="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource liveColorConverter}}"
                        Height="50"
                        ToolTipService.InitialShowDelay="510"
@@ -112,6 +111,9 @@
                        ToolTipService.HasDropShadow="True"
                        ToolTipService.VerticalOffset="5"
                        ToolTipService.HorizontalOffset="10">
+                    <Label.Content>
+                        <TextBlock Text="{Binding Path=DisplayName, Mode=OneWay}" />
+                    </Label.Content>
                     <Label.ToolTip>
                         <ToolTip>
                             <TextBlock DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource TemplatedParent}}"

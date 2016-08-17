@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
@@ -101,7 +102,7 @@ namespace Storm.Model
 
         protected override void NotifyIsNowLive()
         {
-            NotificationService.Send(string.Format("{0} is LIVE", DisplayName), () =>
+            NotificationService.Send(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName), () =>
             {
                 Utils.OpenUriInBrowser(Uri);
             });

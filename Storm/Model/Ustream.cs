@@ -67,7 +67,11 @@ namespace Storm.Model
 
             JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
 
-            if (resp != null)
+            if (resp == null)
+            {
+                IsLive = false;
+            }
+            else
             {
                 if (resp["channel"].HasValues)
                 {
@@ -76,13 +80,9 @@ namespace Storm.Model
                         SetDisplayName(resp);
                     }
                     
-                    IsLive = WasUserLive(resp);
-
-                    return;
+                    IsLive = ((string)resp["channel"]["status"]).Equals("live");
                 }
             }
-
-            IsLive = false;
         }
 
         private async Task<string> DetermineChannelIdAsync()
@@ -119,22 +119,7 @@ namespace Storm.Model
                 HasUpdatedDisplayName = true;
             }
         }
-
-        private static bool WasUserLive(JObject resp)
-        {
-            string statusValue = (string)resp["channel"]["status"];
-
-            if (String.IsNullOrEmpty(statusValue) == false)
-            {
-                if (statusValue.Equals("live"))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
+        
         protected override void NotifyIsNowLive()
         {
             string title = string.Format(CultureInfo.CurrentCulture, "{0} is now live", DisplayName);

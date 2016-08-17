@@ -90,29 +90,32 @@ namespace Storm.DataAccess
             return toReturn;
         }
 
-        private static StreamBase DetermineStreamingService(Uri tmp)
+        private static StreamBase DetermineStreamingService(Uri uri)
         {
             StreamBase sb = null;
 
-            switch (tmp.DnsSafeHost)
+            switch (uri.DnsSafeHost)
             {
                 case "twitch.tv":
-                    sb = new Twitch(tmp);
+                    sb = new Twitch(uri);
                     break;
                 case "ustream.tv":
-                    sb = new Ustream(tmp);
+                    sb = new Ustream(uri);
                     break;
                 case "mixlr.com":
-                    sb = new Mixlr(tmp);
+                    sb = new Mixlr(uri);
                     break;
                 case "hitbox.tv":
-                    sb = new Hitbox(tmp);
+                    sb = new Hitbox(uri);
                     break;
                 case "beam.pro":
-                    sb = new Beam(tmp);
+                    sb = new Beam(uri);
+                    break;
+                case "chaturbate.com":
+                    sb = new Chaturbate(uri);
                     break;
                 default:
-                    sb = new UnsupportedService(tmp.AbsoluteUri);
+                    sb = new UnsupportedService(uri.AbsoluteUri);
                     break;
             }
 
