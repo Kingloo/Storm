@@ -88,7 +88,7 @@ namespace Storm.Model
 
         protected override void NotifyIsNowLive()
         {
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is now LIVE", DisplayName);
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
 
             NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
         }
