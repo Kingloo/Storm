@@ -46,12 +46,15 @@ namespace Storm.Model
 
             string website = await Utils.DownloadWebsiteAsStringAsync(req);
 
-            // notice the negation
-            // if the website string contains "Room is currently offline"
-            // then the stream is offline
-            // therefore IsLive would be false
+            if (String.IsNullOrWhiteSpace(website) == false)
+            {
+                // notice the negation
+                // if the website string contains "Room is currently offline"
+                // then the stream is offline
+                // therefore IsLive would be false
 
-            IsLive = !website.Contains("Room is currently offline");
+                IsLive = !website.Contains("Room is currently offline");
+            }
         }
         
         protected override void NotifyIsNowLive()
