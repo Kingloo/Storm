@@ -1,13 +1,14 @@
 ﻿<Window x:Class="Storm.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:this="clr-namespace:Storm"
         xmlns:model="clr-namespace:Storm.Model">
 
     <Window.Style>
         <Style TargetType="{x:Type this:MainWindow}">
             <Setter Property="Title" Value="Storm" />
-            <Setter Property="Top" Value="50" />
+            <Setter Property="Top" Value="50" /> <!--see code-behind where we set MaxHeight-->
             <Setter Property="Left" Value="150" />
             <Setter Property="Width" Value="350" />
             <Setter Property="ShowInTaskbar" Value="True" />
@@ -77,8 +78,19 @@
                     Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />
     </Window.InputBindings>
 
+    <Window.Resources>
+        <CollectionViewSource x:Key="sortedStreams"
+                              Source="{Binding Path=Streams}"
+                              IsLiveSortingRequested="True">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="IsLive" Direction="Descending" />
+                <scm:SortDescription PropertyName="DisplayName" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+
     <ItemsControl Margin="0,0,0,7"
-                  ItemsSource="{Binding Path=Streams, Mode=OneWay}">
+                  ItemsSource="{Binding Source={StaticResource sortedStreams}}">
 
         <ItemsControl.Template>
             <ControlTemplate>

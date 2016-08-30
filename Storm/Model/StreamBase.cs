@@ -122,7 +122,8 @@ namespace Storm.Model
             }
         }
 
-        private bool _isValid = false;
+        // only UnsupportedService should be false
+        private bool _isValid = true;
         public bool IsValid
         {
             get
@@ -134,22 +135,38 @@ namespace Storm.Model
                 _isValid = value;
             }
         }
+
+        private readonly bool _hasLivestreamerSupport = false;
+        public bool HasLivestreamerSupport { get; protected set; }
         #endregion
 
         protected StreamBase(Uri accountUri)
         {
-            if (accountUri == null) { throw new ArgumentNullException(nameof(accountUri), "StreamBase ctor was passed a null uri"); }
+            if (accountUri == null)
+            {
+                throw new ArgumentNullException(nameof(accountUri), "StreamBase ctor was passed a null uri");
+            }
 
             Uri = accountUri;
             Name = SetAccountName(accountUri.AbsoluteUri);
             DisplayName = Name;
         }
 
+        protected static bool IsLivestreamerOnPath()
+        {
+            string path = Environment.GetEnvironmentVariable("Path");
+
+            return CultureInfo
+                .CurrentCulture
+                .CompareInfo
+                .IndexOf(path, "livestreamer", CompareOptions.IgnoreCase) > -1;
+        }
+
         private static string SetAccountName(string text)
         {
             if (text == null) { throw new ArgumentNullException(nameof(text)); }
 
-            return text.Substring(text.LastIndexOf("/") + 1);
+            return text.Substring(text.LastIndexOf("/", StringComparison.CurrentCultureIgnoreCase) + 1);
         }
 
         protected static async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
@@ -198,7 +215,19 @@ namespace Storm.Model
 
         public virtual void GoToStream()
         {
-            string args = string.Format(CultureInfo.InvariantCulture, @"/C livestreamer.exe {0} best", Uri.AbsoluteUri);
+            if (HasLivestreamerSupport && IsLivestreamerOnPath())
+            {
+                LaunchLiveStreamer();
+            }
+            else
+            {
+                Utils.OpenUriInBrowser(Uri);
+            }
+        }
+
+        private void LaunchLiveStreamer()
+        {
+            string args = string.Format(CultureInfo.CurrentCulture, @"/C livestreamer.exe {0} best", Uri.AbsoluteUri);
 
             ProcessStartInfo pInfo = new ProcessStartInfo
             {
@@ -223,5 +252,12 @@ namespace Storm.Model
 
             return sb.ToString();
         }
+
+#if DEBUG
+        public void DEBUG_toggle_is_live()
+        {
+            IsLive = !IsLive;
+        }
+#endif
     }
 }

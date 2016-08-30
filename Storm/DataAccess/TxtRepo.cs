@@ -7,34 +7,36 @@ using Storm.Model;
 
 namespace Storm.DataAccess
 {
-    class TxtRepo : IRepository
+    public class TxtRepo : IRepository
     {
         private string _filePath = string.Empty;
-        public string FilePath
-        {
-            get
-            {
-                return _filePath;
-            }
-            set
-            {
-                _filePath = value;
-            }
-        }
-
+        public string FilePath { get { return _filePath; } }
+        
         public TxtRepo(string filePath)
         {
-            if (filePath == null) throw new ArgumentNullException(nameof(filePath));
-            if (String.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("filePath was null or whitespace");
+            if (String.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("filePath was null or whitespace");
+            }
 
             _filePath = filePath;
         }
 
+        public void SetFilePath(string newPath)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<IEnumerable<StreamBase>> LoadAsync()
         {
-            List<StreamBase> streams = null;
+            List<StreamBase> streams = new List<StreamBase>();
 
-            FileStream fsAsync = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.None, 2048, true);
+            FileStream fsAsync = new FileStream(FilePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                2048,
+                true);
 
             try
             {
@@ -42,9 +44,17 @@ namespace Storm.DataAccess
                 {
                     fsAsync = null;
 
-                    string fileAsString = await sr.ReadToEndAsync().ConfigureAwait(false);
+                    string line = string.Empty;
 
-                    streams = await ParseStringAsync(fileAsString).ConfigureAwait(false);
+                    while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
+                    {
+                        StreamBase sb = ParseIntoStream(line);
+
+                        if (sb != null)
+                        {
+                            streams.Add(sb);
+                        }
+                    }
                 }
             }
             catch (FileNotFoundException e)
@@ -55,41 +65,33 @@ namespace Storm.DataAccess
             {
                 fsAsync?.Dispose();
             }
-            
-            return streams == null ? Enumerable.Empty<StreamBase>() : streams;
+
+            return streams;
         }
 
-        private static async Task<List<StreamBase>> ParseStringAsync(string fileAsString)
+        private static StreamBase ParseIntoStream(string line)
         {
-            List<StreamBase> toReturn = new List<StreamBase>();
+            // # means line is a comment
+            if (line.StartsWith("#", StringComparison.CurrentCultureIgnoreCase)) { return null; }
 
-            StringReader sr = new StringReader(fileAsString);
-
-            string line = string.Empty;
-
-            while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
+            // if this is not done subsequent Uri.TryCreate will fail
+            if (line.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase) == false
+                && line.StartsWith("https://", StringComparison.CurrentCultureIgnoreCase) == false)
             {
-                if (line.StartsWith("#") == false)
-                {
-                    if (line.StartsWith("http://") == false && line.StartsWith("https://") == false)
-                    {
-                        line = string.Concat("http://", line);
-                    }
-
-                    Uri tmp = null;
-
-                    if (Uri.TryCreate(line, UriKind.Absolute, out tmp))
-                    {
-                        StreamBase sb = DetermineStreamingService(tmp);
-
-                        toReturn.Add(sb);
-                    }
-                }
+                line = string.Concat("http://", line);
             }
 
-            return toReturn;
-        }
+            // C# 7 ALERT - use new feature
+            // Uri.TryCreate(line, UriKind.Absolute, out Uri uri))
+            Uri uri = null;
+            if (!Uri.TryCreate(line, UriKind.Absolute, out uri))
+            {
+                return new UnsupportedService("invalid Uri");
+            }
 
+            return DetermineStreamingService(uri);
+        }
+        
         private static StreamBase DetermineStreamingService(Uri uri)
         {
             StreamBase sb = null;

@@ -14,15 +14,12 @@ namespace Storm.Model
             get
             {
                 return IsLive
-                    ? string.Format("{0} is live", DisplayName)
-                    : string.Format("{0} is offline", DisplayName);
+                    ? string.Format(CultureInfo.CurrentCulture, "{0} is live", DisplayName)
+                    : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
             }
         }
 
-        public Chaturbate(Uri accountUri) : base(accountUri)
-        {
-            IsValid = true;
-        }
+        public Chaturbate(Uri accountUri) : base(accountUri) { }
 
         public override async Task UpdateAsync()
         {
@@ -63,12 +60,7 @@ namespace Storm.Model
 
             NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
         }
-
-        public override void GoToStream()
-        {
-            Utils.OpenUriInBrowser(Uri);
-        }
-
+        
         private static HttpWebRequest BuildHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);

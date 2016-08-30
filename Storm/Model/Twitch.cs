@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Cache;
@@ -56,7 +57,7 @@ namespace Storm.Model
             : base(u)
         {
             ApiUri = "https://api.twitch.tv/kraken";
-            IsValid = true;
+            HasLivestreamerSupport = true;
         }
 
         public async override Task UpdateAsync()
@@ -161,7 +162,7 @@ namespace Storm.Model
             
             showNotification();
         }
-
+        
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);

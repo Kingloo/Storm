@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Storm.Model;
@@ -12,26 +13,31 @@ namespace Storm
         {
             InitializeComponent();
 
-            MaxHeight = SystemParameters.WorkArea.Bottom - 200;
+            MaxHeight = SystemParameters.WorkArea.Bottom - 100;
 
             DataContext = new MainWindowViewModel(this, ((App)App.Current).UrlsRepo);
 
-            KeyUp += MainWindow_KeyUp;
+#if DEBUG
+            KeyUp += DEBUG_MainWindow_KeyUp;
+#endif
         }
 
-        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+#if DEBUG
+
+        private void DEBUG_MainWindow_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.F1)
             {
-                StringBuilder sb = new StringBuilder();
+                IEnumerable<StreamBase> s = from each in (DataContext as MainWindowViewModel).Streams
+                                            where each.Uri.AbsoluteUri.Contains("unicorn")
+                                            select each;
 
-                foreach (StreamBase each in ((MainWindowViewModel)DataContext).Streams)
+                foreach (StreamBase each in s)
                 {
-                    sb.AppendLine(each.ToString());
+                    each.DEBUG_toggle_is_live();
                 }
-
-                Utils.LogMessage(sb.ToString());
             }
         }
+#endif
     }
 }

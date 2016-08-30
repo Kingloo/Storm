@@ -6,9 +6,11 @@ namespace Storm.DataAccess
 {
     public interface IRepository
     {
-        string FilePath { get; set; }
+        string FilePath { get; }
+
+        void SetFilePath(string newPath);
 
         Task<IEnumerable<StreamBase>> LoadAsync();
-        Task SaveAsync(IEnumerable<StreamBase> uris);
+        Task SaveAsync(IEnumerable<StreamBase> streams);
     }
 }

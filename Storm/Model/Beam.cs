@@ -15,15 +15,14 @@ namespace Storm.Model
             get
             {
                 return IsLive
-                    ? string.Format("{0} is LIVE", DisplayName)
-                    : string.Format("{0} is offline", DisplayName);
+                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName)
+                    : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
             }
         }
 
         public Beam(Uri accountUri) : base(accountUri)
         {
             ApiUri = "https://beam.pro/api/v1";
-            IsValid = true;
         }
         
         public override async Task UpdateAsync()
@@ -94,12 +93,7 @@ namespace Storm.Model
 
             return req;
         }
-
-        public override void GoToStream()
-        {
-            Utils.OpenUriInBrowser(Uri);
-        }
-
+        
         protected override void NotifyIsNowLive()
         {
             NotificationService.Send(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName), () =>

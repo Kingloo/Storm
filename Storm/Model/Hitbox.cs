@@ -21,7 +21,6 @@ namespace Storm.Model
         public Hitbox(Uri accountUri) : base(accountUri)
         {
             ApiUri = "https://api.hitbox.tv";
-            IsValid = true;
         }
         
         public override async Task UpdateAsync()
@@ -68,7 +67,7 @@ namespace Storm.Model
             
             NotificationService.Send(title, GoToStream);
         }
-
+        
         private static HttpWebRequest BuildHitboxHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = WebRequest.CreateHttp(uri);

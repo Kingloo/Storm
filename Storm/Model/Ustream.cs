@@ -36,7 +36,6 @@ namespace Storm.Model
             : base(u)
         {
             ApiUri = "https://api.ustream.tv";
-            IsValid = true;
         }
 
         public async override Task UpdateAsync()
@@ -126,7 +125,7 @@ namespace Storm.Model
             
             NotificationService.Send(title, GoToStream);
         }
-
+        
         private static HttpWebRequest BuildUstreamHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);

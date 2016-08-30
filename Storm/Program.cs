@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using Storm.DataAccess;
 
-[assembly: CLSCompliant(true)]
 namespace Storm
 {
     public static class Program
@@ -10,8 +10,8 @@ namespace Storm
         [STAThread]
         public static int Main()
         {
-            string filePath = string.Format(CultureInfo.InvariantCulture, @"C:\Users\{0}\Documents\StormUrls.txt", Environment.UserName);
-            TxtRepo urlsRepo = new TxtRepo(filePath);
+            string fullPath = GetUrlFilePath();
+            TxtRepo urlsRepo = new TxtRepo(fullPath);
 
             App app = new App(urlsRepo);
             app.InitializeComponent();
@@ -26,6 +26,14 @@ namespace Storm
             }
 
             return exitCode;
+        }
+
+        private static string GetUrlFilePath()
+        {
+            string userDocsDir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string urlsFileName = "StormUrls.txt";
+
+            return Path.Combine(userDocsDir, urlsFileName);
         }
     }
 }
