@@ -15,7 +15,7 @@ namespace Storm.Model
         {
             get
             {
-                return string.Format(CultureInfo.CurrentCulture, "{0} is malformatted", Name);
+                return string.Format(CultureInfo.CurrentCulture, "{0} is an un supported service", Name);
             }
         }
         #endregion

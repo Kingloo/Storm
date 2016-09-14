@@ -78,7 +78,7 @@ namespace Storm.Model
         {
             get
             {
-                return _displayName;
+                return String.IsNullOrEmpty(_displayName) ? Name : _displayName;
             }
             protected set
             {
@@ -134,8 +134,7 @@ namespace Storm.Model
             }
 
             Uri = accountUri;
-            Name = SetAccountName(accountUri.AbsoluteUri);
-            DisplayName = Name;
+            Name = SetAccountName(accountUri);
         }
 
         protected static bool IsLivestreamerOnPath()
@@ -147,14 +146,7 @@ namespace Storm.Model
                 .CompareInfo
                 .IndexOf(path, "livestreamer", CompareOptions.IgnoreCase) > -1;
         }
-
-        private static string SetAccountName(string text)
-        {
-            if (text == null) { throw new ArgumentNullException(nameof(text)); }
-
-            return text.Substring(text.LastIndexOf("/", StringComparison.CurrentCultureIgnoreCase) + 1);
-        }
-
+        
         protected static async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
         {
             string jsonResponse = string.Empty;
@@ -193,6 +185,13 @@ namespace Storm.Model
             }
 
             return j;
+        }
+
+        protected virtual string SetAccountName(Uri uri)
+        {
+            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+            
+            return uri.Segments[1]; // [0] is the first slash
         }
 
         public abstract Task UpdateAsync();
