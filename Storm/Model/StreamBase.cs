@@ -121,21 +121,7 @@ namespace Storm.Model
                 OnNotifyPropertyChanged();
             }
         }
-
-        // only UnsupportedService should be false
-        private bool _isValid = true;
-        public bool IsValid
-        {
-            get
-            {
-                return _isValid;
-            }
-            protected set
-            {
-                _isValid = value;
-            }
-        }
-
+        
         private readonly bool _hasLivestreamerSupport = false;
         public bool HasLivestreamerSupport { get; protected set; }
         #endregion

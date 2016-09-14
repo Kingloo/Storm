@@ -1,10 +1,16 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Storm.Model
 {
     public class UnsupportedService : StreamBase
     {
+        #region Fields
+        private bool messageWritten = false;
+        #endregion
+
+        #region Properties
         public override string MouseOverTooltip
         {
             get
@@ -12,25 +18,34 @@ namespace Storm.Model
                 return string.Format(CultureInfo.CurrentCulture, "{0} is malformatted", Name);
             }
         }
+        #endregion
 
         public UnsupportedService(string malFormatted)
-            : base(null)
+            : base(new Uri(malFormatted))
         {
             Name = malFormatted;
-            DisplayName = malFormatted;
-
-            // only UnsupportedService should set this to false
-            IsValid = false;
         }
 
-        public override Task UpdateAsync()
+        public override async Task UpdateAsync()
         {
-            return new Task(() => { return; });
+            await WriteMessage();
         }
 
-        protected override Task DetermineIfLiveAsync()
+        protected override async Task DetermineIfLiveAsync()
         {
-            return new Task(() => { return; });
+            await WriteMessage();
+        }
+
+        private async Task WriteMessage()
+        {
+            if (!messageWritten)
+            {
+                string message = string.Format("{0} is an unsupported service.", Name);
+
+                await Utils.LogMessageAsync(message);
+
+                messageWritten = true;
+            }
         }
 
         protected override void NotifyIsNowLive() { }

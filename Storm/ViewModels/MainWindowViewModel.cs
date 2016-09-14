@@ -152,8 +152,7 @@ namespace Storm.ViewModels
             SetUIToUpdating();
 
             List<Task> updateTasks = (from each in Streams
-                                      where each.Updating == false
-                                      where each.IsValid
+                                      where !each.Updating
                                       select each.UpdateAsync())
                                       .ToList();
 
