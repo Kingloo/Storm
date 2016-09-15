@@ -57,7 +57,7 @@ namespace Storm.Model
             : base(u)
         {
             ApiUri = "https://api.twitch.tv/kraken";
-            HasLivestreamerSupport = true;
+            HasLivestreamerSupport = false;
         }
 
         public async override Task UpdateAsync()
@@ -162,7 +162,14 @@ namespace Storm.Model
             
             showNotification();
         }
-        
+
+        public override void GoToStream()
+        {
+            string uri = string.Format("https://player.twitch.tv/?branding=false&showInfo=false&channel={0}", Name);
+            
+            Utils.OpenUriInBrowser(new Uri(uri));
+        }
+
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
