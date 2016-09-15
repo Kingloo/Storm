@@ -57,7 +57,7 @@ namespace Storm.Model
             : base(u)
         {
             ApiUri = "https://api.twitch.tv/kraken";
-            HasLivestreamerSupport = false;
+            HasLivestreamerSupport = true;
         }
 
         public async override Task UpdateAsync()
@@ -163,12 +163,12 @@ namespace Storm.Model
             showNotification();
         }
 
-        public override void GoToStream()
-        {
-            string uri = string.Format("https://player.twitch.tv/?branding=false&showInfo=false&channel={0}", Name);
+        //public override void GoToStream()
+        //{
+        //    string uri = string.Format("https://player.twitch.tv/?branding=false&showInfo=false&channel={0}", Name);
             
-            Utils.OpenUriInBrowser(new Uri(uri));
-        }
+        //    Utils.OpenUriInBrowser(new Uri(uri));
+        //}
 
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
         {
@@ -193,6 +193,8 @@ namespace Storm.Model
 
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-Encoding", "gzip, deflate");
+
+            req.Headers.Add("Client-ID", "ewvlchtxgqq88ru9gmfp1gmyt6h2b93");
 
             return req;
         }
