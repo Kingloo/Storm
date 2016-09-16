@@ -50,7 +50,8 @@ namespace Storm.ViewModels
         }
 
         private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
-        public ObservableCollection<StreamBase> Streams { get { return _streams; } }
+        //public ObservableCollection<StreamBase> Streams { get { return _streams; } }
+        public IReadOnlyCollection<StreamBase> Streams { get { return _streams; } }
         #endregion
 
         #region Commands
@@ -119,11 +120,13 @@ namespace Storm.ViewModels
 
         private async Task LoadUrlsAsync()
         {
-            Streams.Clear();
+            //Streams.Clear();
+            _streams.Clear();
 
             IEnumerable<StreamBase> loaded = await urlsRepo.LoadAsync();
-
-            Streams.AddList(loaded);
+            
+            //Streams.AddList(loaded);
+            _streams.AddList(loaded);
         }
 
         private async Task ReloadUrlsAsync()
