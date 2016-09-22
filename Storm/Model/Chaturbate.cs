@@ -14,7 +14,7 @@ namespace Storm.Model
             get
             {
                 return IsLive
-                    ? string.Format(CultureInfo.CurrentCulture, "{0} is live", DisplayName)
+                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Chaturbate", DisplayName)
                     : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
             }
         }
@@ -45,18 +45,16 @@ namespace Storm.Model
 
             if (String.IsNullOrWhiteSpace(website) == false)
             {
-                // notice the negation
-                // if the website string contains "Room is currently offline"
-                // then the stream is offline
-                // therefore IsLive would be false
-
                 IsLive = !website.Contains("Room is currently offline");
+                
+                // website must contain NEITHER "Room is currently offline" NOR "banned"
+                //IsLive = !(website.Contains("Room is currently offline") && website.Contains("banned"));
             }
         }
         
         protected override void NotifyIsNowLive()
         {
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Chaturbate", DisplayName);
 
             NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
         }

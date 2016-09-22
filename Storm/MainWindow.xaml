@@ -139,6 +139,7 @@
                                       CommandParameter="{Binding}" />
                     </Label.InputBindings>
                 </Label>
+
             </DataTemplate>
         </ItemsControl.ItemTemplate>
     </ItemsControl>

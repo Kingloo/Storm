@@ -15,7 +15,7 @@ namespace Storm.Model
             get
             {
                 return IsLive
-                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName)
+                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Beam", DisplayName)
                     : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
             }
         }
@@ -96,7 +96,7 @@ namespace Storm.Model
         
         protected override void NotifyIsNowLive()
         {
-            NotificationService.Send(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName), () =>
+            NotificationService.Send(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Beam", DisplayName), () =>
             {
                 Utils.OpenUriInBrowser(Uri);
             });

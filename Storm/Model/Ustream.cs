@@ -22,7 +22,7 @@ namespace Storm.Model
             {
                 if (IsLive)
                 {
-                    return string.Format(CultureInfo.CurrentCulture, "{0} is live", DisplayName);
+                    return string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Ustream", DisplayName);
                 }
                 else
                 {
@@ -121,7 +121,7 @@ namespace Storm.Model
         
         protected override void NotifyIsNowLive()
         {
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Ustream", DisplayName);
             
             NotificationService.Send(title, GoToStream);
         }

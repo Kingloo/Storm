@@ -37,7 +37,7 @@ namespace Storm.Model
                 {
                     StringBuilder sb = new StringBuilder();
 
-                    sb.Append(string.Format(CultureInfo.CurrentCulture, "{0} is live", DisplayName));
+                    sb.Append(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Twitch", DisplayName));
 
                     if (String.IsNullOrWhiteSpace(Game) == false)
                     {
@@ -147,7 +147,7 @@ namespace Storm.Model
         {
             Action showNotification = null;
 
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Twitch", DisplayName);
 
             if (String.IsNullOrWhiteSpace(Game))
             {
