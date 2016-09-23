@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Storm.Extensions
+namespace Storm
 {
     public static class WebRequestExt
     {
