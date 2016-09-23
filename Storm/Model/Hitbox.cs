@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Configuration;
-using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 
 namespace Storm.Model
 {
-    class Hitbox : StreamBase
+    public class Hitbox : StreamBase
     {
-        public override string MouseOverTooltip
+        #region Properties
+        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Hitbox.ico"));
+        public override BitmapImage Icon
         {
             get
             {
-                return string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Hitbox", DisplayName);
+                return _icon;
             }
         }
+        #endregion
 
         public Hitbox(Uri accountUri) : base(accountUri)
         {
             ApiUri = "https://api.hitbox.tv";
+
+            _icon.Freeze();
         }
         
         public override async Task UpdateAsync()
@@ -33,7 +38,7 @@ namespace Storm.Model
 
             if (wasLive == false && IsLive == true)
             {
-                NotifyIsNowLive();
+                NotifyIsNowLive(nameof(Hitbox));
             }
 
             Updating = false;
@@ -42,30 +47,21 @@ namespace Storm.Model
         protected override async Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/user/{1}", ApiUri, Name);
-            HttpWebRequest req = BuildHitboxHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildHitboxHttpWebRequest(new Uri(apiAddressToQuery));
+            
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
-            JObject apiResp = await GetApiResponseAsync(req).ConfigureAwait(false);
+            bool live = false;
 
-            if (apiResp != null)
+            if (json != null)
             {
-                if (apiResp.HasValues)
+                if (json.HasValues)
                 {
-                    bool wasLive = IsLive;
-
-                    IsLive = Convert.ToBoolean((int)apiResp["is_live"]);
-
-                    return;
+                    live = Convert.ToBoolean((int)json["is_live"]);
                 }
             }
-
-            IsLive = false;
-        }
-
-        protected override void NotifyIsNowLive()
-        {
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Hitbox", DisplayName);
             
-            NotificationService.Send(title, GoToStream);
+            IsLive = live;
         }
         
         private static HttpWebRequest BuildHitboxHttpWebRequest(Uri uri)

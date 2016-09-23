@@ -1,23 +1,21 @@
-﻿using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.ComponentModel;
 
 namespace Storm.ViewModels
 {
     public class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnNotifyPropertyChanged([CallerMemberName] string propertyName = default(string))
+        
+        protected void RaisePropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler pceh = PropertyChanged;
+            PropertyChangedEventArgs args = new PropertyChangedEventArgs(propertyName);
 
-            if ((pceh != null) && (String.IsNullOrWhiteSpace(propertyName) == false))
-            {
-                PropertyChangedEventArgs args = new PropertyChangedEventArgs(propertyName);
+            OnPropertyChanged(args);
+        }
 
-                pceh(this, args);
-            }
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs args)
+        {
+            PropertyChanged?.Invoke(this, args);
         }
     }
 }

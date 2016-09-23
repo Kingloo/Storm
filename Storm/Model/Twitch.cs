@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 
 namespace Storm.Model
 {
-    class Twitch : StreamBase
+    public class Twitch : StreamBase
     {
+        #region Properties
         private string _game = string.Empty;
         public string Game
         {
@@ -22,10 +23,13 @@ namespace Storm.Model
             }
             set
             {
-                _game = value;
+                if (_game != value)
+                {
+                    _game = value;
 
-                OnNotifyPropertyChanged();
-                OnNotifyPropertyChanged("MouseOverTooltip");
+                    RaisePropertyChanged(nameof(Game));
+                    RaisePropertyChanged(nameof(MouseOverTooltip));
+                }
             }
         }
 
@@ -37,7 +41,7 @@ namespace Storm.Model
                 {
                     StringBuilder sb = new StringBuilder();
 
-                    sb.Append(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Twitch", DisplayName));
+                    sb.Append(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName));
 
                     if (String.IsNullOrWhiteSpace(Game) == false)
                     {
@@ -52,12 +56,24 @@ namespace Storm.Model
                 }
             }
         }
-        
+
+        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Twitch.ico"));
+        public override BitmapImage Icon
+        {
+            get
+            {
+                return _icon;
+            }
+        }
+        #endregion
+
         public Twitch(Uri u)
             : base(u)
         {
             ApiUri = "https://api.twitch.tv/kraken";
             HasLivestreamerSupport = true;
+
+            _icon.Freeze();
         }
 
         public async override Task UpdateAsync()
@@ -80,7 +96,7 @@ namespace Storm.Model
 
             if (wasLive == false && IsLive == true)
             {
-                NotifyIsNowLive();
+                NotifyIsNowLive(nameof(Twitch));
             }
 
             Updating = false;
@@ -89,15 +105,15 @@ namespace Storm.Model
         protected async Task TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", ApiUri, Name);
-            HttpWebRequest twitchRequest = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
+            HttpWebRequest request = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
+            
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
-            JObject response = await GetApiResponseAsync(twitchRequest).ConfigureAwait(false);
-
-            if (response != null)
+            if (json != null)
             {
-                if (response["display_name"] != null)
+                if (json["display_name"] != null)
                 {
-                    DisplayName = (string)response["display_name"];
+                    DisplayName = (string)json["display_name"];
 
                     HasUpdatedDisplayName = true;
                 }
@@ -107,15 +123,15 @@ namespace Storm.Model
         protected async Task DetermineGameAsync()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}", ApiUri, Name);
-            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+            
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
-            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
-
-            if (resp != null)
+            if (json != null)
             {
-                if (resp["game"] is JToken)
+                if (json["game"] is JToken)
                 {
-                    Game = (string)resp["game"];
+                    Game = (string)json["game"];
                 }
             }
         }
@@ -123,53 +139,42 @@ namespace Storm.Model
         protected async override Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", ApiUri, Name);
-            HttpWebRequest req = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
 
-            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
-            if (resp != null)
+            bool live = false;
+
+            if (json != null)
             {
-                if (resp["stream"] != null)
+                if (json["stream"] != null)
                 {
-                    if (resp["stream"].HasValues)
+                    if (json["stream"].HasValues)
                     {
-                        IsLive = true;
-
-                        return;
+                        live = true;
                     }
                 }
             }
-
-            IsLive = false;
+            
+            IsLive = live;
         }
 
-        protected override void NotifyIsNowLive()
+        public override void NotifyIsNowLive(string _)
         {
-            Action showNotification = null;
-
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Twitch", DisplayName);
-
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
+            
             if (String.IsNullOrWhiteSpace(Game))
             {
-                showNotification = () => NotificationService.Send(title, GoToStream);
+                NotificationService.Send(title, GoToStream);
             }
             else
             {
                 string description = string.Format(CultureInfo.CurrentCulture, "and playing {0}", Game);
                 
-                showNotification = () => NotificationService.Send(title, description, GoToStream);
+                NotificationService.Send(title, description, GoToStream);
             }
-            
-            showNotification();
         }
-
-        //public override void GoToStream()
-        //{
-        //    string uri = string.Format("https://player.twitch.tv/?branding=false&showInfo=false&channel={0}", Name);
-            
-        //    Utils.OpenUriInBrowser(new Uri(uri));
-        //}
-
+        
         private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(uri);

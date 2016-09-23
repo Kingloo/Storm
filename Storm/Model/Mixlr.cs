@@ -1,34 +1,32 @@
 ﻿using System;
 using System.Configuration;
-using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 
 namespace Storm.Model
 {
-    class Mixlr : StreamBase
+    public class Mixlr : StreamBase
     {
-        public override string MouseOverTooltip
+        #region Properties
+        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Mixlr.ico"));
+        public override BitmapImage Icon
         {
             get
             {
-                if (IsLive)
-                {
-                    return string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Mixlr", DisplayName);
-                }
-                else
-                {
-                    return string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
-                }
+                return _icon;
             }
         }
+        #endregion
 
         public Mixlr(Uri userUrl)
             : base(userUrl)
         {
             ApiUri = "https://api.mixlr.com/users";
+
+            _icon.Freeze();
         }
 
         public override async Task UpdateAsync()
@@ -41,7 +39,7 @@ namespace Storm.Model
             
             if (wasLive == false && IsLive == true)
             {
-                NotifyIsNowLive();
+                NotifyIsNowLive(nameof(Mixlr));
             }
 
             Updating = false;
@@ -49,30 +47,27 @@ namespace Storm.Model
         
         protected override async Task DetermineIfLiveAsync()
         {
-            // string apiAddressToQueryForStreams = string.Format("{0}/{1}?source=embed&callback=onUserLoad", apiUri, Name);
-            // var thing = (string)json["broadcasts"].FirstOrDefault()["streams"]["rtsp"]["url"];
-
             string apiAddressToQuery = string.Format("{0}/{1}", ApiUri, Name);
-            HttpWebRequest req = BuildMixlrHttpWebRequest(new Uri(apiAddressToQuery));
-
-            JObject apiResp = await GetApiResponseAsync(req).ConfigureAwait(false);
+            HttpWebRequest request = BuildMixlrHttpWebRequest(new Uri(apiAddressToQuery));
             
-            if (apiResp != null)
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+
+            bool live = false;
+            
+            if (json != null)
             {
-                if (apiResp.HasValues)
+                if (json.HasValues)
                 {
                     if (HasUpdatedDisplayName == false)
                     {
-                        TrySetDisplayName(apiResp);
+                        TrySetDisplayName(json);
                     }
 
-                    IsLive = (bool)apiResp["is_live"];
-
-                    return;
+                    live = (bool)json["is_live"];
                 }
             }
-
-            IsLive = false;
+            
+            IsLive = live;
         }
 
         private void TrySetDisplayName(JObject apiResp)
@@ -83,13 +78,6 @@ namespace Storm.Model
             {
                 HasUpdatedDisplayName = true;
             }
-        }
-
-        protected override void NotifyIsNowLive()
-        {
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Mixlr", DisplayName);
-
-            NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
         }
         
         private static HttpWebRequest BuildMixlrHttpWebRequest(Uri uri)
@@ -118,3 +106,7 @@ namespace Storm.Model
         }
     }
 }
+
+
+// string apiAddressToQueryForStreams = string.Format("{0}/{1}?source=embed&callback=onUserLoad", apiUri, Name);
+// var thing = (string)json["broadcasts"].FirstOrDefault()["streams"]["rtsp"]["url"];

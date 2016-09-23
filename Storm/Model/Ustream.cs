@@ -1,33 +1,27 @@
 ﻿using System;
 using System.Configuration;
-using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 using Storm.Extensions;
 
 namespace Storm.Model
 {
-    class Ustream : StreamBase
+    public class Ustream : StreamBase
     {
         #region Fields
         private string channelId = string.Empty;
         #endregion
 
         #region Properties
-        public override string MouseOverTooltip
+        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Ustream.ico"));
+        public override BitmapImage Icon
         {
             get
             {
-                if (IsLive)
-                {
-                    return string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Ustream", DisplayName);
-                }
-                else
-                {
-                    return string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
-                }
+                return _icon;
             }
         }
         #endregion
@@ -36,6 +30,8 @@ namespace Storm.Model
             : base(u)
         {
             ApiUri = "https://api.ustream.tv";
+
+            _icon.Freeze();
         }
 
         public async override Task UpdateAsync()
@@ -53,7 +49,7 @@ namespace Storm.Model
             
             if (wasLive == false && IsLive == true)
             {
-                NotifyIsNowLive();
+                NotifyIsNowLive(nameof(Ustream));
             }
 
             Updating = false;
@@ -62,26 +58,27 @@ namespace Storm.Model
         protected async override Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}.json", ApiUri, channelId);
-            HttpWebRequest req = BuildUstreamHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildUstreamHttpWebRequest(new Uri(apiAddressToQuery));
+            
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
-            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
+            bool live = false;
 
-            if (resp == null)
+            if (json != null)
             {
-                IsLive = false;
-            }
-            else
-            {
-                if (resp["channel"].HasValues)
+                if (json.HasValues)
                 {
                     if (HasUpdatedDisplayName == false)
                     {
-                        SetDisplayName(resp);
+                        SetDisplayName(json);
                     }
                     
-                    IsLive = ((string)resp["channel"]["status"]).Equals("live");
+                    live = ((string)json["channel"]["status"])
+                        .Equals("live");
                 }
             }
+            
+            IsLive = live;
         }
 
         private async Task<string> DetermineChannelIdAsync()
@@ -117,13 +114,6 @@ namespace Storm.Model
 
                 HasUpdatedDisplayName = true;
             }
-        }
-        
-        protected override void NotifyIsNowLive()
-        {
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Ustream", DisplayName);
-            
-            NotificationService.Send(title, GoToStream);
         }
         
         private static HttpWebRequest BuildUstreamHttpWebRequest(Uri uri)

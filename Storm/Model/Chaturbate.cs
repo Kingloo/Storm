@@ -1,25 +1,29 @@
 ﻿using System;
 using System.Configuration;
-using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Storm.Model
 {
     public class Chaturbate : StreamBase
     {
-        public override string MouseOverTooltip
+        #region Properties
+        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Chaturbate.ico"));
+        public override BitmapImage Icon
         {
             get
             {
-                return IsLive
-                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Chaturbate", DisplayName)
-                    : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
+                return _icon;
             }
         }
+        #endregion
 
-        public Chaturbate(Uri accountUri) : base(accountUri) { }
+        public Chaturbate(Uri accountUri) : base(accountUri)
+        {
+            _icon.Freeze();
+        }
 
         public override async Task UpdateAsync()
         {
@@ -31,7 +35,7 @@ namespace Storm.Model
 
             if (wasLive == false && IsLive == true)
             {
-                NotifyIsNowLive();
+                NotifyIsNowLive(nameof(Chaturbate));
             }
 
             Updating = false;
@@ -39,24 +43,21 @@ namespace Storm.Model
 
         protected override async Task DetermineIfLiveAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(Uri);
+            HttpWebRequest request = BuildHttpWebRequest(Uri);
 
-            string website = await Utils.DownloadWebsiteAsStringAsync(req);
+            string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
 
-            if (String.IsNullOrWhiteSpace(website) == false)
+            bool live = false;
+
+            if (String.IsNullOrWhiteSpace(response) == false)
             {
-                IsLive = !website.Contains("Room is currently offline");
+                live = !response.Contains("Room is currently offline");
                 
                 // website must contain NEITHER "Room is currently offline" NOR "banned"
                 //IsLive = !(website.Contains("Room is currently offline") && website.Contains("banned"));
             }
-        }
-        
-        protected override void NotifyIsNowLive()
-        {
-            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Chaturbate", DisplayName);
 
-            NotificationService.Send(title, () => Utils.OpenUriInBrowser(Uri));
+            IsLive = live;
         }
         
         private static HttpWebRequest BuildHttpWebRequest(Uri uri)

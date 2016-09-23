@@ -35,11 +35,14 @@ namespace Storm.ViewModels
             }
             set
             {
-                _activity = value;
+                if (_activity != value)
+                {
+                    _activity = value;
 
-                OnNotifyPropertyChanged();
+                    RaisePropertyChanged(nameof(Activity));
 
-                RaiseAllAsyncCanExecuteChangedEvents();
+                    RaiseAllAsyncCanExecuteChangedEvents();
+                }
             }
         }
 

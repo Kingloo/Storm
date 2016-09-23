@@ -1,28 +1,31 @@
 ﻿using System;
 using System.Configuration;
-using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 
 namespace Storm.Model
 {
     public class Beam : StreamBase
     {
-        public override string MouseOverTooltip
+        #region Properties
+        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Beam.ico"));
+        public override BitmapImage Icon
         {
             get
             {
-                return IsLive
-                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Beam", DisplayName)
-                    : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
+                return _icon;
             }
         }
+        #endregion
 
         public Beam(Uri accountUri) : base(accountUri)
         {
             ApiUri = "https://beam.pro/api/v1";
+
+            _icon.Freeze();
         }
         
         public override async Task UpdateAsync()
@@ -35,7 +38,7 @@ namespace Storm.Model
 
             if (wasLive == false && IsLive == true)
             {
-                NotifyIsNowLive();
+                NotifyIsNowLive(nameof(Beam));
             }
 
             Updating = false;
@@ -44,31 +47,31 @@ namespace Storm.Model
         protected override async Task DetermineIfLiveAsync()
         {
             string apiCall = string.Format("{0}/channels/{1}", ApiUri, Name);
-            HttpWebRequest req = BuildBeamHttpWebRequest(new Uri(apiCall));
-
-            JObject resp = await GetApiResponseAsync(req).ConfigureAwait(false);
-
-            if (resp != null)
+            HttpWebRequest request = BuildBeamHttpWebRequest(new Uri(apiCall));
+            
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            
+            bool live = false;
+            
+            if (json != null)
             {
                 JToken tmpToken = null;
 
                 if (!HasUpdatedDisplayName)
                 {
-                    if (resp.TryGetValue("token", out tmpToken))
+                    if (json.TryGetValue("token", out tmpToken))
                     {
-                        DisplayName = (string)resp["token"];
+                        DisplayName = (string)json["token"];
                     }
                 }
 
-                if (resp.TryGetValue("online", out tmpToken))
+                if (json.TryGetValue("online", out tmpToken))
                 {
-                    IsLive = (bool)resp["online"];
-                }
-                else
-                {
-                    IsLive = false;
+                    live = (bool)json["online"];
                 }
             }
+            
+            IsLive = live;
         }
 
         private static HttpWebRequest BuildBeamHttpWebRequest(Uri uri)
@@ -92,14 +95,6 @@ namespace Storm.Model
             }
 
             return req;
-        }
-        
-        protected override void NotifyIsNowLive()
-        {
-            NotificationService.Send(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE on Beam", DisplayName), () =>
-            {
-                Utils.OpenUriInBrowser(Uri);
-            });
         }
     }
 }

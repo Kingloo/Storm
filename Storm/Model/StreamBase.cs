@@ -1,14 +1,13 @@
 ﻿using System;
-using System.IO;
+using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Storm.ViewModels;
-using Storm.Extensions;
-using System.Diagnostics;
-using System.Globalization;
 
 namespace Storm.Model
 {
@@ -43,6 +42,18 @@ namespace Storm.Model
         #endregion
 
         #region Properties
+        public abstract BitmapImage Icon { get; }
+
+        public virtual string MouseOverTooltip
+        {
+            get
+            {
+                return IsLive
+                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName)
+                    : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
+            }
+        }
+        
         private Uri _uri = null;
         public Uri Uri
         {
@@ -52,9 +63,12 @@ namespace Storm.Model
             }
             protected set
             {
-                _uri = value;
+                if (_uri != value)
+                {
+                    _uri = value;
 
-                OnNotifyPropertyChanged();
+                    RaisePropertyChanged(nameof(Uri));
+                }
             }
         }
 
@@ -67,9 +81,12 @@ namespace Storm.Model
             }
             protected set
             {
-                _name = value;
+                if (_name != value)
+                {
+                    _name = value;
 
-                OnNotifyPropertyChanged();
+                    RaisePropertyChanged(nameof(Name));
+                }
             }
         }
 
@@ -82,10 +99,13 @@ namespace Storm.Model
             }
             protected set
             {
-                _displayName = value;
+                if (_displayName != value)
+                {
+                    _displayName = value;
 
-                OnNotifyPropertyChanged();
-                OnNotifyPropertyChanged("MouseOverTooltip");
+                    RaisePropertyChanged(nameof(DisplayName));
+                    RaisePropertyChanged(nameof(MouseOverTooltip));
+                }
             }
         }
 
@@ -98,15 +118,16 @@ namespace Storm.Model
             }
             protected set
             {
-                _isLive = value;
+                if (_isLive != value)
+                {
+                    _isLive = value;
 
-                OnNotifyPropertyChanged();
-                OnNotifyPropertyChanged("MouseOverTooltip");
+                    RaisePropertyChanged(nameof(IsLive));
+                    RaisePropertyChanged(nameof(MouseOverTooltip));
+                }
             }
         }
-
-        public abstract string MouseOverTooltip { get; }
-
+        
         private bool _updating = false;
         public bool Updating
         {
@@ -116,9 +137,12 @@ namespace Storm.Model
             }
             set
             {
-                _updating = value;
+                if (_updating != value)
+                {
+                    _updating = value;
 
-                OnNotifyPropertyChanged();
+                    RaisePropertyChanged(nameof(Updating));
+                }
             }
         }
         
@@ -146,42 +170,38 @@ namespace Storm.Model
                 .CompareInfo
                 .IndexOf(path, "livestreamer", CompareOptions.IgnoreCase) > -1;
         }
-        
-        protected static async Task<JObject> GetApiResponseAsync(HttpWebRequest request)
+
+        protected static async Task<object> GetApiResponseAsync(HttpWebRequest request, bool isJson)
         {
-            string jsonResponse = string.Empty;
+            if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
-            using (HttpWebResponse resp = (HttpWebResponse)(await request.GetResponseAsyncExt().ConfigureAwait(false)))
+            string response = await Utils.DownloadWebsiteAsStringAsync(request).ConfigureAwait(false);
+            
+            if (String.IsNullOrEmpty(response)){ return null; }
+
+            if (isJson)
             {
-                if (resp == null)
-                {
-                    request?.Abort();
-                }
-                else
-                {
-                    if (resp.StatusCode == HttpStatusCode.OK)
-                    {
-                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
-                        {
-                            jsonResponse = await sr.ReadToEndAsync().ConfigureAwait(false);
-                        }
-                    }
-                }
+                return ParseToJson(response);
             }
-
+            else
+            {
+                return response;
+            }
+        }
+        
+        private static JObject ParseToJson(string response)
+        {
+            if (response == null) { throw new ArgumentNullException(nameof(response)); }
 
             JObject j = null;
 
-            if (String.IsNullOrEmpty(jsonResponse) == false)
+            try
             {
-                try
-                {
-                    j = JObject.Parse(jsonResponse);
-                }
-                catch (JsonReaderException e)
-                {
-                    Utils.LogException(e);
-                }
+                j = JObject.Parse(response);
+            }
+            catch (JsonReaderException e)
+            {
+                Utils.LogException(e);
             }
 
             return j;
@@ -196,7 +216,16 @@ namespace Storm.Model
 
         public abstract Task UpdateAsync();
         protected abstract Task DetermineIfLiveAsync();
-        protected abstract void NotifyIsNowLive();
+
+        public virtual void NotifyIsNowLive(string serviceName)
+        {
+            string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
+            string description = string.Format(CultureInfo.CurrentCulture, "on {0}", serviceName);
+
+            Action action = () => Utils.OpenUriInBrowser(Uri);
+
+            NotificationService.Send(title, description, action);
+        }
 
         public virtual void GoToStream()
         {

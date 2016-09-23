@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace Storm.Extensions
 {
-    public static class HttpWebRequestExt
+    public static class WebRequestExt
     {
-        public static WebResponse GetResponseExt(this HttpWebRequest request)
+        public static WebResponse GetResponseExt(this WebRequest request)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
@@ -16,15 +16,17 @@ namespace Storm.Extensions
             {
                 webResp = request.GetResponse();
             }
-            catch (WebException e)
+            catch (WebException ex)
             {
-                webResp = e?.Response;
+                Utils.LogException(ex);
+
+                webResp = ex?.Response;
             }
 
             return webResp;
         }
 
-        public static async Task<WebResponse> GetResponseAsyncExt(this HttpWebRequest request)
+        public static async Task<WebResponse> GetResponseAsyncExt(this WebRequest request)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
@@ -34,9 +36,11 @@ namespace Storm.Extensions
             {
                 webResp = await request.GetResponseAsync().ConfigureAwait(false);
             }
-            catch (WebException e)
+            catch (WebException ex)
             {
-                webResp = e?.Response;
+                Utils.LogException(ex);
+
+                webResp = ex?.Response;
             }
 
             return webResp;
