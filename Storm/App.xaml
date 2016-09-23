@@ -60,6 +60,7 @@
         <SolidColorBrush x:Key="Online" Color="LightGreen" />
         <SolidColorBrush x:Key="Offline" Color="#FF4040" />
         <SolidColorBrush x:Key="Default" Color="AliceBlue" />
+        
         <LinearGradientBrush x:Key="Updating" StartPoint="0.5,0" EndPoint="0.5,1">
             <GradientStopCollection>
                 <GradientStop Offset="0.1">

@@ -90,11 +90,14 @@
     </Window.Resources>
 
     <ItemsControl Margin="0,0,0,7"
+                  Name="items"                 
+                  Focusable="False"
                   ItemsSource="{Binding Source={StaticResource sortedStreams}}">
 
         <ItemsControl.Template>
             <ControlTemplate>
-                <ScrollViewer CanContentScroll="True">
+                <ScrollViewer CanContentScroll="True"
+                              Focusable="False">
                     <ItemsPresenter />
                 </ScrollViewer>
             </ControlTemplate>
@@ -118,24 +121,56 @@
                 <Grid Background="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource liveColorConverter}}"
                       Margin="0,7,0,0"
                       Height="50">
+                    
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="50" />
                     </Grid.ColumnDefinitions>
 
-                    <Label Grid.Column="0"
+                    <Rectangle Grid.Column="0"
+                               Width="5"
+                               Fill="Transparent"
+                               Focusable="True"
+                               KeyUp="go_KeyUp"
+                               FocusVisualStyle="{x:Null}"> <!--this removes the hashed outline-->
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="GotKeyboardFocus">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetProperty="Fill.Color"
+                                                        Duration="0"
+                                                        To="White" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="LostKeyboardFocus">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetProperty="Fill.Color"
+                                                        Duration="0"
+                                                        To="Transparent" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+
+                    <Label Grid.Column="1"
+                           Focusable="False"
                            ToolTipService.InitialShowDelay="510"
                            ToolTipService.ShowDuration="3000"
                            ToolTipService.HasDropShadow="True"
                            ToolTipService.VerticalOffset="5"
                            ToolTipService.HorizontalOffset="10">
                         <Label.Content>
-                            <TextBlock Text="{Binding Path=DisplayName, Mode=OneWay}" />
+                            <TextBlock Text="{Binding Path=DisplayName}"
+                                       TextTrimming="CharacterEllipsis" />
                         </Label.Content>
                         <Label.ToolTip>
                             <ToolTip>
                                 <TextBlock DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource TemplatedParent}}"
-                                           Text="{Binding Path=MouseOverTooltip, Mode=OneWay}"
+                                           Text="{Binding Path=MouseOverTooltip}"
                                            FontSize="14" />
                             </ToolTip>
                         </Label.ToolTip>
@@ -146,21 +181,10 @@
                         </Label.InputBindings>
                     </Label>
 
-                    <Image Grid.Column="1"
+                    <Image Grid.Column="2"
                            Width="20"
                            Height="20"
-                           Source="{Binding Path=Icon, Mode=OneTime}">
-                        <!--<Image.OpacityMask>
-                            <LinearGradientBrush StartPoint="0,0.5"
-                                                 EndPoint="1,0.5">
-                                <GradientStop Offset="0"
-                                              Color="Transparent" />
-                                <GradientStop Offset="1"
-                                              Color="Black" />
-                            </LinearGradientBrush>
-                        </Image.OpacityMask>-->
-                    </Image>
-
+                           Source="{Binding Path=Icon, Mode=OneTime}" />
                 </Grid>
             </DataTemplate>
         </ItemsControl.ItemTemplate>

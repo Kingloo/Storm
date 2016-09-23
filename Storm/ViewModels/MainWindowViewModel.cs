@@ -13,7 +13,7 @@ using Storm.Model;
 
 namespace Storm.ViewModels
 {
-    class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ViewModelBase
     {
         #region Fields
         private readonly MainWindow mainWindow = null;
@@ -121,14 +121,12 @@ namespace Storm.ViewModels
             }
         }
 
-        private async Task LoadUrlsAsync()
+        public async Task LoadUrlsAsync()
         {
-            //Streams.Clear();
             _streams.Clear();
 
             IEnumerable<StreamBase> loaded = await urlsRepo.LoadAsync();
             
-            //Streams.AddList(loaded);
             _streams.AddList(loaded);
         }
 
@@ -136,7 +134,7 @@ namespace Storm.ViewModels
         {
             await LoadUrlsAsync();
             
-            await UpdateAllAsync();
+            await UpdateAsync();
         }
 
         private DelegateCommandAsync _updateAllAsyncCommand = null;
@@ -146,14 +144,14 @@ namespace Storm.ViewModels
             {
                 if (_updateAllAsyncCommand == null)
                 {
-                    _updateAllAsyncCommand = new DelegateCommandAsync(UpdateAllAsync, canExecuteAsync);
+                    _updateAllAsyncCommand = new DelegateCommandAsync(UpdateAsync, canExecuteAsync);
                 }
 
                 return _updateAllAsyncCommand;
             }
         }
 
-        private async Task UpdateAllAsync()
+        public async Task UpdateAsync()
         {
             SetUIToUpdating();
 
@@ -214,27 +212,19 @@ namespace Storm.ViewModels
         }
         #endregion
 
-        public MainWindowViewModel(MainWindow mainWindow, IRepository urlsRepo)
+        public MainWindowViewModel(MainWindow window, IRepository urlsRepo)
         {
             this.urlsRepo = urlsRepo;
 
-            this.mainWindow = mainWindow;
-            mainWindow.Loaded += mainWindow_Loaded;
+            mainWindow = window;
             
             updateTimer.Tick += updateTimer_Tick;
             updateTimer.Start();
         }
-
-        private async void mainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            await LoadUrlsAsync();
-
-            await UpdateAllAsync();
-        }
-
+        
         private async void updateTimer_Tick(object sender, EventArgs e)
         {
-            await UpdateAllAsync();
+            await UpdateAsync();
         }
     }
 }
