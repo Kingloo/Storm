@@ -3,7 +3,7 @@ Storm
 
 A programme that notifies you when a live stream begins.
 
-Supports: Twitch, Mixlr, Ustream, Hitbox, Beam.pro, Chaturbate
+Supports: Twitch, Mixlr, Ustream, Hitbox, Beam.pro, Chaturbate, YouTube Gaming
 
 F11 opens the file where stream URLs are stored.
 
