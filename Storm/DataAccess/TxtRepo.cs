@@ -100,20 +100,44 @@ namespace Storm.DataAccess
                 case "twitch.tv":
                     sb = new Twitch(uri);
                     break;
+                case "www.twitch.tv":
+                    sb = new Twitch(uri);
+                    break;
                 case "ustream.tv":
+                    sb = new Ustream(uri);
+                    break;
+                case "www.ustream.tv":
                     sb = new Ustream(uri);
                     break;
                 case "mixlr.com":
                     sb = new Mixlr(uri);
                     break;
+                case "www.mixlr.com":
+                    sb = new Mixlr(uri);
+                    break;
                 case "hitbox.tv":
+                    sb = new Hitbox(uri);
+                    break;
+                case "www.hitbox.tv":
                     sb = new Hitbox(uri);
                     break;
                 case "beam.pro":
                     sb = new Beam(uri);
                     break;
+                case "www.beam.pro":
+                    sb = new Beam(uri);
+                    break;
                 case "chaturbate.com":
                     sb = new Chaturbate(uri);
+                    break;
+                case "www.chaturbate.com":
+                    sb = new Chaturbate(uri);
+                    break;
+                case "youtube.com":
+                    sb = new YouTube(uri);
+                    break;
+                case "www.youtube.com":
+                    sb = new YouTube(uri);
                     break;
                 default:
                     sb = new UnsupportedService(uri.AbsoluteUri);

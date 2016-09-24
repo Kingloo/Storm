@@ -47,7 +47,7 @@ namespace Storm.Model
         protected override async Task DetermineIfLiveAsync()
         {
             string apiCall = string.Format("{0}/channels/{1}", ApiUri, Name);
-            HttpWebRequest request = BuildBeamHttpWebRequest(new Uri(apiCall));
+            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiCall));
             
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
             
@@ -74,25 +74,13 @@ namespace Storm.Model
             IsLive = live;
         }
 
-        private static HttpWebRequest BuildBeamHttpWebRequest(Uri uri)
+        protected override HttpWebRequest BuildHttpWebRequest(Uri uri)
         {
-            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
+            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+
+            HttpWebRequest req = base.BuildHttpWebRequest(uri);
 
             req.Accept = "application/json; charset=UTF-8";
-            req.AllowAutoRedirect = true;
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-            req.Host = uri.DnsSafeHost;
-            req.KeepAlive = false;
-            req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version11;
-            req.Timeout = 2500;
-            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
-
-            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            }
 
             return req;
         }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Net;
-using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -105,7 +103,7 @@ namespace Storm.Model
         protected async Task TrySetDisplayNameAsync()
         {
             string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", ApiUri, Name);
-            HttpWebRequest request = BuildTwitchHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
+            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
             
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
@@ -123,7 +121,7 @@ namespace Storm.Model
         protected async Task DetermineGameAsync()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}", ApiUri, Name);
-            HttpWebRequest request = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
@@ -139,7 +137,7 @@ namespace Storm.Model
         protected async override Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/streams/{1}", ApiUri, Name);
-            HttpWebRequest request = BuildTwitchHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
 
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
@@ -175,30 +173,13 @@ namespace Storm.Model
             }
         }
         
-        private static HttpWebRequest BuildTwitchHttpWebRequest(Uri uri)
+        protected override HttpWebRequest BuildHttpWebRequest(Uri uri)
         {
-            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
+            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+
+            HttpWebRequest req = base.BuildHttpWebRequest(uri);
 
             req.Accept = "application/vnd.twitchtv.v3+json";
-            req.AllowAutoRedirect = true;
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-            req.Host = uri.DnsSafeHost;
-            req.KeepAlive = false;
-            req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format(CultureInfo.InvariantCulture, "{0}{1}", uri.GetLeftPart(UriPartial.Scheme), uri.DnsSafeHost);
-            req.Timeout = 4000;
-            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
-
-            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            }
-
-            req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-Encoding", "gzip, deflate");
-
             req.Headers.Add("Client-ID", "ewvlchtxgqq88ru9gmfp1gmyt6h2b93");
 
             return req;

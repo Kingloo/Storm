@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Configuration;
 using System.Net;
-using System.Net.Cache;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
@@ -47,7 +45,7 @@ namespace Storm.Model
         protected override async Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/user/{1}", ApiUri, Name);
-            HttpWebRequest request = BuildHitboxHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
@@ -62,30 +60,6 @@ namespace Storm.Model
             }
             
             IsLive = live;
-        }
-        
-        private static HttpWebRequest BuildHitboxHttpWebRequest(Uri uri)
-        {
-            HttpWebRequest req = WebRequest.CreateHttp(uri);
-
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-            req.Host = uri.DnsSafeHost;
-            req.KeepAlive = false;
-            req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version11;
-            req.Timeout = 2500;
-            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
-
-            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            }
-
-            req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-encoding", "gzip, deflate");
-
-            return req;
         }
     }
 }

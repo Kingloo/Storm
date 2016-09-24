@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Configuration;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using System.Net.Cache;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
@@ -40,7 +40,7 @@ namespace Storm.Model
 
             if (String.IsNullOrWhiteSpace(channelId))
             {
-                channelId = await DetermineChannelIdAsync();
+                await DetermineChannelIdAsync();
             }
             
             bool wasLive = IsLive;
@@ -55,10 +55,30 @@ namespace Storm.Model
             Updating = false;
         }
 
+        private async Task DetermineChannelIdAsync()
+        {
+            HttpWebRequest req = BuildHttpWebRequest(Uri);
+
+            string response = (string)(await GetApiResponseAsync(req, false).ConfigureAwait(false));
+
+            if (String.IsNullOrWhiteSpace(response) == false)
+            {
+                string beginning = "\"channelId\":";
+                string ending = ",";
+
+                IReadOnlyList<string> results = response.FindBetween(beginning, ending);
+
+                if (results.Count > 0)
+                {
+                    channelId = results.First();
+                }
+            }
+        }
+
         protected async override Task DetermineIfLiveAsync()
         {
             string apiAddressToQuery = string.Format("{0}/channels/{1}.json", ApiUri, channelId);
-            HttpWebRequest request = BuildUstreamHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
@@ -70,7 +90,7 @@ namespace Storm.Model
                 {
                     if (HasUpdatedDisplayName == false)
                     {
-                        SetDisplayName(json);
+                        TrySetDisplayName(json);
                     }
                     
                     live = ((string)json["channel"]["status"])
@@ -80,31 +100,8 @@ namespace Storm.Model
             
             IsLive = live;
         }
-
-        private async Task<string> DetermineChannelIdAsync()
-        {
-            HttpWebRequest req = BuildUstreamHttpWebRequest(Uri);
-            string response = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
-
-            if (String.IsNullOrWhiteSpace(response))
-            {
-                return string.Empty;
-            }
-            
-            string beginning = "\"channelId\":";
-            string ending = ",";
-
-            FromBetweenResult res = response.FromBetween(beginning, ending);
-            
-            if (res.Result == Result.Success)
-            {
-                return res.ResultValue;
-            }
-
-            return string.Empty;
-        }
-
-        private void SetDisplayName(JObject resp)
+        
+        private void TrySetDisplayName(JObject resp)
         {
             string displayName = (string)resp["channel"]["title"];
 
@@ -115,29 +112,14 @@ namespace Storm.Model
                 HasUpdatedDisplayName = true;
             }
         }
-        
-        private static HttpWebRequest BuildUstreamHttpWebRequest(Uri uri)
+
+        protected override HttpWebRequest BuildHttpWebRequest(Uri uri)
         {
-            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
+            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+
+            HttpWebRequest req = base.BuildHttpWebRequest(uri);
 
             req.Accept = "application/json; charset=UTF-8";
-            req.AllowAutoRedirect = true;
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-            req.Host = uri.DnsSafeHost;
-            req.KeepAlive = false;
-            req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version11;
-            req.Timeout = 2500;
-            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
-
-            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            }
-
-            req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-Encoding", "gzip, deflate");
 
             return req;
         }

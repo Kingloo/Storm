@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -152,10 +154,7 @@ namespace Storm.Model
 
         protected StreamBase(Uri accountUri)
         {
-            if (accountUri == null)
-            {
-                throw new ArgumentNullException(nameof(accountUri), "StreamBase ctor was passed a null uri");
-            }
+            if (accountUri == null) { throw new ArgumentNullException(nameof(accountUri)); }
 
             Uri = accountUri;
             Name = SetAccountName(accountUri);
@@ -177,7 +176,7 @@ namespace Storm.Model
 
             string response = await Utils.DownloadWebsiteAsStringAsync(request).ConfigureAwait(false);
             
-            if (String.IsNullOrEmpty(response)){ return null; }
+            if (String.IsNullOrWhiteSpace(response)) { return null; }
 
             if (isJson)
             {
@@ -237,6 +236,33 @@ namespace Storm.Model
             {
                 Utils.OpenUriInBrowser(Uri);
             }
+        }
+
+        protected virtual HttpWebRequest BuildHttpWebRequest(Uri uri)
+        {
+            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+
+            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
+
+            req.AllowAutoRedirect = true;
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+            req.Host = uri.DnsSafeHost;
+            req.KeepAlive = false;
+            req.Method = "GET";
+            req.ProtocolVersion = HttpVersion.Version11;
+            req.Timeout = 4000;
+            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
+
+            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            }
+
+            req.Headers.Add("DNT", "1");
+            req.Headers.Add("Accept-encoding", "gzip, deflate");
+
+            return req;
         }
 
         private void LaunchLiveStreamer()

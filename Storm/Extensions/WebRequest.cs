@@ -18,7 +18,7 @@ namespace Storm
             }
             catch (WebException ex)
             {
-                Utils.LogException(ex);
+                Utils.LogException(ex, request.RequestUri.AbsoluteUri);
 
                 webResp = ex?.Response;
             }
@@ -38,7 +38,7 @@ namespace Storm
             }
             catch (WebException ex)
             {
-                Utils.LogException(ex);
+                Utils.LogException(ex, request.RequestUri.AbsoluteUri);
 
                 webResp = ex?.Response;
             }
