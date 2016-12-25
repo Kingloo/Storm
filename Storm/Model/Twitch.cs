@@ -35,23 +35,27 @@ namespace Storm.Model
         {
             get
             {
+                StringBuilder sb = new StringBuilder();
+
+                sb.Append($"{DisplayName} is ");
+                
                 if (IsLive)
                 {
-                    StringBuilder sb = new StringBuilder();
-
-                    sb.Append(string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName));
-
-                    if (String.IsNullOrWhiteSpace(Game) == false)
+                    if (String.IsNullOrWhiteSpace(Game))
                     {
-                        sb.Append(string.Format(CultureInfo.CurrentCulture, " and playing {0}", Game));
+                        sb.Append($"LIVE");
                     }
-
-                    return sb.ToString();
+                    else
+                    {
+                        sb.Append($"playing {Game}");
+                    }
                 }
                 else
                 {
-                    return string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
+                    sb.Append($"offline");
                 }
+
+                return sb.ToString();
             }
         }
 
@@ -65,13 +69,12 @@ namespace Storm.Model
         }
         #endregion
 
-        public Twitch(Uri u)
-            : base(u)
+        public Twitch(Uri uri)
+            : base(uri)
         {
             ApiUri = "https://api.twitch.tv/kraken";
-            HasLivestreamerSupport = true;
 
-            _icon.Freeze();
+            HasLivestreamerSupport = true;
         }
 
         public async override Task UpdateAsync()
@@ -181,6 +184,9 @@ namespace Storm.Model
 
             req.Accept = "application/vnd.twitchtv.v3+json";
             req.Headers.Add("Client-ID", "ewvlchtxgqq88ru9gmfp1gmyt6h2b93");
+            // jzkbprff40iqj646a697cyrvl0zt2m6
+            // lf8xspujnqfqcdlj11zq77dfen2tqjo
+            // pwkzresl8kj2rdj6g7bvxl9ys1wly3j
 
             return req;
         }

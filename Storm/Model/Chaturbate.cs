@@ -18,10 +18,7 @@ namespace Storm.Model
         }
         #endregion
 
-        public Chaturbate(Uri accountUri) : base(accountUri)
-        {
-            _icon.Freeze();
-        }
+        public Chaturbate(Uri accountUri) : base(accountUri) { }
 
         public override async Task UpdateAsync()
         {
@@ -49,7 +46,8 @@ namespace Storm.Model
 
             if (String.IsNullOrWhiteSpace(response) == false)
             {
-                live = !response.Contains("Room is currently offline");
+                live = !response.Contains("Room is currently offline")
+                    && !response.Contains("meta name=\"keywords\" content=\"Login, Chaturbate login\"");
                 
                 // website must contain NEITHER "Room is currently offline" NOR "banned"
                 //IsLive = !(website.Contains("Room is currently offline") && website.Contains("banned"));
@@ -57,5 +55,34 @@ namespace Storm.Model
 
             IsLive = live;
         }
+
+        //public override async void GoToStream()
+        //{
+        //    HttpWebRequest request = BuildHttpWebRequest(Uri);
+
+        //    string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
+
+        //    if (String.IsNullOrWhiteSpace(response) == false)
+        //    {
+        //        string beginning = "html += \"src='";
+        //        string ending = "'\";";
+
+        //        IReadOnlyList<string> results = response.FindBetween(beginning, ending);
+
+        //        if (results.Count > 1)
+        //        {
+        //            // TODO - pass me the location of a video player
+        //            // configuration file
+        //            string args = "";
+
+        //            ProcessStartInfo pInfo = new ProcessStartInfo
+        //            {
+        //                Arguments = args,
+        //                FileName = "cmd.exe",
+        //                WindowStyle = ProcessWindowStyle.Hidden
+        //            };
+        //        }
+        //    }
+        //}
     }
 }

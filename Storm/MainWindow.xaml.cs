@@ -1,5 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Shapes;
 using Storm.Model;
 using Storm.ViewModels;
@@ -8,37 +11,42 @@ namespace Storm
 {
     public partial class MainWindow : Window
     {
+        private IntPtr hWnd = IntPtr.Zero;
         private readonly MainWindowViewModel vm = null;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            MaxHeight = SystemParameters.WorkArea.Bottom - 100;
+            SourceInitialized += MainWindow_SourceInitialized;
+            LocationChanged += MainWindow_LocationChanged;
+            Loaded += MainWindow_Loaded;
 
             vm = new MainWindowViewModel(this, ((App)App.Current).UrlsRepo);
             DataContext = vm;
-            
-            Loaded += MainWindow_Loaded;
-
-#if DEBUG
-            KeyUp += (sender, e) =>
-            {
-                if (e.Key == Key.F1)
-                {
-                    IEnumerable<StreamBase> s = from each in (DataContext as MainWindowViewModel).Streams
-                                                where each.Uri.AbsoluteUri.Contains("unicorn")
-                                                select each;
-
-                    foreach (StreamBase each in s)
-                    {
-                        each.DEBUG_toggle_is_live();
-                    }
-                }
-            };
-#endif
         }
 
+        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        {
+            hWnd = new WindowInteropHelper(this).EnsureHandle();
+
+            CalculateMaxHeight();
+        }
+
+        private void MainWindow_LocationChanged(object sender, EventArgs e)
+        {
+            CalculateMaxHeight();
+        }
+
+        private void CalculateMaxHeight()
+        {
+            Screen currentMonitor = Screen.FromHandle(hWnd);
+
+            MaxHeight = currentMonitor == null
+                ? SystemParameters.WorkArea.Bottom - 100
+                : currentMonitor.WorkingArea.Bottom - 100;
+        }
+        
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             await vm.LoadUrlsAsync();
@@ -46,7 +54,7 @@ namespace Storm
             await vm.UpdateAsync();
         }
         
-        private void go_KeyUp(object sender, KeyEventArgs e)
+        private void go_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
             {

@@ -8,6 +8,8 @@
     <Window.Style>
         <Style TargetType="{x:Type this:MainWindow}">
             <Setter Property="Title" Value="Storm" />
+            <Setter Property="AutomationProperties.Name" Value="Storm" />
+            <Setter Property="AutomationProperties.HelpText" Value="Be notified when a live stream starts" />
             <Setter Property="Top" Value="50" /> <!--see code-behind where we set MaxHeight-->
             <Setter Property="Left" Value="150" />
             <Setter Property="Width" Value="350" />

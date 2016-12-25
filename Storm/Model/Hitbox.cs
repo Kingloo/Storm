@@ -22,8 +22,6 @@ namespace Storm.Model
         public Hitbox(Uri accountUri) : base(accountUri)
         {
             ApiUri = "https://api.hitbox.tv";
-
-            _icon.Freeze();
         }
         
         public override async Task UpdateAsync()

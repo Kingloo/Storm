@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Storm.Extensions;
 
 namespace Storm
 {
@@ -24,21 +25,7 @@ namespace Storm
             return Path.Combine(dir, filename);
         }
         
-
-        public static void SetWindowToMiddleOfScreen(Window window)
-        {
-            if (window == null) { throw new ArgumentNullException(nameof(window)); }
-
-            double screenHeight = SystemParameters.PrimaryScreenHeight;
-            double windowHeight = window.Height;
-            window.Top = (screenHeight / 2) - (windowHeight / 2);
-
-            double screenWidth = SystemParameters.PrimaryScreenWidth;
-            double windowWidth = window.Width;
-            window.Left = (screenWidth / 2) - (windowWidth / 2);
-        }
-
-
+        
         public static void SafeDispatcher(Action action)
         {
             if (action == null) { throw new ArgumentNullException(nameof(action)); }

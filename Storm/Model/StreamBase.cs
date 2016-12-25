@@ -158,6 +158,8 @@ namespace Storm.Model
 
             Uri = accountUri;
             Name = SetAccountName(accountUri);
+
+            Icon.Freeze();
         }
 
         protected static bool IsLivestreamerOnPath()

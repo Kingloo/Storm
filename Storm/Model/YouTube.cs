@@ -21,10 +21,7 @@ namespace Storm.Model
         }
         #endregion
 
-        public YouTube(Uri accountUri) : base(accountUri)
-        {
-            _icon.Freeze();
-        }
+        public YouTube(Uri uri) : base(uri) { }
 
         protected override string SetAccountName(Uri uri)
         {

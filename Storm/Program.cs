@@ -31,7 +31,12 @@ namespace Storm
         private static string GetUrlFilePath()
         {
             string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+#if DEBUG
+            string filename = "StormUrls-test.txt";
+#else
             string filename = "StormUrls.txt";
+#endif
 
             return Path.Combine(dir, filename);
         }

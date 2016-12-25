@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Storm
+namespace Storm.Extensions
 {
     public static class WebRequestExt
     {
@@ -18,8 +18,6 @@ namespace Storm
             }
             catch (WebException ex)
             {
-                Utils.LogException(ex, request.RequestUri.AbsoluteUri);
-
                 webResp = ex?.Response;
             }
 
@@ -38,8 +36,6 @@ namespace Storm
             }
             catch (WebException ex)
             {
-                Utils.LogException(ex, request.RequestUri.AbsoluteUri);
-
                 webResp = ex?.Response;
             }
 

@@ -30,15 +30,17 @@ namespace Storm.DataAccess
         {
             List<StreamBase> streams = new List<StreamBase>();
 
-            FileStream fsAsync = new FileStream(FilePath,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.None,
-                2048,
-                true);
+            FileStream fsAsync = null;
 
             try
             {
+                fsAsync = new FileStream(FilePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                true);
+
                 using (StreamReader sr = new StreamReader(fsAsync))
                 {
                     fsAsync = null;
@@ -93,58 +95,17 @@ namespace Storm.DataAccess
         
         private static StreamBase DetermineStreamingService(Uri uri)
         {
-            StreamBase sb = null;
+            string dnsSafe = uri.DnsSafeHost;
 
-            switch (uri.DnsSafeHost)
-            {
-                case "twitch.tv":
-                    sb = new Twitch(uri);
-                    break;
-                case "www.twitch.tv":
-                    sb = new Twitch(uri);
-                    break;
-                case "ustream.tv":
-                    sb = new Ustream(uri);
-                    break;
-                case "www.ustream.tv":
-                    sb = new Ustream(uri);
-                    break;
-                case "mixlr.com":
-                    sb = new Mixlr(uri);
-                    break;
-                case "www.mixlr.com":
-                    sb = new Mixlr(uri);
-                    break;
-                case "hitbox.tv":
-                    sb = new Hitbox(uri);
-                    break;
-                case "www.hitbox.tv":
-                    sb = new Hitbox(uri);
-                    break;
-                case "beam.pro":
-                    sb = new Beam(uri);
-                    break;
-                case "www.beam.pro":
-                    sb = new Beam(uri);
-                    break;
-                case "chaturbate.com":
-                    sb = new Chaturbate(uri);
-                    break;
-                case "www.chaturbate.com":
-                    sb = new Chaturbate(uri);
-                    break;
-                case "youtube.com":
-                    sb = new YouTube(uri);
-                    break;
-                case "www.youtube.com":
-                    sb = new YouTube(uri);
-                    break;
-                default:
-                    sb = new UnsupportedService(uri.AbsoluteUri);
-                    break;
-            }
+            if (dnsSafe.Contains("twitch.tv")) { return new Twitch(uri); }
+            if (dnsSafe.Contains("ustream.tv")) { return new Ustream(uri); }
+            if (dnsSafe.Contains("mixlr.com")) { return new Mixlr(uri); }
+            if (dnsSafe.Contains("hitbox.tv")) { return new Hitbox(uri); }
+            if (dnsSafe.Contains("beam.pro")) { return new Beam(uri); }
+            if (dnsSafe.Contains("chaturbate.com")) { return new Chaturbate(uri); }
+            if (dnsSafe.Contains("youtube.com")) { return new YouTube(uri); }
 
-            return sb;
+            return new UnsupportedService(uri.AbsoluteUri);
         }
 
         public Task SaveAsync(IEnumerable<StreamBase> streams)

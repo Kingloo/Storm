@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Configuration;
 using System.Net;
-using System.Net.Cache;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
@@ -24,8 +22,6 @@ namespace Storm.Model
         public Beam(Uri accountUri) : base(accountUri)
         {
             ApiUri = "https://beam.pro/api/v1";
-
-            _icon.Freeze();
         }
         
         public override async Task UpdateAsync()

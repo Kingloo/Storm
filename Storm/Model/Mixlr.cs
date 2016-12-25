@@ -23,8 +23,6 @@ namespace Storm.Model
             : base(userUrl)
         {
             ApiUri = "https://api.mixlr.com/users";
-
-            _icon.Freeze();
         }
 
         public override async Task UpdateAsync()

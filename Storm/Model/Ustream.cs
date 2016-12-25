@@ -26,12 +26,10 @@ namespace Storm.Model
         }
         #endregion
 
-        public Ustream(Uri u)
-            : base(u)
+        public Ustream(Uri uri)
+            : base(uri)
         {
             ApiUri = "https://api.ustream.tv";
-
-            _icon.Freeze();
         }
 
         public async override Task UpdateAsync()
