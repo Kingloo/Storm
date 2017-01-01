@@ -217,14 +217,9 @@ namespace Storm.ViewModels
             this.urlsRepo = urlsRepo;
 
             mainWindow = window;
-            
-            updateTimer.Tick += updateTimer_Tick;
+
+            updateTimer.Tick += async (s, e) => await UpdateAsync();
             updateTimer.Start();
-        }
-        
-        private async void updateTimer_Tick(object sender, EventArgs e)
-        {
-            await UpdateAsync();
         }
     }
 }
