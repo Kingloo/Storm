@@ -91,7 +91,8 @@
         </CollectionViewSource>
     </Window.Resources>
 
-    <ItemsControl Margin="0,0,0,7"
+    <!--<ItemsControl Margin="0,0,0,7"-->
+    <ItemsControl Margin="0,0,0,0"
                   Name="items"                 
                   Focusable="False"
                   ItemsSource="{Binding Source={StaticResource sortedStreams}}">
@@ -107,7 +108,7 @@
 
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-                <VirtualizingStackPanel Margin="7,0,7,0" />
+                <VirtualizingStackPanel Margin="7,0,7,7" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
 

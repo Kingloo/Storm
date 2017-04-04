@@ -148,8 +148,8 @@ namespace Storm.Model
             }
         }
         
-        private readonly bool _hasLivestreamerSupport = false;
-        public bool HasLivestreamerSupport { get; protected set; }
+        private readonly bool _hasStreamlinkSupport = false;
+        public bool HasStreamlinkSupport { get; protected set; }
         #endregion
 
         protected StreamBase(Uri accountUri)
@@ -162,14 +162,14 @@ namespace Storm.Model
             Icon.Freeze();
         }
 
-        protected static bool IsLivestreamerOnPath()
+        protected static bool IsStreamlinkOnPath()
         {
             string path = Environment.GetEnvironmentVariable("Path");
 
             return CultureInfo
                 .CurrentCulture
                 .CompareInfo
-                .IndexOf(path, "livestreamer", CompareOptions.IgnoreCase) > -1;
+                .IndexOf(path, "streamlink", CompareOptions.IgnoreCase) > -1;
         }
 
         protected static async Task<object> GetApiResponseAsync(HttpWebRequest request, bool isJson)
@@ -230,9 +230,9 @@ namespace Storm.Model
 
         public virtual void GoToStream()
         {
-            if (HasLivestreamerSupport && IsLivestreamerOnPath())
+            if (HasStreamlinkSupport && IsStreamlinkOnPath())
             {
-                LaunchLiveStreamer();
+                LaunchStreamlink();
             }
             else
             {
@@ -267,9 +267,9 @@ namespace Storm.Model
             return req;
         }
 
-        private void LaunchLiveStreamer()
+        private void LaunchStreamlink()
         {
-            string args = string.Format(CultureInfo.CurrentCulture, @"/C livestreamer.exe {0} best", Uri.AbsoluteUri);
+            string args = string.Format(CultureInfo.CurrentCulture, @"/C streamlink.exe {0} best", Uri.AbsoluteUri);
 
             ProcessStartInfo pInfo = new ProcessStartInfo
             {

@@ -74,7 +74,7 @@ namespace Storm.Model
         {
             ApiUri = "https://api.twitch.tv/kraken";
 
-            HasLivestreamerSupport = true;
+            HasStreamlinkSupport = true;
         }
 
         public async override Task UpdateAsync()

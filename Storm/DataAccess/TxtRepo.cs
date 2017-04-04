@@ -49,6 +49,8 @@ namespace Storm.DataAccess
 
                     while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
+                        if (line.StartsWith("#", StringComparison.CurrentCultureIgnoreCase)) { continue; }
+
                         StreamBase sb = ParseIntoStream(line);
 
                         if (sb != null)
@@ -72,24 +74,18 @@ namespace Storm.DataAccess
 
         private static StreamBase ParseIntoStream(string line)
         {
-            // # means line is a comment
-            if (line.StartsWith("#", StringComparison.CurrentCultureIgnoreCase)) { return null; }
-
             // if this is not done subsequent Uri.TryCreate will fail
             if (line.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase) == false
                 && line.StartsWith("https://", StringComparison.CurrentCultureIgnoreCase) == false)
             {
                 line = string.Concat("http://", line);
             }
-
-            // C# 7 ALERT - use new feature
-            // Uri.TryCreate(line, UriKind.Absolute, out Uri uri))
-            Uri uri = null;
-            if (!Uri.TryCreate(line, UriKind.Absolute, out uri))
+            
+            if (!Uri.TryCreate(line, UriKind.Absolute, out Uri uri))
             {
                 return new UnsupportedService("invalid Uri");
             }
-
+            
             return DetermineStreamingService(uri);
         }
         

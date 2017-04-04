@@ -22,6 +22,8 @@ namespace Storm.Model
         public Beam(Uri accountUri) : base(accountUri)
         {
             ApiUri = "https://beam.pro/api/v1";
+
+            HasStreamlinkSupport = true;
         }
         
         public override async Task UpdateAsync()
