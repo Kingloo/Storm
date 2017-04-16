@@ -62,7 +62,7 @@ namespace Storm.DataAccess
             }
             catch (FileNotFoundException e)
             {
-                Utils.LogException(e);
+                Log.LogException(e);
             }
             finally
             {

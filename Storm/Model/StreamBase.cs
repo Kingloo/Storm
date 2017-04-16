@@ -148,15 +148,23 @@ namespace Storm.Model
             }
         }
         
-        private readonly bool _hasStreamlinkSupport = false;
-        public bool HasStreamlinkSupport { get; protected set; }
+        private bool _hasStreamlinkSupport = false;
+        public bool HasStreamlinkSupport
+        {
+            get
+            {
+                return _hasStreamlinkSupport;
+            }
+            protected set
+            {
+                _hasStreamlinkSupport = value;
+            }
+        }
         #endregion
 
         protected StreamBase(Uri accountUri)
         {
-            if (accountUri == null) { throw new ArgumentNullException(nameof(accountUri)); }
-
-            Uri = accountUri;
+            Uri = accountUri ?? throw new ArgumentNullException(nameof(accountUri));
             Name = SetAccountName(accountUri);
 
             Icon.Freeze();
@@ -169,14 +177,15 @@ namespace Storm.Model
             return CultureInfo
                 .CurrentCulture
                 .CompareInfo
-                .IndexOf(path, "streamlink", CompareOptions.IgnoreCase) > -1;
+                .IndexOf(path, "streamlink", CompareOptions.OrdinalIgnoreCase) > -1;
         }
 
         protected static async Task<object> GetApiResponseAsync(HttpWebRequest request, bool isJson)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
-
-            string response = await Utils.DownloadWebsiteAsStringAsync(request).ConfigureAwait(false);
+            
+            string response = await Download.WebsiteAsync(request)
+                .ConfigureAwait(false);
             
             if (String.IsNullOrWhiteSpace(response)) { return null; }
 
@@ -202,7 +211,7 @@ namespace Storm.Model
             }
             catch (JsonReaderException e)
             {
-                Utils.LogException(e);
+                Log.LogException(e);
             }
 
             return j;
@@ -244,7 +253,7 @@ namespace Storm.Model
         {
             if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
 
-            HttpWebRequest req = HttpWebRequest.CreateHttp(uri);
+            HttpWebRequest req = WebRequest.CreateHttp(uri);
 
             req.AllowAutoRedirect = true;
             req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;

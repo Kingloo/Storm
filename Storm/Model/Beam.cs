@@ -53,17 +53,15 @@ namespace Storm.Model
             
             if (json != null)
             {
-                JToken tmpToken = null;
-
                 if (!HasUpdatedDisplayName)
                 {
-                    if (json.TryGetValue("token", out tmpToken))
+                    if (json.TryGetValue("token", out JToken token))
                     {
                         DisplayName = (string)json["token"];
                     }
                 }
 
-                if (json.TryGetValue("online", out tmpToken))
+                if (json.TryGetValue("online", out JToken online))
                 {
                     live = (bool)json["online"];
                 }

@@ -25,7 +25,7 @@ namespace Storm
 
         private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            Utils.LogException(e.Exception);
+            Log.LogException(e.Exception);
         }
     }
 }

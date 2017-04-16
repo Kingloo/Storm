@@ -134,6 +134,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -157,11 +158,13 @@
     <Compile Include="DataAccess\IRepository.cs" />
     <Compile Include="DataAccess\TxtRepo.cs" />
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="Extensions\ICollectionT.cs" />
+    <Compile Include="Download.cs" />
+    <Compile Include="Extensions\Collections.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="Extensions\WebRequest.cs" />
     <Compile Include="Extensions\Window.cs" />
     <Compile Include="LiveColorConverter.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Model\Beam.cs" />
     <Compile Include="Model\Chaturbate.cs" />
     <Compile Include="Model\Hitbox.cs" />
@@ -170,7 +173,6 @@
     <Compile Include="NotificationService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Model\StreamBase.cs" />
-    <Compile Include="StreamManager.cs" />
     <Compile Include="Model\Twitch.cs" />
     <Compile Include="Model\UnsupportedService.cs" />
     <Compile Include="Model\Ustream.cs" />

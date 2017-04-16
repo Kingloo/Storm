@@ -127,7 +127,7 @@ namespace Storm.ViewModels
 
             IEnumerable<StreamBase> loaded = await urlsRepo.LoadAsync();
             
-            _streams.AddList(loaded);
+            _streams.AddRange(loaded);
         }
 
         private async Task ReloadUrlsAsync()

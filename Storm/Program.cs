@@ -22,7 +22,7 @@ namespace Storm
             {
                 string errorMessage = string.Format(CultureInfo.InvariantCulture, "exited with code {0}", exitCode);
 
-                Utils.LogMessage(errorMessage);
+                Log.LogMessage(errorMessage);
             }
 
             return exitCode;

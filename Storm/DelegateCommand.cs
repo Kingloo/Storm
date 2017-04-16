@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Storm
+namespace Storm 
 {
     public abstract class Command : ICommand
     {
@@ -12,9 +12,7 @@ namespace Storm
         public abstract bool CanExecute(object parameter);
 
         public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, new EventArgs());
-        }
+            => CanExecuteChanged?.Invoke(this, new EventArgs());
     }
 
     public class DelegateCommand : Command
@@ -24,22 +22,15 @@ namespace Storm
 
         public DelegateCommand(Action execute, Predicate<object> canExecute)
         {
-            if (execute == null) throw new ArgumentNullException(nameof(execute));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
-
-            _execute = execute;
-            _canExecute = canExecute;
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
         }
 
         public override void Execute(object parameter)
-        {
-            _execute();
-        }
+            => _execute();
 
         public override bool CanExecute(object parameter)
-        {
-            return _canExecute(parameter);
-        }
+            => _canExecute(parameter);
     }
 
     public class DelegateCommand<T> : Command
@@ -49,22 +40,15 @@ namespace Storm
 
         public DelegateCommand(Action<T> execute, Predicate<T> canExecute)
         {
-            if (execute == null) throw new ArgumentNullException(nameof(execute));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
-
-            _execute = execute;
-            _canExecute = canExecute;
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
         }
 
         public override void Execute(object parameter)
-        {
-            _execute((T)parameter);
-        }
+            => _execute((T)parameter);
 
         public override bool CanExecute(object parameter)
-        {
-            return _canExecute((T)parameter);
-        }
+            => _canExecute((T)parameter);
     }
 
     public class DelegateCommandAsync : Command
@@ -75,17 +59,12 @@ namespace Storm
 
         public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object> canExecute)
         {
-            if (executeAsync == null) throw new ArgumentNullException(nameof(executeAsync));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
-
-            _executeAsync = executeAsync;
-            _canExecute = canExecute;
+            _executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
+            _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
         }
 
         public async override void Execute(object parameter)
-        {
-            await ExecuteAsync();
-        }
+            => await ExecuteAsync();
 
         private async Task ExecuteAsync()
         {
@@ -99,37 +78,23 @@ namespace Storm
         }
 
         public override bool CanExecute(object parameter)
-        {
-            if (_isExecuting == true)
-            {
-                return false;
-            }
-            else
-            {
-                return _canExecute(parameter);
-            }
-        }
+            => _isExecuting ? false : _canExecute(parameter);
     }
 
     public class DelegateCommandAsync<T> : Command
     {
-        private readonly Func<T, Task> _executeAsync;
-        private readonly Predicate<T> _canExecute;
+        private readonly Func<T, Task> _executeAsync = null;
+        private readonly Predicate<T> _canExecute = null;
         private bool _isExecuting = false;
 
         public DelegateCommandAsync(Func<T, Task> executeAsync, Predicate<T> canExecute)
         {
-            if (executeAsync == null) throw new ArgumentNullException(nameof(executeAsync));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
-
-            _executeAsync = executeAsync;
-            _canExecute = canExecute;
+            _executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
+            _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
         }
 
         public override async void Execute(object parameter)
-        {
-            await ExecuteAsync((T)parameter);
-        }
+            => await ExecuteAsync((T)parameter);
 
         private async Task ExecuteAsync(T parameter)
         {
@@ -143,15 +108,6 @@ namespace Storm
         }
 
         public override bool CanExecute(object parameter)
-        {
-            if (_isExecuting == true)
-            {
-                return false;
-            }
-            else
-            {
-                return _canExecute((T)parameter);
-            }
-        }
+            => _isExecuting ? false : _canExecute((T)parameter);
     }
 }

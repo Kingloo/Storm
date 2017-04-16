@@ -13,22 +13,9 @@ namespace Storm
         public SolidColorBrush Default { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool islive = (bool)value;
-            
-            if (islive)
-            {
-                return Online;
-            }
-            else
-            {
-                return Offline;
-            }
-        }
+            => (bool)value ? Online : Offline;
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return true;
-        }
+            => true;
     }
 }

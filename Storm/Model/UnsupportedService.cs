@@ -52,7 +52,8 @@ namespace Storm.Model
             {
                 string message = string.Format(CultureInfo.CurrentCulture, "{0} is an unsupported service.", Name);
 
-                await Utils.LogMessageAsync(message);
+                await Log.LogMessageAsync(message)
+                    .ConfigureAwait(false);
 
                 messageWritten = true;
             }
