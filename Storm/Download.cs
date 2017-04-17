@@ -37,47 +37,6 @@ namespace Storm
 
     public class Download
     {
-        public static string Website(Uri uri)
-        {
-            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
-            
-            string website = string.Empty;
-
-            HttpWebRequest request = BuildWebRequest(uri);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponseExt();
-
-            if (response == null)
-            {
-                request?.Abort();
-            }
-            else
-            {
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    using (StreamReader sr
-                        = new StreamReader(response.GetResponseStream()))
-                    {
-                        try
-                        {
-                            website = sr.ReadToEnd();
-                        }
-                        catch (IOException ex)
-                        {
-                            string message = Invariant($"Requesting {request.RequestUri.AbsoluteUri} failed: {response.StatusCode}");
-
-                            Log.LogException(ex, message);
-                        }
-                        finally
-                        {
-                            response?.Dispose();
-                        }
-                    }
-                }
-            }
-            
-            return website;
-        }
-
         public static async Task<string> WebsiteAsync(HttpWebRequest request)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
@@ -124,46 +83,13 @@ namespace Storm
         {
             if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
             
-            string website = string.Empty;
+            HttpWebRequest request = BuildStandardRequest(uri);
 
-            HttpWebRequest request = BuildWebRequest(uri);
-            HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsyncExt();
-            
-            if (response == null)
-            {
-                request?.Abort();
-            }
-            else
-            {
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    using (StreamReader sr
-                        = new StreamReader(response.GetResponseStream()))
-                    {
-                        try
-                        {
-                            website = await sr.ReadToEndAsync()
-                                .ConfigureAwait(false);
-                        }
-                        catch (IOException ex)
-                        {
-                            string message = Invariant($"Requesting {request.RequestUri.AbsoluteUri} failed: {response.StatusCode}");
-
-                            await Log.LogExceptionAsync(ex, message)
-                                .ConfigureAwait(false);
-                        }
-                        finally
-                        {
-                            response?.Dispose();
-                        }
-                    }
-                }
-            }
-
-            return website;
+            return await WebsiteAsync(request)
+                .ConfigureAwait(false);
         }
 
-        private static HttpWebRequest BuildWebRequest(Uri uri)
+        private static HttpWebRequest BuildStandardRequest(Uri uri)
         {
             HttpWebRequest req = WebRequest.CreateHttp(uri);
 
@@ -222,7 +148,7 @@ namespace Storm
         {
             if (_file.Exists) { return DownloadResult.FileAlreadyExists; }
 
-            int memoryAndFileBuffer = 1024 * 1024 * 3;
+            int memoryAndFileBuffer = 1024 * 1024 * 3; // 3 MiB
 
             var fsAsync = new FileStream(_file.FullName,
                 FileMode.CreateNew,
@@ -236,7 +162,8 @@ namespace Storm
                 Timeout = TimeSpan.FromSeconds(5)
             };
 
-            HttpResponseMessage response = await client.GetAsync(_uri,
+            HttpResponseMessage response = await client.GetAsync(
+                _uri,
                 HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
 
@@ -262,7 +189,9 @@ namespace Storm
                     percent = totalBytesRead / length;
 
                     totalBytesRead += bytesRead;
-                    
+
+                    // without this limiter,
+                    // the event would be invoked thousands of times unnecessarily
                     if (totalBytesRead > (lastTotalBytesRead + NotifyEveryBytes))
                     {
                         OnDownloadProgress(totalBytesRead, percent);
