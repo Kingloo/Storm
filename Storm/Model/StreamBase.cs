@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -19,27 +18,15 @@ namespace Storm.Model
         private string _apiUri = string.Empty;
         protected string ApiUri
         {
-            get
-            {
-                return _apiUri;
-            }
-            set
-            {
-                _apiUri = value;
-            }
+            get => _apiUri;
+            set => _apiUri = value;
         }
 
         private bool _hasUpdatedDisplayName = false;
         protected bool HasUpdatedDisplayName
         {
-            get
-            {
-                return _hasUpdatedDisplayName;
-            }
-            set
-            {
-                _hasUpdatedDisplayName = value;
-            }
+            get => _hasUpdatedDisplayName;
+            set => _hasUpdatedDisplayName = value;
         }
         #endregion
 
@@ -59,10 +46,7 @@ namespace Storm.Model
         private Uri _uri = null;
         public Uri Uri
         {
-            get
-            {
-                return _uri;
-            }
+            get => _uri;
             protected set
             {
                 if (_uri != value)
@@ -77,10 +61,7 @@ namespace Storm.Model
         private string _name = string.Empty;
         public string Name
         {
-            get
-            {
-                return _name;
-            }
+            get => _name;
             protected set
             {
                 if (_name != value)
@@ -95,10 +76,7 @@ namespace Storm.Model
         private string _displayName = string.Empty;
         public string DisplayName
         {
-            get
-            {
-                return String.IsNullOrEmpty(_displayName) ? Name : _displayName;
-            }
+            get => String.IsNullOrEmpty(_displayName)? Name : _displayName;
             protected set
             {
                 if (_displayName != value)
@@ -114,10 +92,7 @@ namespace Storm.Model
         private bool _isLive = false;
         public bool IsLive
         {
-            get
-            {
-                return _isLive;
-            }
+            get => _isLive;
             protected set
             {
                 if (_isLive != value)
@@ -133,10 +108,7 @@ namespace Storm.Model
         private bool _updating = false;
         public bool Updating
         {
-            get
-            {
-                return _updating;
-            }
+            get => _updating;
             set
             {
                 if (_updating != value)
@@ -151,14 +123,8 @@ namespace Storm.Model
         private bool _hasStreamlinkSupport = false;
         public bool HasStreamlinkSupport
         {
-            get
-            {
-                return _hasStreamlinkSupport;
-            }
-            protected set
-            {
-                _hasStreamlinkSupport = value;
-            }
+            get => _hasStreamlinkSupport;
+            protected set => _hasStreamlinkSupport = value;
         }
         #endregion
 
@@ -263,22 +229,38 @@ namespace Storm.Model
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
             req.Timeout = 4000;
-            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
+            req.UserAgent = GetUserAgent();
+            
+            req.Headers.Add("DNT", "1");
+            req.Headers.Add("Accept-encoding", "gzip, deflate");
 
             if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
             {
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             }
-
-            req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-encoding", "gzip, deflate");
-
+            
             return req;
+        }
+
+        private static string GetUserAgent()
+        {
+            string key = "UserAgent";
+
+            if (ConfigurationManagerWrapper.TryGetString(key, out string userAgent))
+            {
+                return userAgent;
+            }
+            else
+            {
+                Log.LogMessage($"{key} was not found");
+
+                return string.Empty;
+            }
         }
 
         private void LaunchStreamlink()
         {
-            string args = string.Format(CultureInfo.CurrentCulture, @"/C streamlink.exe {0} best", Uri.AbsoluteUri);
+            string args = $"/C streamlink.exe {Uri.AbsoluteUri} best";
 
             ProcessStartInfo pInfo = new ProcessStartInfo
             {

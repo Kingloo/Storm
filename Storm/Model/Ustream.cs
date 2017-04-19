@@ -16,14 +16,9 @@ namespace Storm.Model
         #endregion
 
         #region Properties
-        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Ustream.ico"));
-        public override BitmapImage Icon
-        {
-            get
-            {
-                return _icon;
-            }
-        }
+        private readonly static BitmapImage _icon
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/Ustream.ico"));
+        public override BitmapImage Icon => _icon;
         #endregion
 
         public Ustream(Uri uri)
@@ -45,7 +40,7 @@ namespace Storm.Model
 
             await DetermineIfLiveAsync();
             
-            if (wasLive == false && IsLive == true)
+            if (!wasLive && IsLive)
             {
                 NotifyIsNowLive(nameof(Ustream));
             }
@@ -57,16 +52,17 @@ namespace Storm.Model
         {
             HttpWebRequest req = BuildHttpWebRequest(Uri);
 
-            string response = (string)(await GetApiResponseAsync(req, false).ConfigureAwait(false));
+            string response = (string)(await GetApiResponseAsync(req, false)
+                .ConfigureAwait(false));
 
-            if (String.IsNullOrWhiteSpace(response) == false)
+            if (!String.IsNullOrWhiteSpace(response))
             {
                 string beginning = "\"channelId\":";
                 string ending = ",";
 
                 IReadOnlyList<string> results = response.FindBetween(beginning, ending);
 
-                if (results.Count > 0)
+                if (results.Any())
                 {
                     channelId = results.First();
                 }
@@ -75,18 +71,20 @@ namespace Storm.Model
 
         protected async override Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/channels/{1}.json", ApiUri, channelId);
+            string apiAddressToQuery = $"{ApiUri}/channels/{channelId}.json";
+
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true)
+                .ConfigureAwait(false));
 
-            bool live = false;
+            bool live = IsLive;
 
             if (json != null)
             {
                 if (json.HasValues)
                 {
-                    if (HasUpdatedDisplayName == false)
+                    if (!HasUpdatedDisplayName)
                     {
                         TrySetDisplayName(json);
                     }
@@ -103,7 +101,7 @@ namespace Storm.Model
         {
             string displayName = (string)resp["channel"]["title"];
 
-            if (String.IsNullOrEmpty(displayName) == false)
+            if (!String.IsNullOrEmpty(displayName))
             {
                 DisplayName = displayName;
 

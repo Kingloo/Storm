@@ -11,20 +11,18 @@ namespace Storm.Model
     public class YouTube : StreamBase
     {
         #region Properties
-        private static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/YouTube.ico"));
-        public override BitmapImage Icon
-        {
-            get
-            {
-                return _icon;
-            }
-        }
+        private static BitmapImage _icon
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/YouTube.ico"));
+        public override BitmapImage Icon => _icon;
         #endregion
 
-        public YouTube(Uri uri) : base(uri) { }
+        public YouTube(Uri uri)
+            : base(uri) { }
 
         protected override string SetAccountName(Uri uri)
         {
+            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+
             string newName = uri.AbsoluteUri;
             
             // 0: /
@@ -67,7 +65,7 @@ namespace Storm.Model
 
             await DetermineIfLiveAsync();
 
-            if (wasLive == false && IsLive == true)
+            if (!wasLive && IsLive)
             {
                 NotifyIsNowLive(nameof(YouTube));
             }
@@ -79,16 +77,17 @@ namespace Storm.Model
         {
             HttpWebRequest request = BuildHttpWebRequest(Uri);
 
-            string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
+            string response = (string)(await GetApiResponseAsync(request, false)
+                .ConfigureAwait(false));
 
-            if (String.IsNullOrEmpty(response) == false)
+            if (!String.IsNullOrEmpty(response))
             {
                 string beginning = "<meta property=\"og:title\" content=\"";
                 string ending = "\">";
 
                 IReadOnlyList<string> results = response.FindBetween(beginning, ending);
 
-                if (results.Count > 0)
+                if (results.Any())
                 {
                     DisplayName = results.First();
 
@@ -101,11 +100,12 @@ namespace Storm.Model
         {
             HttpWebRequest request = BuildHttpWebRequest(Uri);
 
-            string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
+            string response = (string)(await GetApiResponseAsync(request, false)
+                .ConfigureAwait(false));
 
             bool live = false;
 
-            if (String.IsNullOrEmpty(response) == false)
+            if (!String.IsNullOrEmpty(response))
             {
                 live = response.Contains("yt-badge-live");
             }

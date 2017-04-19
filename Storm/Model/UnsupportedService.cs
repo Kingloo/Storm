@@ -14,20 +14,9 @@ namespace Storm.Model
 
         #region Properties
         public override string MouseOverTooltip
-        {
-            get
-            {
-                return string.Format(CultureInfo.CurrentCulture, "{0} is an unsupported service", Name);
-            }
-        }
+            => string.Format(CultureInfo.CurrentCulture, "{0} is an unsupported service", Name);
 
-        public override BitmapImage Icon
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public override BitmapImage Icon => null;
         #endregion
 
         public UnsupportedService(string malFormatted)
@@ -37,14 +26,10 @@ namespace Storm.Model
         }
 
         public override async Task UpdateAsync()
-        {
-            await WriteMessage();
-        }
+            => await WriteMessage();
 
         protected override async Task DetermineIfLiveAsync()
-        {
-            await WriteMessage();
-        }
+            => await WriteMessage();
 
         private async Task WriteMessage()
         {

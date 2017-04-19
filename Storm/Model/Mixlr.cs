@@ -9,14 +9,9 @@ namespace Storm.Model
     public class Mixlr : StreamBase
     {
         #region Properties
-        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Mixlr.ico"));
-        public override BitmapImage Icon
-        {
-            get
-            {
-                return _icon;
-            }
-        }
+        private readonly static BitmapImage _icon
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/Mixlr.ico"));
+        public override BitmapImage Icon => _icon;
         #endregion
 
         public Mixlr(Uri userUrl)
@@ -33,7 +28,7 @@ namespace Storm.Model
             
             await DetermineIfLiveAsync();
             
-            if (wasLive == false && IsLive == true)
+            if (!wasLive && IsLive)
             {
                 NotifyIsNowLive(nameof(Mixlr));
             }
@@ -43,18 +38,20 @@ namespace Storm.Model
         
         protected override async Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/{1}", ApiUri, Name);
+            string apiAddressToQuery = $"{ApiUri}/{Name}";
+
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true)
+                .ConfigureAwait(false));
 
-            bool live = false;
+            bool live = IsLive;
             
             if (json != null)
             {
                 if (json.HasValues)
                 {
-                    if (HasUpdatedDisplayName == false)
+                    if (!HasUpdatedDisplayName)
                     {
                         TrySetDisplayName(json);
                     }
@@ -69,11 +66,8 @@ namespace Storm.Model
         private void TrySetDisplayName(JObject apiResp)
         {
             DisplayName = (string)apiResp["username"];
-
-            if (DisplayName.Equals(Name) == false)
-            {
-                HasUpdatedDisplayName = true;
-            }
+            
+            HasUpdatedDisplayName = DisplayName.Equals(Name) ? false : true;
         }
     }
 }

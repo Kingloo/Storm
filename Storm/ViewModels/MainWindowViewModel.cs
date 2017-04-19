@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Threading;
 using Storm.DataAccess;
 using Storm.Extensions;
@@ -13,15 +12,31 @@ using Storm.Model;
 
 namespace Storm.ViewModels
 {
+    public class StatusChangedEventArgs : EventArgs
+    {
+        private readonly bool _isUpdating = false;
+        public bool IsUpdating => _isUpdating;
+
+        public StatusChangedEventArgs(bool isUpdating)
+        {
+            _isUpdating = isUpdating;
+        }
+    }
+
     public class MainWindowViewModel : ViewModelBase
     {
-        #region Fields
-        private readonly MainWindow mainWindow = null;
-        private readonly IRepository urlsRepo = null;
+        #region Events
+        public event EventHandler<StatusChangedEventArgs> StatusChanged;
 
+        private void OnStatusChanged(bool isUpdating)
+            => StatusChanged?.Invoke(this, new StatusChangedEventArgs(isUpdating));
+        #endregion
+
+        #region Fields
+        private readonly IRepository urlsRepo = null;
         private readonly DispatcherTimer updateTimer = new DispatcherTimer
         {
-            Interval = new TimeSpan(0, 3, 0)
+            Interval = TimeSpan.FromMinutes(3)
         };
         #endregion
 
@@ -29,10 +44,7 @@ namespace Storm.ViewModels
         private bool _activity = false;
         public bool Activity
         {
-            get
-            {
-                return _activity;
-            }
+            get => _activity;
             set
             {
                 if (_activity != value)
@@ -42,19 +54,21 @@ namespace Storm.ViewModels
                     RaisePropertyChanged(nameof(Activity));
 
                     RaiseAllAsyncCanExecuteChangedEvents();
+
+                    OnStatusChanged(_activity);
                 }
             }
         }
 
         private void RaiseAllAsyncCanExecuteChangedEvents()
         {
-            ReloadUrlsAsyncCommand.RaiseCanExecuteChanged();
+            LoadUrlsAsyncCommand.RaiseCanExecuteChanged();
             UpdateAllAsyncCommand.RaiseCanExecuteChanged();
         }
 
-        private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
-        //public ObservableCollection<StreamBase> Streams { get { return _streams; } }
-        public IReadOnlyCollection<StreamBase> Streams { get { return _streams; } }
+        private readonly ObservableCollection<StreamBase> _streams
+            = new ObservableCollection<StreamBase>();
+        public IReadOnlyCollection<StreamBase> Streams => _streams;
         #endregion
 
         #region Commands
@@ -65,7 +79,7 @@ namespace Storm.ViewModels
             {
                 if (_goToStreamCommand == null)
                 {
-                    _goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, canExecute);
+                    _goToStreamCommand = new DelegateCommand<StreamBase>(GoToStream, CanExecute);
                 }
 
                 return _goToStreamCommand;
@@ -74,6 +88,8 @@ namespace Storm.ViewModels
 
         private static void GoToStream(StreamBase stream)
         {
+            if (stream == null) { throw new ArgumentNullException(nameof(stream)); }
+
             stream.GoToStream();
         }
 
@@ -84,7 +100,7 @@ namespace Storm.ViewModels
             {
                 if (_openUrlsFileCommand == null)
                 {
-                    _openUrlsFileCommand = new DelegateCommand(OpenUrlsFile, canExecute);
+                    _openUrlsFileCommand = new DelegateCommand(OpenUrlsFile, CanExecute);
                 }
 
                 return _openUrlsFileCommand;
@@ -101,23 +117,25 @@ namespace Storm.ViewModels
             {
                 Process.Start("notepad.exe", urlsRepo.FilePath);
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
+                Log.LogException(ex);
+
                 Process.Start(urlsRepo.FilePath); // .txt default program
             }
         }
 
-        private DelegateCommandAsync _reloadUrlsAsyncCommand = null;
-        public DelegateCommandAsync ReloadUrlsAsyncCommand
+        private DelegateCommandAsync _loadUrlsAsyncCommand = null;
+        public DelegateCommandAsync LoadUrlsAsyncCommand
         {
             get
             {
-                if (_reloadUrlsAsyncCommand == null)
+                if (_loadUrlsAsyncCommand == null)
                 {
-                    _reloadUrlsAsyncCommand = new DelegateCommandAsync(ReloadUrlsAsync, canExecuteAsync);
+                    _loadUrlsAsyncCommand = new DelegateCommandAsync(LoadUrlsAsync, CanExecuteAsync);
                 }
 
-                return _reloadUrlsAsyncCommand;
+                return _loadUrlsAsyncCommand;
             }
         }
 
@@ -125,18 +143,13 @@ namespace Storm.ViewModels
         {
             _streams.Clear();
 
-            IEnumerable<StreamBase> loaded = await urlsRepo.LoadAsync();
+            var loaded = await urlsRepo.LoadAsync();
             
             _streams.AddRange(loaded);
-        }
 
-        private async Task ReloadUrlsAsync()
-        {
-            await LoadUrlsAsync();
-            
             await UpdateAsync();
         }
-
+        
         private DelegateCommandAsync _updateAllAsyncCommand = null;
         public DelegateCommandAsync UpdateAllAsyncCommand
         {
@@ -144,7 +157,7 @@ namespace Storm.ViewModels
             {
                 if (_updateAllAsyncCommand == null)
                 {
-                    _updateAllAsyncCommand = new DelegateCommandAsync(UpdateAsync, canExecuteAsync);
+                    _updateAllAsyncCommand = new DelegateCommandAsync(UpdateAsync, CanExecuteAsync);
                 }
 
                 return _updateAllAsyncCommand;
@@ -153,73 +166,35 @@ namespace Storm.ViewModels
 
         public async Task UpdateAsync()
         {
-            SetUIToUpdating();
+            Activity = true;
 
-            List<Task> updateTasks = (from each in Streams
-                                      where !each.Updating
-                                      select each.UpdateAsync())
-                                      .ToList();
+            var updateTasks = Streams
+                .Where(x => !x.Updating)
+                .Select(x => x.UpdateAsync())
+                .ToList();
 
             if (updateTasks.Count > 0)
             {
                 await Task.WhenAll(updateTasks);
             }
-            
-            SetUIToStable();
-        }
-
-        private void SetUIToUpdating()
-        {
-            Activity = true;
-
-            VisualStateManager.GoToState(mainWindow, "Updating", false);
-        }
-
-        private void SetUIToStable()
-        {
-            VisualStateManager.GoToState(mainWindow, "Stable", false);
 
             Activity = false;
         }
+        
+        private bool CanExecute(object _) => true;
 
-        private DelegateCommand _exitCommand = null;
-        public DelegateCommand ExitCommand
-        {
-            get
-            {
-                if (_exitCommand == null)
-                {
-                    _exitCommand = new DelegateCommand(Exit, canExecute);
-                }
-
-                return _exitCommand;
-            }
-        }
-
-        private void Exit()
-        {
-            mainWindow.Close();
-        }
-
-        private bool canExecute(object _)
-        {
-            return true;
-        }
-
-        private bool canExecuteAsync(object _)
-        {
-            return !Activity;
-        }
+        private bool CanExecuteAsync(object _) => !Activity;
         #endregion
 
-        public MainWindowViewModel(MainWindow window, IRepository urlsRepo)
+        public MainWindowViewModel(IRepository urlsRepo)
         {
             this.urlsRepo = urlsRepo;
 
-            mainWindow = window;
-
-            updateTimer.Tick += async (s, e) => await UpdateAsync();
+            updateTimer.Tick += UpdateTimer_Tick;
             updateTimer.Start();
         }
+
+        private async void UpdateTimer_Tick(object sender, EventArgs e)
+            => await UpdateAsync();
     }
 }

@@ -6,11 +6,13 @@ using System.Windows.Media;
 namespace Storm
 {
     [ValueConversion(typeof(bool), typeof(SolidColorBrush))]
-    class LiveColorConverter : IValueConverter
+    public class LiveColorConverter : IValueConverter
     {
         public SolidColorBrush Online { get; set; }
         public SolidColorBrush Offline { get; set; }
         public SolidColorBrush Default { get; set; }
+        
+        public LiveColorConverter() { }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => (bool)value ? Online : Offline;

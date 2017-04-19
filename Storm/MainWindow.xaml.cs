@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Shapes;
@@ -14,7 +13,7 @@ namespace Storm
         private IntPtr hWnd = IntPtr.Zero;
         private readonly MainWindowViewModel vm = null;
 
-        public MainWindow()
+        public MainWindow(MainWindowViewModel viewModel)
         {
             InitializeComponent();
 
@@ -22,8 +21,22 @@ namespace Storm
             LocationChanged += MainWindow_LocationChanged;
             Loaded += MainWindow_Loaded;
 
-            vm = new MainWindowViewModel(this, ((App)App.Current).UrlsRepo);
+            vm = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            vm.StatusChanged += Vm_StatusChanged;
+
             DataContext = vm;
+        }
+
+        private void Vm_StatusChanged(object sender, StatusChangedEventArgs e)
+        {
+            if (e.IsUpdating)
+            {
+                VisualStateManager.GoToState(this, "Updating", false);
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "Stable", false);
+            }
         }
 
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
@@ -34,13 +47,11 @@ namespace Storm
         }
 
         private void MainWindow_LocationChanged(object sender, EventArgs e)
-        {
-            CalculateMaxHeight();
-        }
+            => CalculateMaxHeight();
 
         private void CalculateMaxHeight()
         {
-            Screen currentMonitor = Screen.FromHandle(hWnd);
+            var currentMonitor = System.Windows.Forms.Screen.FromHandle(hWnd);
 
             MaxHeight = currentMonitor == null
                 ? SystemParameters.WorkArea.Bottom - 100
@@ -48,13 +59,9 @@ namespace Storm
         }
         
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            await vm.LoadUrlsAsync();
-            
-            await vm.UpdateAsync();
-        }
-        
-        private void go_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+            => await vm.LoadUrlsAsync();
+
+        private void SelectorMovement_KeyUp(object sender, KeyEventArgs e)
         {
             switch (e.Key)
             {

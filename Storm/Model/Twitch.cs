@@ -15,10 +15,7 @@ namespace Storm.Model
         private string _game = string.Empty;
         public string Game
         {
-            get
-            {
-                return _game;
-            }
+            get => _game;
             set
             {
                 if (_game != value)
@@ -59,14 +56,9 @@ namespace Storm.Model
             }
         }
 
-        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Twitch.ico"));
-        public override BitmapImage Icon
-        {
-            get
-            {
-                return _icon;
-            }
-        }
+        private readonly static BitmapImage _icon
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/Twitch.ico"));
+        public override BitmapImage Icon => _icon;
         #endregion
 
         public Twitch(Uri uri)
@@ -81,7 +73,7 @@ namespace Storm.Model
         {
             Updating = true;
 
-            List<Task> updateTasks = new List<Task>();
+            var updateTasks = new List<Task>();
 
             bool wasLive = IsLive;
 
@@ -95,7 +87,7 @@ namespace Storm.Model
             
             await Task.WhenAll(updateTasks);
 
-            if (wasLive == false && IsLive == true)
+            if (!wasLive && IsLive)
             {
                 NotifyIsNowLive(nameof(Twitch));
             }
@@ -105,10 +97,12 @@ namespace Storm.Model
 
         protected async Task TrySetDisplayNameAsync()
         {
-            string apiAddressToQueryForDisplayName = string.Format("{0}/channels/{1}", ApiUri, Name);
+            string apiAddressToQueryForDisplayName = $"{ApiUri}/channels/{Name}";
+
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true)
+                .ConfigureAwait(false));
 
             if (json != null)
             {
@@ -123,31 +117,38 @@ namespace Storm.Model
 
         protected async Task DetermineGameAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/channels/{1}", ApiUri, Name);
+            string apiAddressToQuery = $"{ApiUri}/channels/{Name}";
+
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true)
+                .ConfigureAwait(false));
 
             if (json != null)
             {
-                if (json["game"] is JToken)
+                if (json["game"] is JToken token)
                 {
-                    Game = (string)json["game"];
+                    Game = (string)token;
+
+                    //Game = (string)json["game"];
                 }
             }
         }
 
         protected async override Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/streams/{1}", ApiUri, Name);
+            string apiAddressToQuery = $"{ApiUri}/streams/{Name}";
+
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
 
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true)
+                .ConfigureAwait(false));
 
-            bool live = false;
+            bool live = IsLive;
 
             if (json != null)
             {
+                // change this to be like DetermineGameAsync if that was successful
                 if (json["stream"] != null)
                 {
                     if (json["stream"].HasValues)
@@ -184,6 +185,7 @@ namespace Storm.Model
 
             req.Accept = "application/vnd.twitchtv.v3+json";
             req.Headers.Add("Client-ID", "ewvlchtxgqq88ru9gmfp1gmyt6h2b93");
+
             // jzkbprff40iqj646a697cyrvl0zt2m6
             // lf8xspujnqfqcdlj11zq77dfen2tqjo
             // pwkzresl8kj2rdj6g7bvxl9ys1wly3j

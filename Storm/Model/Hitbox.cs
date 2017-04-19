@@ -9,17 +9,13 @@ namespace Storm.Model
     public class Hitbox : StreamBase
     {
         #region Properties
-        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Hitbox.ico"));
-        public override BitmapImage Icon
-        {
-            get
-            {
-                return _icon;
-            }
-        }
+        private readonly static BitmapImage _icon
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/Hitbox.ico"));
+        public override BitmapImage Icon => _icon;
         #endregion
 
-        public Hitbox(Uri accountUri) : base(accountUri)
+        public Hitbox(Uri accountUri)
+            : base(accountUri)
         {
             ApiUri = "https://api.hitbox.tv";
         }
@@ -32,7 +28,7 @@ namespace Storm.Model
 
             await DetermineIfLiveAsync();
 
-            if (wasLive == false && IsLive == true)
+            if (!wasLive && IsLive)
             {
                 NotifyIsNowLive(nameof(Hitbox));
             }
@@ -42,12 +38,14 @@ namespace Storm.Model
         
         protected override async Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = string.Format("{0}/user/{1}", ApiUri, Name);
+            string apiAddressToQuery = $"{ApiUri}/user/{Name}";
+
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true)
+                .ConfigureAwait(false));
 
-            bool live = false;
+            bool live = IsLive;
 
             if (json != null)
             {

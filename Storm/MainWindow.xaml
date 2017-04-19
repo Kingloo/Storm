@@ -75,9 +75,9 @@
         <KeyBinding x:Name="OpenUrlsFileCommandKeyBinding"
                     Key="F11"
                     Command="{Binding Path=OpenUrlsFileCommand, Mode=OneTime}" />
-        <KeyBinding x:Name="ReloadUrlsAsyncCommandKeyBinding"
+        <KeyBinding x:Name="LoadUrlsAsyncCommandKeyBinding"
                     Key="F12"
-                    Command="{Binding Path=ReloadUrlsAsyncCommand, Mode=OneTime}" />
+                    Command="{Binding Path=LoadUrlsAsyncCommand, Mode=OneTime}" />
     </Window.InputBindings>
 
     <Window.Resources>
@@ -135,7 +135,7 @@
                                Width="5"
                                Fill="Transparent"
                                Focusable="True"
-                               KeyUp="go_KeyUp"
+                               KeyUp="SelectorMovement_KeyUp"
                                FocusVisualStyle="{x:Null}"> <!--this removes the hashed outline-->
                         <Rectangle.Triggers>
                             <EventTrigger RoutedEvent="GotKeyboardFocus">

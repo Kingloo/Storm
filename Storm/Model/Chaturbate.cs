@@ -8,17 +8,13 @@ namespace Storm.Model
     public class Chaturbate : StreamBase
     {
         #region Properties
-        private readonly static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/Icons/Chaturbate.ico"));
-        public override BitmapImage Icon
-        {
-            get
-            {
-                return _icon;
-            }
-        }
+        private readonly static BitmapImage _icon
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/Chaturbate.ico"));
+        public override BitmapImage Icon => _icon;
         #endregion
 
-        public Chaturbate(Uri accountUri) : base(accountUri) { }
+        public Chaturbate(Uri accountUri)
+            : base(accountUri) { }
 
         public override async Task UpdateAsync()
         {
@@ -28,7 +24,7 @@ namespace Storm.Model
 
             await DetermineIfLiveAsync();
 
-            if (wasLive == false && IsLive == true)
+            if (!wasLive && IsLive)
             {
                 NotifyIsNowLive(nameof(Chaturbate));
             }
@@ -40,11 +36,12 @@ namespace Storm.Model
         {
             HttpWebRequest request = BuildHttpWebRequest(Uri);
 
-            string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
+            string response = (string)(await GetApiResponseAsync(request, false)
+                .ConfigureAwait(false));
 
             bool live = false;
 
-            if (String.IsNullOrWhiteSpace(response) == false)
+            if (!String.IsNullOrWhiteSpace(response))
             {
                 live = !response.Contains("Room is currently offline")
                     && !response.Contains("meta name=\"keywords\" content=\"Login, Chaturbate login\"")
@@ -56,34 +53,5 @@ namespace Storm.Model
 
             IsLive = live;
         }
-
-        //public override async void GoToStream()
-        //{
-        //    HttpWebRequest request = BuildHttpWebRequest(Uri);
-
-        //    string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
-
-        //    if (String.IsNullOrWhiteSpace(response) == false)
-        //    {
-        //        string beginning = "html += \"src='";
-        //        string ending = "'\";";
-
-        //        IReadOnlyList<string> results = response.FindBetween(beginning, ending);
-
-        //        if (results.Count > 1)
-        //        {
-        //            // TODO - pass me the location of a video player
-        //            // configuration file
-        //            string args = "";
-
-        //            ProcessStartInfo pInfo = new ProcessStartInfo
-        //            {
-        //                Arguments = args,
-        //                FileName = "cmd.exe",
-        //                WindowStyle = ProcessWindowStyle.Hidden
-        //            };
-        //        }
-        //    }
-        //}
     }
 }

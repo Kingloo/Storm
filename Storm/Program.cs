@@ -11,10 +11,17 @@ namespace Storm
         public static int Main()
         {
             string fullPath = GetUrlFilePath();
+
+            if (String.IsNullOrWhiteSpace(fullPath))
+            {
+                Log.LogMessage($"StormUrls.txt not found");
+
+                return -1;
+            }
+
             TxtRepo urlsRepo = new TxtRepo(fullPath);
 
             App app = new App(urlsRepo);
-            app.InitializeComponent();
 
             int exitCode = app.Run();
 
