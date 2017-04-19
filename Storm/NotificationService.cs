@@ -87,10 +87,15 @@ namespace Storm
                 AddChild(grid);
 
 #if DEBUG
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => Close());
+                DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
+                    new TimeSpan(0, 0, 2),
+                    () => Close());
 #else
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => Close());
+                DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
+                    new TimeSpan(0, 0, 15),
+                    () => Close());
 #endif
+                notifyWindowCloseTimer.Start();
             }
 
             private Style BuildWindowStyle()

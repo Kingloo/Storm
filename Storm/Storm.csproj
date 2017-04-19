@@ -154,10 +154,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="CountdownDispatcherTimer.cs" />
     <Compile Include="DataAccess\IRepository.cs" />
     <Compile Include="DataAccess\TxtRepo.cs" />
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="DispatcherCountdownTimer.cs" />
     <Compile Include="Download.cs" />
     <Compile Include="Extensions\Collections.cs" />
     <Compile Include="Extensions\String.cs" />
