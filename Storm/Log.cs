@@ -53,6 +53,7 @@ namespace Storm
                 sb.AppendLine(message);
             }
 
+            sb.AppendLine(ex.GetType().Name);
             sb.AppendLine(ex.Message);
             sb.AppendLine(ex.StackTrace);
 
@@ -77,6 +78,7 @@ namespace Storm
                 sb.AppendLine(message);
             }
 
+            sb.AppendLine(ex.GetType().Name);
             sb.AppendLine(ex.Message);
             sb.AppendLine(ex.StackTrace);
 
@@ -90,9 +92,9 @@ namespace Storm
             StringBuilder sb = new StringBuilder();
 
             DateTime time = DateTime.Now;
-            string name = Process.GetCurrentProcess().MainModule.ModuleName;
+            string process = Process.GetCurrentProcess().MainModule.ModuleName;
 
-            string log = $"{time} - {name}";
+            string log = $"{time} - {process}";
 
             sb.AppendLine(log);
             sb.AppendLine(text);
