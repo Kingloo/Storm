@@ -148,14 +148,16 @@ namespace Storm.Model
 
             if (json != null)
             {
+                live = (bool)json["stream"]?.HasValues;
+
                 // change this to be like DetermineGameAsync if that was successful
-                if (json["stream"] != null)
-                {
-                    if (json["stream"].HasValues)
-                    {
-                        live = true;
-                    }
-                }
+                //if (json["stream"] != null)
+                //{
+                //    if (json["stream"].HasValues)
+                //    {
+                //        live = true;
+                //    }
+                //}
             }
             
             IsLive = live;
