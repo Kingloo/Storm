@@ -20,11 +20,24 @@ namespace Storm
             SourceInitialized += MainWindow_SourceInitialized;
             LocationChanged += MainWindow_LocationChanged;
             Loaded += MainWindow_Loaded;
+            KeyUp += MainWindow_KeyUp;
 
             vm = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             vm.StatusChanged += Vm_StatusChanged;
 
             DataContext = vm;
+        }
+
+        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Escape:
+                    Close();
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void Vm_StatusChanged(object sender, StatusChangedEventArgs e)

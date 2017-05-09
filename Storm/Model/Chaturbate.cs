@@ -45,7 +45,7 @@ namespace Storm.Model
             {
                 live = !response.Contains("Room is currently offline")
                     && !response.Contains("meta name=\"keywords\" content=\"Login, Chaturbate login\"")
-                    && !response.Contains("is banned");
+                    && !response.Contains("has been banned");
                 
                 // website must contain NEITHER "Room is currently offline" NOR "banned"
                 //IsLive = !(website.Contains("Room is currently offline") && website.Contains("banned"));

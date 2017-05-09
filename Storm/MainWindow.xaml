@@ -66,9 +66,6 @@
     </Window.Style>
 
     <Window.InputBindings>
-        <KeyBinding x:Name="ExitCommandKeyBinding"
-                    Key="Escape"
-                    Command="{Binding Path=ExitCommand, Mode=OneTime}" />
         <KeyBinding x:Name="UpdateAllAsyncCommandKeyBinding"
                     Key="F5"
                     Command="{Binding Path=UpdateAllAsyncCommand, Mode=OneTime}" />
