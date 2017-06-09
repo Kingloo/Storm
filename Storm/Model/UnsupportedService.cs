@@ -16,7 +16,9 @@ namespace Storm.Model
         public override string MouseOverTooltip
             => string.Format(CultureInfo.CurrentCulture, "{0} is an unsupported service", Name);
 
-        public override BitmapImage Icon => null;
+        private static BitmapImage _icon
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/UnsupportedService.ico"));
+        public override BitmapImage Icon => _icon;
         #endregion
 
         public UnsupportedService(string malFormatted)

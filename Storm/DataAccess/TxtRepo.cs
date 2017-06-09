@@ -28,7 +28,7 @@ namespace Storm.DataAccess
 
         public async Task<IEnumerable<StreamBase>> LoadAsync()
         {
-            List<StreamBase> streams = new List<StreamBase>();
+            var streams = new List<StreamBase>();
 
             FileStream fsAsync = null;
 
