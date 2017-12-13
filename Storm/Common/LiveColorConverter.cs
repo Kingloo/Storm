@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace Storm
+namespace Storm.Common
 {
     [ValueConversion(typeof(bool), typeof(SolidColorBrush))]
     public class LiveColorConverter : IValueConverter

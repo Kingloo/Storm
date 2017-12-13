@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Storm.Common;
 using Storm.ViewModels;
 
 namespace Storm.Model
@@ -150,8 +151,7 @@ namespace Storm.Model
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
             
-            string response = await Download.WebsiteAsync(request)
-                .ConfigureAwait(false);
+            string response = await Download.WebsiteAsync(request).ConfigureAwait(false);
             
             if (String.IsNullOrWhiteSpace(response)) { return null; }
 
@@ -229,7 +229,7 @@ namespace Storm.Model
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
             req.Timeout = 4000;
-            req.UserAgent = GetUserAgent();
+            req.UserAgent = Constants.UserAgent;
             
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-encoding", "gzip, deflate");
@@ -241,23 +241,7 @@ namespace Storm.Model
             
             return req;
         }
-
-        private static string GetUserAgent()
-        {
-            string key = "UserAgent";
-
-            if (ConfigurationManagerWrapper.TryGetString(key, out string userAgent))
-            {
-                return userAgent;
-            }
-            else
-            {
-                Log.LogMessage($"{key} was not found");
-
-                return string.Empty;
-            }
-        }
-
+        
         private void LaunchStreamlink()
         {
             string args = $"/C streamlink.exe {Uri.AbsoluteUri} best";

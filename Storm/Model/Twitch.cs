@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
+using Storm.Common;
 
 namespace Storm.Model
 {
@@ -121,17 +122,11 @@ namespace Storm.Model
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true)
-                .ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
-            if (json != null)
+            if (json["game"] is JToken token)
             {
-                if (json["game"] is JToken token)
-                {
-                    Game = (string)token;
-
-                    //Game = (string)json["game"];
-                }
+                Game = (string)token;
             }
         }
 
@@ -141,23 +136,13 @@ namespace Storm.Model
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
 
-            JObject json = (JObject)(await GetApiResponseAsync(request, true)
-                .ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
             bool live = IsLive;
 
-            if (json != null)
+            if (json["stream"] is JToken token)
             {
-                live = (bool)json["stream"]?.HasValues;
-
-                // change this to be like DetermineGameAsync if that was successful
-                //if (json["stream"] != null)
-                //{
-                //    if (json["stream"].HasValues)
-                //    {
-                //        live = true;
-                //    }
-                //}
+                live = token.HasValues;
             }
             
             IsLive = live;

@@ -4,109 +4,80 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Storm
+namespace Storm.Common
 {
     public static class NotificationService
     {
-        public static void Send(string title, Action action)
-        {
-            NotificationWindow window = new NotificationWindow(title, string.Empty, action);
+        public static void Send(string title)
+            => Send(title, string.Empty, null);
 
-            Display(window);
-        }
+        public static void Send(string title, string description)
+            => Send(title, description, null);
+
+        public static void Send(string title, Action action)
+            => Send(title, string.Empty, action);
         
         public static void Send(string title, string description, Action action)
         {
-            NotificationWindow window = new NotificationWindow(title, description, action);
+            var window = new NotificationWindow(title, description, action);
 
             Display(window);
         }
 
+
         private static void Display(NotificationWindow window)
         {
+            if (window == null) { throw new ArgumentNullException(nameof(window)); }
+
             window.Show();
 
             System.Media.SystemSounds.Hand.Play();
         }
 
+
         private sealed class NotificationWindow : Window
         {
-            private Action action = null;
-
             internal NotificationWindow(string title, string description, Action action)
             {
-                this.action = action;
+                Style = BuildWindowStyle(action);
+                
+                bool hasDescription = !String.IsNullOrWhiteSpace(description);
 
-                Style = BuildWindowStyle();
+                Grid grid = hasDescription ? BuildGrid(numRows: 2) : BuildGrid(numRows: 1);
 
-                Grid grid = new Grid
-                {
-                    Style = BuildGridStyle()
-                };
-
-                grid.RowDefinitions.Add(new RowDefinition
-                {
-                    Height = GridLength.Auto
-                });
-
-                Label lbl_Title = new Label
-                {
-                    Style = BuildLabelTitleStyle(),
-                    Content = new TextBlock
-                    {
-                        Text = title,
-                        TextTrimming = TextTrimming.CharacterEllipsis
-                    }
-                };
-
+                Label lbl_Title = BuildTitleLabel(title);
                 Grid.SetRow(lbl_Title, 0);
                 grid.Children.Add(lbl_Title);
 
-                if (String.IsNullOrEmpty(description) == false)
+                if (hasDescription)
                 {
-                    Label lbl_Description = new Label
-                    {
-                        Style = BuildLabelDescriptionStyle(),
-                        Content = new TextBlock
-                        {
-                            Text = description,
-                            TextTrimming = TextTrimming.CharacterEllipsis,
-                            FontStyle = FontStyles.Italic
-                        }
-                    };
-
-                    grid.RowDefinitions.Add(new RowDefinition
-                    {
-                        Height = GridLength.Auto
-                    });
-
+                    Label lbl_Description = BuildDescriptionLabel(description);
                     Grid.SetRow(lbl_Description, 1);
                     grid.Children.Add(lbl_Description);
                 }
-
+                
                 AddChild(grid);
-
+                
 #if DEBUG
-                DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
-                    new TimeSpan(0, 0, 2),
+                var notifyWindowCloseTimer = new DispatcherCountdownTimer(
+                    TimeSpan.FromSeconds(2),
                     () => Close());
 #else
-                DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
-                    new TimeSpan(0, 0, 15),
+                var notifyWindowCloseTimer = new DispatcherCountdownTimer(
+                    TimeSpan.FromSeconds(15),
                     () => Close());
 #endif
                 notifyWindowCloseTimer.Start();
             }
 
-            private Style BuildWindowStyle()
+            private static Style BuildWindowStyle(Action action)
             {
                 Style style = new Style(typeof(NotificationWindow));
 
                 if (action != null)
                 {
-                    MouseButtonEventHandler doubleClickAction = (s, e) => action();
-
-                    EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, doubleClickAction);
+                    var handler = new MouseButtonEventHandler((s, e) => action());
+                    var leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
 
                     style.Setters.Add(leftMouseDoubleClick);
                 }
@@ -123,16 +94,41 @@ namespace Storm
                 style.Setters.Add(new Setter(WindowStyleProperty, WindowStyle.None));
                 style.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(0d)));
 
+                double desiredWidth = 475d;
+
                 double top = SystemParameters.WorkArea.Top + 50;
-                double left = SystemParameters.WorkArea.Right - 475d - 100;
+                double left = SystemParameters.WorkArea.Right - desiredWidth - 100;
 
                 style.Setters.Add(new Setter(TopProperty, top));
                 style.Setters.Add(new Setter(LeftProperty, left));
 
                 style.Setters.Add(new Setter(SizeToContentProperty, SizeToContent.Height));
-                style.Setters.Add(new Setter(WidthProperty, 475d));
+                style.Setters.Add(new Setter(WidthProperty, desiredWidth));
 
                 return style;
+            }
+
+            private static Grid BuildGrid(int numRows)
+            {
+                if (numRows < 1)
+                {
+                    throw new ArgumentException("there must be at least 1 row", nameof(numRows));
+                }
+
+                Grid grid = new Grid
+                {
+                    Style = BuildGridStyle()
+                };
+
+                for (int i = 0; i < numRows; i++)
+                {
+                    grid.RowDefinitions.Add(new RowDefinition
+                    {
+                        Height = GridLength.Auto
+                    });
+                }
+
+                return grid;
             }
 
             private static Style BuildGridStyle()
@@ -152,7 +148,20 @@ namespace Storm
                 return style;
             }
 
-            private static Style BuildLabelTitleStyle()
+            private static Label BuildTitleLabel(string title)
+            {
+                return new Label
+                {
+                    Style = BuildTitleLabelStyle(),
+                    Content = new TextBlock
+                    {
+                        Text = title,
+                        TextTrimming = TextTrimming.CharacterEllipsis
+                    }
+                };
+            }
+
+            private static Style BuildTitleLabelStyle()
             {
                 Style style = new Style(typeof(Label));
 
@@ -170,7 +179,21 @@ namespace Storm
                 return style;
             }
 
-            private static Style BuildLabelDescriptionStyle()
+            private static Label BuildDescriptionLabel(string description)
+            {
+                return new Label
+                {
+                    Style = BuildDescriptionLabelStyle(),
+                    Content = new TextBlock
+                    {
+                        Text = description,
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        FontStyle = FontStyles.Italic
+                    }
+                };
+            }
+
+            private static Style BuildDescriptionLabelStyle()
             {
                 Style style = new Style(typeof(Label));
 

@@ -37,8 +37,8 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>145</ApplicationRevision>
-    <ApplicationVersion>1.4.0.%2a</ApplicationVersion>
+    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationVersion>1.5.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -97,7 +97,7 @@
     <StartupObject>Storm.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>profile_icon.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\profile_icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
@@ -154,33 +154,32 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="ConfigurationManagerWrapper.cs" />
-    <Compile Include="DataAccess\IRepository.cs" />
+    <Compile Include="Common\Log.cs" />
+    <Compile Include="Common\NotificationService.cs" />
     <Compile Include="DataAccess\TxtRepo.cs" />
-    <Compile Include="DelegateCommand.cs" />
-    <Compile Include="DispatcherCountdownTimer.cs" />
-    <Compile Include="Download.cs" />
+    <Compile Include="Common\DelegateCommand.cs" />
+    <Compile Include="Common\DispatcherCountdownTimer.cs" />
+    <Compile Include="Common\Download.cs" />
     <Compile Include="Extensions\Collections.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="Extensions\WebRequest.cs" />
     <Compile Include="Extensions\Window.cs" />
-    <Compile Include="LiveColorConverter.cs" />
-    <Compile Include="Log.cs" />
+    <Compile Include="Common\LiveColorConverter.cs" />
     <Compile Include="Model\Beam.cs" />
     <Compile Include="Model\Chaturbate.cs" />
+    <Compile Include="Model\Constants.cs" />
     <Compile Include="Model\Hitbox.cs" />
     <Compile Include="Model\Mixlr.cs" />
     <Compile Include="Model\YouTube.cs" />
-    <Compile Include="NotificationService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Model\StreamBase.cs" />
     <Compile Include="Model\Twitch.cs" />
     <Compile Include="Model\UnsupportedService.cs" />
     <Compile Include="Model\Ustream.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Common\Utils.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -188,7 +187,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -225,12 +224,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="profile_icon.ico" />
+    <Resource Include="Icons\profile_icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

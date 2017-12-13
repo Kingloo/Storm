@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Storm.Common;
 using Storm.DataAccess;
 using Storm.Extensions;
 using Storm.Model;
@@ -33,7 +34,7 @@ namespace Storm.ViewModels
         #endregion
 
         #region Fields
-        private readonly IRepository urlsRepo = null;
+        private readonly TxtRepo urlsRepo = null;
         private readonly DispatcherTimer updateTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMinutes(3)
@@ -115,13 +116,13 @@ namespace Storm.ViewModels
 
             try
             {
-                Process.Start("notepad.exe", urlsRepo.FilePath);
+                Process.Start("notepad.exe", urlsRepo.UrlsFile.FullName);
             }
             catch (FileNotFoundException ex)
             {
                 Log.LogException(ex);
 
-                Process.Start(urlsRepo.FilePath); // .txt default program
+                Process.Start(urlsRepo.UrlsFile.FullName); // .txt default program
             }
         }
 
@@ -186,7 +187,7 @@ namespace Storm.ViewModels
         private bool CanExecuteAsync(object _) => !Activity;
         #endregion
 
-        public MainWindowViewModel(IRepository urlsRepo)
+        public MainWindowViewModel(TxtRepo urlsRepo)
         {
             this.urlsRepo = urlsRepo;
 

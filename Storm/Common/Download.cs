@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Storm.Extensions;
 using static System.FormattableString;
 
-namespace Storm
+namespace Storm.Common
 {
     public enum DownloadResult
     {

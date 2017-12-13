@@ -6,7 +6,7 @@ using System.Windows.Shapes;
 using Storm.Model;
 using Storm.ViewModels;
 
-namespace Storm
+namespace Storm.Views
 {
     public partial class MainWindow : Window
     {

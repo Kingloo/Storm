@@ -1,7 +1,8 @@
 ﻿<Application x:Class="Storm.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:this="clr-namespace:Storm"
+             xmlns:views="clr-namespace:Storm.Views"
+             DispatcherUnhandledException="Application_DispatcherUnhandledException"
              ShutdownMode="OnMainWindowClose">
     
     <Application.Resources>
@@ -15,7 +16,7 @@
         <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
 
         <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
-        <Style TargetType="{x:Type this:MainWindow}" BasedOn="{StaticResource {x:Type Window}}" />
+        <Style TargetType="{x:Type views:MainWindow}" BasedOn="{StaticResource {x:Type Window}}" />
         <Style TargetType="{x:Type ItemsPresenter}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
         <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
 

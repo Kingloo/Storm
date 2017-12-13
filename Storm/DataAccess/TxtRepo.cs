@@ -2,30 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Storm.Common;
 using Storm.Model;
 
 namespace Storm.DataAccess
 {
-    public class TxtRepo : IRepository
+    public class TxtRepo
     {
-        private string _filePath = string.Empty;
-        public string FilePath { get { return _filePath; } }
+        private FileInfo _urlsFile = null;
+        public FileInfo UrlsFile => _urlsFile;
         
-        public TxtRepo(string filePath)
+        public TxtRepo(FileInfo urlsFile)
         {
-            if (String.IsNullOrWhiteSpace(filePath))
-            {
-                throw new ArgumentException("filePath was null or whitespace");
-            }
-
-            _filePath = filePath;
+            _urlsFile = urlsFile;
         }
-
-        public void SetFilePath(string newPath)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public async Task<IEnumerable<StreamBase>> LoadAsync()
         {
             var streams = new List<StreamBase>();
@@ -34,12 +25,13 @@ namespace Storm.DataAccess
 
             try
             {
-                fsAsync = new FileStream(FilePath,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.None,
-                4096,
-                true);
+                fsAsync = new FileStream(
+                    UrlsFile.FullName,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.None,
+                    4096,
+                    FileOptions.Asynchronous | FileOptions.SequentialScan);
 
                 using (StreamReader sr = new StreamReader(fsAsync))
                 {
@@ -49,20 +41,21 @@ namespace Storm.DataAccess
 
                     while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
-                        if (line.StartsWith("#", StringComparison.CurrentCultureIgnoreCase)) { continue; }
+                        if (line.StartsWith("#", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            continue;
+                        }
 
-                        StreamBase sb = ParseIntoStream(line);
-
-                        if (sb != null)
+                        if (ParseIntoStream(line) is StreamBase sb)
                         {
                             streams.Add(sb);
                         }
                     }
                 }
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException ex)
             {
-                Log.LogException(e);
+                Log.LogException(ex);
             }
             finally
             {
@@ -102,11 +95,6 @@ namespace Storm.DataAccess
             if (dnsSafe.Contains("youtube.com")) { return new YouTube(uri); }
 
             return new UnsupportedService(uri.AbsoluteUri);
-        }
-
-        public Task SaveAsync(IEnumerable<StreamBase> streams)
-        {
-            throw new NotImplementedException("editing of urls to be done through invoking notepad.exe");
         }
     }
 }

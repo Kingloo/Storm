@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Storm.Common;
 
 namespace Storm.Model
 {
@@ -39,8 +40,7 @@ namespace Storm.Model
             {
                 string message = string.Format(CultureInfo.CurrentCulture, "{0} is an unsupported service.", Name);
 
-                await Log.LogMessageAsync(message)
-                    .ConfigureAwait(false);
+                await Log.LogMessageAsync(message).ConfigureAwait(false);
 
                 messageWritten = true;
             }

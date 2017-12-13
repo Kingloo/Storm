@@ -1,19 +1,19 @@
 ﻿using System.Net;
 using System.Windows;
 using System.Windows.Threading;
+using Storm.Common;
 using Storm.DataAccess;
 using Storm.ViewModels;
+using Storm.Views;
 
 namespace Storm
 {
     public partial class App : Application
     {
-        public App(IRepository repo)
+        public App(TxtRepo repo)
         {
             InitializeComponent();
-
-            DispatcherUnhandledException += Application_DispatcherUnhandledException;
-
+            
             MainWindow = new MainWindow(new MainWindowViewModel(repo));
 
             MainWindow.Show();
@@ -28,7 +28,7 @@ namespace Storm
 
         private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            Log.LogException(e.Exception);
+            Log.LogException(e.Exception, true);
         }
     }
 }

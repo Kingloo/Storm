@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Threading;
 
-namespace Storm
+namespace Storm.Common
 {
     public class DispatcherCountdownTimer
     {

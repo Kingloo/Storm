@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
-namespace Storm
+namespace Storm.Common
 {
     public static class Utils
     {
@@ -39,7 +39,7 @@ namespace Storm
             
             if (dispatcher.CheckAccess())
             {
-                await Task.Run(() => action);
+                await Task.Run(action);
             }
             else
             {

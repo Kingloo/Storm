@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Storm 
+namespace Storm.Common
 {
     public abstract class Command : ICommand
     {
