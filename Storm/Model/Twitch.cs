@@ -124,9 +124,12 @@ namespace Storm.Model
             
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
-            if (json["game"] is JToken token)
+            if (json != null)
             {
-                Game = (string)token;
+                if (json["game"] is JToken token)
+                {
+                    Game = (string)token;
+                }
             }
         }
 
@@ -140,9 +143,12 @@ namespace Storm.Model
 
             bool live = IsLive;
 
-            if (json["stream"] is JToken token)
+            if (json != null)
             {
-                live = token.HasValues;
+                if (json["stream"] is JToken token)
+                {
+                    live = token.HasValues;
+                }
             }
             
             IsLive = live;
