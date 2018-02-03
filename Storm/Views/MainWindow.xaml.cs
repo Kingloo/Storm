@@ -20,7 +20,7 @@ namespace Storm.Views
             SourceInitialized += MainWindow_SourceInitialized;
             LocationChanged += MainWindow_LocationChanged;
             Loaded += MainWindow_Loaded;
-            KeyUp += MainWindow_KeyUp;
+            KeyDown += MainWindow_KeyDown;
 
             vm = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             vm.StatusChanged += Vm_StatusChanged;
@@ -28,7 +28,7 @@ namespace Storm.Views
             DataContext = vm;
         }
 
-        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -39,7 +39,7 @@ namespace Storm.Views
                     break;
             }
         }
-
+        
         private void Vm_StatusChanged(object sender, StatusChangedEventArgs e)
         {
             if (e.IsUpdating)
