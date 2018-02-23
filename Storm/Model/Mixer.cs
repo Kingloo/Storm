@@ -6,18 +6,18 @@ using Newtonsoft.Json.Linq;
 
 namespace Storm.Model
 {
-    public class Beam : StreamBase
+    public class Mixer : StreamBase
     {
         #region Properties
         private readonly static BitmapImage _icon
-            = new BitmapImage(new Uri("pack://application:,,,/Icons/Beam.ico"));
+            = new BitmapImage(new Uri("pack://application:,,,/Icons/Mixer.ico"));
         public override BitmapImage Icon => _icon;
         #endregion
 
-        public Beam(Uri accountUri)
+        public Mixer(Uri accountUri)
             : base(accountUri)
         {
-            ApiUri = "https://beam.pro/api/v1";
+            ApiUri = "https://mixer.com/api/v1";
 
             HasStreamlinkSupport = true;
         }
@@ -27,27 +27,27 @@ namespace Storm.Model
             Updating = true;
 
             bool wasLive = IsLive;
-            
+
             await DetermineIfLiveAsync();
 
             if (!wasLive && IsLive)
             {
-                NotifyIsNowLive(nameof(Beam));
+                NotifyIsNowLive(nameof(Mixer));
             }
 
             Updating = false;
         }
-        
+
         protected override async Task DetermineIfLiveAsync()
         {
             string apiCall = $"{ApiUri}/channels/{Name}";
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiCall));
-            
+
             JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
-            
+
             bool live = IsLive;
-            
+
             if (json != null)
             {
                 if (!HasUpdatedDisplayName)
@@ -63,7 +63,7 @@ namespace Storm.Model
                     live = (bool)json["online"];
                 }
             }
-            
+
             IsLive = live;
         }
 

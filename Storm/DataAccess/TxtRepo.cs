@@ -86,14 +86,17 @@ namespace Storm.DataAccess
         {
             string dnsSafe = uri.DnsSafeHost;
 
-            if (dnsSafe.Contains("twitch.tv")) { return new Twitch(uri); }
-            if (dnsSafe.Contains("ustream.tv")) { return new Ustream(uri); }
-            if (dnsSafe.Contains("mixlr.com")) { return new Mixlr(uri); }
-            if (dnsSafe.Contains("hitbox.tv")) { return new Hitbox(uri); }
-            if (dnsSafe.Contains("beam.pro")) { return new Beam(uri); }
-            if (dnsSafe.Contains("chaturbate.com")) { return new Chaturbate(uri); }
-            if (dnsSafe.Contains("youtube.com")) { return new YouTube(uri); }
+            var sc = StringComparison.OrdinalIgnoreCase;
 
+            if (dnsSafe.EndsWith("twitch.tv", sc)) { return new Twitch(uri); }
+            if (dnsSafe.EndsWith("ustream.tv", sc)) { return new Ustream(uri); }
+            if (dnsSafe.EndsWith("mixlr.com", sc)) { return new Mixlr(uri); }
+            if (dnsSafe.EndsWith("hitbox.tv", sc)) { return new Hitbox(uri); }
+            if (dnsSafe.EndsWith("beam.pro", sc)) { return new Beam(uri); }
+            if (dnsSafe.EndsWith("mixer.com", sc)) { return new Mixer(uri); }
+            if (dnsSafe.EndsWith("chaturbate.com", sc)) { return new Chaturbate(uri); }
+            if (dnsSafe.EndsWith("youtube.com", sc)) { return new YouTube(uri); }
+            
             return new UnsupportedService(uri.AbsoluteUri);
         }
     }
