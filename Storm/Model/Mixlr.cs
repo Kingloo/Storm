@@ -9,16 +9,18 @@ namespace Storm.Model
     public class Mixlr : StreamBase
     {
         #region Properties
+        public override Uri Api => new Uri("https://api.mixlr.com/users");
+
         private readonly static BitmapImage _icon
             = new BitmapImage(new Uri("pack://application:,,,/Icons/Mixlr.ico"));
         public override BitmapImage Icon => _icon;
+
+        public override bool HasStreamlinkSupport => false;
         #endregion
 
         public Mixlr(Uri userUrl)
             : base(userUrl)
-        {
-            ApiUri = "https://api.mixlr.com/users";
-        }
+        { }
 
         public override async Task UpdateAsync()
         {
@@ -38,7 +40,7 @@ namespace Storm.Model
         
         protected override async Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = $"{ApiUri}/{Name}";
+            string apiAddressToQuery = $"{Api.AbsoluteUri}/{Name}";
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             

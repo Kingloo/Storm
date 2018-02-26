@@ -37,8 +37,8 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.6.0.%2a</ApplicationVersion>
+    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationVersion>1.7.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -154,11 +154,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Common\DispatcherCountdownTimer.cs" />
     <Compile Include="Common\Log.cs" />
     <Compile Include="Common\NotificationService.cs" />
+    <Compile Include="Common\Utils.cs" />
     <Compile Include="DataAccess\TxtRepo.cs" />
     <Compile Include="Common\DelegateCommand.cs" />
-    <Compile Include="Common\DispatcherCountdownTimer.cs" />
     <Compile Include="Common\Download.cs" />
     <Compile Include="Extensions\Collections.cs" />
     <Compile Include="Extensions\String.cs" />
@@ -167,18 +168,18 @@
     <Compile Include="Common\LiveColorConverter.cs" />
     <Compile Include="Model\Beam.cs" />
     <Compile Include="Model\Chaturbate.cs" />
-    <Compile Include="Model\Constants.cs" />
     <Compile Include="Model\Hitbox.cs" />
     <Compile Include="Model\Mixer.cs" />
     <Compile Include="Model\Mixlr.cs" />
+    <Compile Include="Model\StreamFactory.cs" />
     <Compile Include="Model\YouTube.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Model\StreamBase.cs" />
     <Compile Include="Model\Twitch.cs" />
     <Compile Include="Model\UnsupportedService.cs" />
     <Compile Include="Model\Ustream.cs" />
-    <Compile Include="Common\Utils.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\StatusChangedEventArgs.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -34,18 +34,20 @@ namespace Storm.Model
             get
             {
                 StringBuilder sb = new StringBuilder();
-
-                sb.Append($"{DisplayName} is ");
+                
+                sb.Append(DisplayName);
+                sb.Append(" is ");
                 
                 if (IsLive)
                 {
                     if (String.IsNullOrWhiteSpace(Game))
                     {
-                        sb.Append($"LIVE");
+                        sb.Append("LIVE");
                     }
                     else
                     {
-                        sb.Append($"playing {Game}");
+                        sb.Append($"playing ");
+                        sb.Append(Game);
                     }
                 }
                 else
@@ -57,18 +59,18 @@ namespace Storm.Model
             }
         }
 
+        public override Uri Api => new Uri("https://api.twitch.tv/kraken");
+
         private readonly static BitmapImage _icon
             = new BitmapImage(new Uri("pack://application:,,,/Icons/Twitch.ico"));
         public override BitmapImage Icon => _icon;
+
+        public override bool HasStreamlinkSupport => true;
         #endregion
 
         public Twitch(Uri uri)
             : base(uri)
-        {
-            ApiUri = "https://api.twitch.tv/kraken";
-
-            HasStreamlinkSupport = true;
-        }
+        { }
 
         public async override Task UpdateAsync()
         {
@@ -98,7 +100,7 @@ namespace Storm.Model
 
         protected async Task TrySetDisplayNameAsync()
         {
-            string apiAddressToQueryForDisplayName = $"{ApiUri}/channels/{Name}";
+            string apiAddressToQueryForDisplayName = $"{Api.AbsoluteUri}/channels/{Name}";
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
             
@@ -118,7 +120,7 @@ namespace Storm.Model
 
         protected async Task DetermineGameAsync()
         {
-            string apiAddressToQuery = $"{ApiUri}/channels/{Name}";
+            string apiAddressToQuery = $"{Api.AbsoluteUri}/channels/{Name}";
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
@@ -135,7 +137,7 @@ namespace Storm.Model
 
         protected async override Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = $"{ApiUri}/streams/{Name}";
+            string apiAddressToQuery = $"{Api.AbsoluteUri}/streams/{Name}";
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
 
@@ -154,7 +156,7 @@ namespace Storm.Model
             IsLive = live;
         }
 
-        public override void NotifyIsNowLive(string _)
+        public override void NotifyIsNowLive(string serviceName)
         {
             string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
             
@@ -191,7 +193,8 @@ namespace Storm.Model
             StringBuilder sb = new StringBuilder();
 
             sb.Append(base.ToString());
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Game: {0}", String.IsNullOrWhiteSpace(Game) ? "not set" : Game));
+            sb.Append("Game: ");
+            sb.Append(String.IsNullOrWhiteSpace(Game) ? "not set" : Game);
 
             return sb.ToString();
         }

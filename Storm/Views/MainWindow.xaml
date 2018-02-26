@@ -2,7 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:this="clr-namespace:Storm"
         xmlns:views="clr-namespace:Storm.Views"
         xmlns:model="clr-namespace:Storm.Model"
         xmlns:common="clr-namespace:Storm.Common">

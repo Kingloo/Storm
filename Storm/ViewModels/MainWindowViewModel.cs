@@ -1,29 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Storm.Common;
 using Storm.DataAccess;
-using Storm.Extensions;
 using Storm.Model;
 
 namespace Storm.ViewModels
 {
-    public class StatusChangedEventArgs : EventArgs
-    {
-        private readonly bool _isUpdating = false;
-        public bool IsUpdating => _isUpdating;
-
-        public StatusChangedEventArgs(bool isUpdating)
-        {
-            _isUpdating = isUpdating;
-        }
-    }
-
     public class MainWindowViewModel : ViewModelBase
     {
         #region Events
@@ -35,28 +22,29 @@ namespace Storm.ViewModels
 
         #region Fields
         private readonly TxtRepo urlsRepo = null;
+
         private readonly DispatcherTimer updateTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromMinutes(3)
+            Interval = TimeSpan.FromMinutes(3d)
         };
         #endregion
 
         #region Properties
-        private bool _activity = false;
-        public bool Activity
+        private bool _isActive = false;
+        public bool IsActive
         {
-            get => _activity;
+            get => _isActive;
             set
             {
-                if (_activity != value)
+                if (_isActive != value)
                 {
-                    _activity = value;
+                    _isActive = value;
 
-                    RaisePropertyChanged(nameof(Activity));
+                    RaisePropertyChanged(nameof(IsActive));
 
                     RaiseAllAsyncCanExecuteChangedEvents();
 
-                    OnStatusChanged(_activity);
+                    OnStatusChanged(_isActive);
                 }
             }
         }
@@ -87,7 +75,7 @@ namespace Storm.ViewModels
             }
         }
 
-        private static void GoToStream(StreamBase stream)
+        public void GoToStream(StreamBase stream)
         {
             if (stream == null) { throw new ArgumentNullException(nameof(stream)); }
 
@@ -108,23 +96,7 @@ namespace Storm.ViewModels
             }
         }
 
-        private void OpenUrlsFile()
-        {
-            // The FileNotFoundException will be for notepad.exe, NOT urlsRepo.FilePath
-            // the file path is an argument
-            // notepad will tell you if urlsRepo.FilePath could not be found/opened
-
-            try
-            {
-                Process.Start("notepad.exe", urlsRepo.UrlsFile.FullName);
-            }
-            catch (FileNotFoundException ex)
-            {
-                Log.LogException(ex);
-
-                Process.Start(urlsRepo.UrlsFile.FullName); // .txt default program
-            }
-        }
+        private void OpenUrlsFile() => urlsRepo.OpenFile();
 
         private DelegateCommandAsync _loadUrlsAsyncCommand = null;
         public DelegateCommandAsync LoadUrlsAsyncCommand
@@ -144,10 +116,16 @@ namespace Storm.ViewModels
         {
             _streams.Clear();
 
-            var loaded = await urlsRepo.LoadAsync();
-            
-            _streams.AddRange(loaded);
+            string[] loaded = await urlsRepo.LoadAsync();
 
+            foreach (string each in loaded)
+            {
+                if (StreamFactory.TryCreate(each, out StreamBase stream))
+                {
+                    _streams.Add(stream);
+                }
+            }
+            
             await UpdateAsync();
         }
         
@@ -167,7 +145,7 @@ namespace Storm.ViewModels
 
         public async Task UpdateAsync()
         {
-            Activity = true;
+            IsActive = true;
 
             var updateTasks = Streams
                 .Where(x => !x.Updating)
@@ -179,23 +157,36 @@ namespace Storm.ViewModels
                 await Task.WhenAll(updateTasks);
             }
 
-            Activity = false;
+            IsActive = false;
         }
         
         private bool CanExecute(object _) => true;
 
-        private bool CanExecuteAsync(object _) => !Activity;
+        private bool CanExecuteAsync(object _) => !IsActive;
         #endregion
 
         public MainWindowViewModel(TxtRepo urlsRepo)
         {
-            this.urlsRepo = urlsRepo;
+            this.urlsRepo = urlsRepo ?? throw new ArgumentNullException(nameof(urlsRepo));
 
-            updateTimer.Tick += UpdateTimer_Tick;
+            updateTimer.Tick += async (s, e) => await UpdateAsync();
             updateTimer.Start();
         }
 
-        private async void UpdateTimer_Tick(object sender, EventArgs e)
-            => await UpdateAsync();
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(GetType().ToString());
+            sb.AppendLine(IsActive ? "IsActive: true" : "IsActive: false");
+
+            sb.Append("no. of streams: ");
+            sb.AppendLine(Streams.Count.ToString());
+
+            sb.AppendLine(urlsRepo?.ToString() ?? "urlsRepo is null");
+            sb.AppendLine(updateTimer?.ToString() ?? "updateTimer is null");
+
+            return sb.ToString();
+        }
     }
 }

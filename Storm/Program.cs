@@ -8,25 +8,31 @@ namespace Storm
 {
     public static class Program
     {
+        public enum ReturnCode
+        {
+            Success = 0,
+            Failure = -1,
+            DirectoryDoesNotExist = -2,
+            CannotCreateFileInDirectory = -3
+        }
+        
         [STAThread]
         public static int Main()
         {
-            FileInfo urlsFile = GetUrlFilePath();
+            ReturnCode result = GetUrlsFile(out FileInfo file);
 
-            if (urlsFile == null)
+            if (result != ReturnCode.Success)
             {
-                Log.LogMessage($"StormUrls.txt not found");
-
-                return -1;
+                return (int)result;
             }
             
-            TxtRepo urlsRepo = new TxtRepo(urlsFile);
+            TxtRepo urlsRepo = new TxtRepo(file);
 
             App app = new App(urlsRepo);
 
             int exitCode = app.Run();
 
-            if (exitCode != 0)
+            if (exitCode != (int)ReturnCode.Success)
             {
                 string errorMessage = string.Format(CultureInfo.InvariantCulture, "exited with code {0}", exitCode);
 
@@ -36,13 +42,15 @@ namespace Storm
             return exitCode;
         }
 
-        private static FileInfo GetUrlFilePath()
+        private static ReturnCode GetUrlsFile(out FileInfo file)
         {
-            string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
-            if (!Directory.Exists(dir))
+            if (String.IsNullOrWhiteSpace(directory))
             {
-                return null;
+                file = null;
+
+                return ReturnCode.DirectoryDoesNotExist;
             }
 
 #if DEBUG
@@ -51,9 +59,30 @@ namespace Storm
             string filename = "StormUrls.txt";
 #endif
 
-            string fullPath = Path.Combine(dir, filename);
+            string fullPath = Path.Combine(directory, filename);
 
-            return File.Exists(fullPath) ? new FileInfo(fullPath) : null;
+            if (File.Exists(fullPath))
+            {
+                file = new FileInfo(fullPath);
+
+                return ReturnCode.Success;
+            }
+
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(fullPath))
+                {
+                    file = new FileInfo(fullPath);
+
+                    return ReturnCode.Success;
+                }
+            }
+            catch
+            {
+                file = null;
+
+                return ReturnCode.Failure;
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -8,9 +9,7 @@ namespace Storm.Common
     public static class Utils
     {
         public static void DispatchSafely(Dispatcher dispatcher, Action action)
-        {
-            DispatchSafely(dispatcher, action, DispatcherPriority.Normal);
-        }
+            => DispatchSafely(dispatcher, action, DispatcherPriority.Normal);
 
         public static void DispatchSafely(Dispatcher dispatcher, Action action, DispatcherPriority priority)
         {
@@ -28,9 +27,7 @@ namespace Storm.Common
         }
         
         public static async Task DispatchSafelyAsync(Dispatcher dispatcher, Action action)
-        {
-            await DispatchSafelyAsync(dispatcher, action, DispatcherPriority.Normal);
-        }
+            => await DispatchSafelyAsync(dispatcher, action, DispatcherPriority.Normal);
 
         public static async Task DispatchSafelyAsync(Dispatcher dispatcher, Action action, DispatcherPriority priority)
         {
@@ -39,7 +36,7 @@ namespace Storm.Common
             
             if (dispatcher.CheckAccess())
             {
-                await Task.Run(action);
+                await Task.Run(() => action);
             }
             else
             {
@@ -58,7 +55,7 @@ namespace Storm.Common
             }
             else
             {
-                string errorMessage = $"Uri ({uri.OriginalString}) was not absolute";
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "{0} was not absolute", uri.OriginalString);
 
                 Log.LogMessage(errorMessage);
             }
@@ -77,7 +74,7 @@ namespace Storm.Common
             }
             else
             {
-                string errorMessage = $"Uri.TryCreate returned false on {uri}";
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri.TryCreate failed on {0}", link);
 
                 Log.LogMessage(errorMessage);
             }

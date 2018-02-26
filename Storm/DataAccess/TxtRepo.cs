@@ -1,32 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Storm.Common;
-using Storm.Model;
 
 namespace Storm.DataAccess
 {
     public class TxtRepo
     {
-        private FileInfo _urlsFile = null;
-        public FileInfo UrlsFile => _urlsFile;
-        
+        private readonly FileInfo urlsFile = null;
+        private readonly char commentCharacter = Char.Parse("#");
+
         public TxtRepo(FileInfo urlsFile)
+            : this(urlsFile, Char.Parse("#"))
         {
-            _urlsFile = urlsFile;
+            this.urlsFile = urlsFile ?? throw new ArgumentNullException(nameof(urlsFile));
+        }
+
+        public TxtRepo(FileInfo urlsFile, char commentCharacter)
+        {
+            this.commentCharacter = commentCharacter;
         }
         
-        public async Task<IEnumerable<StreamBase>> LoadAsync()
+        public async Task<string[]> LoadAsync()
         {
-            var streams = new List<StreamBase>();
+            var lines = new List<string>();
 
             FileStream fsAsync = null;
 
             try
             {
                 fsAsync = new FileStream(
-                    UrlsFile.FullName,
+                    urlsFile.FullName,
                     FileMode.Open,
                     FileAccess.Read,
                     FileShare.None,
@@ -41,63 +49,54 @@ namespace Storm.DataAccess
 
                     while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
-                        if (line.StartsWith("#", StringComparison.CurrentCultureIgnoreCase))
+                        if (line.StartsWith(commentCharacter.ToString(), StringComparison.CurrentCultureIgnoreCase))
                         {
                             continue;
                         }
 
-                        if (ParseIntoStream(line) is StreamBase sb)
-                        {
-                            streams.Add(sb);
-                        }
+                        lines.Add(line);
                     }
                 }
             }
             catch (FileNotFoundException ex)
             {
                 Log.LogException(ex);
+
+                return Array.Empty<string>();
             }
             finally
             {
                 fsAsync?.Dispose();
             }
 
-            return streams;
+            return lines.ToArray();
         }
 
-        private static StreamBase ParseIntoStream(string line)
+        public void OpenFile()
         {
-            // if this is not done subsequent Uri.TryCreate will fail
-            if (line.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase) == false
-                && line.StartsWith("https://", StringComparison.CurrentCultureIgnoreCase) == false)
+            try
             {
-                line = string.Concat("http://", line);
+                Process.Start("notepad.exe", urlsFile.FullName);
             }
-            
-            if (!Uri.TryCreate(line, UriKind.Absolute, out Uri uri))
+            catch (FileNotFoundException ex)
             {
-                return new UnsupportedService("invalid Uri");
+                Log.LogException(ex);
+
+                Process.Start(urlsFile.FullName);
             }
-            
-            return DetermineStreamingService(uri);
         }
-        
-        private static StreamBase DetermineStreamingService(Uri uri)
+
+        public override string ToString()
         {
-            string dnsSafe = uri.DnsSafeHost;
+            StringBuilder sb = new StringBuilder();
 
-            var sc = StringComparison.OrdinalIgnoreCase;
-
-            if (dnsSafe.EndsWith("twitch.tv", sc)) { return new Twitch(uri); }
-            if (dnsSafe.EndsWith("ustream.tv", sc)) { return new Ustream(uri); }
-            if (dnsSafe.EndsWith("mixlr.com", sc)) { return new Mixlr(uri); }
-            if (dnsSafe.EndsWith("hitbox.tv", sc)) { return new Hitbox(uri); }
-            if (dnsSafe.EndsWith("beam.pro", sc)) { return new Beam(uri); }
-            if (dnsSafe.EndsWith("mixer.com", sc)) { return new Mixer(uri); }
-            if (dnsSafe.EndsWith("chaturbate.com", sc)) { return new Chaturbate(uri); }
-            if (dnsSafe.EndsWith("youtube.com", sc)) { return new YouTube(uri); }
+            sb.AppendLine(GetType().ToString());
+            sb.AppendLine(urlsFile?.FullName ?? "urlsFile is null");
             
-            return new UnsupportedService(uri.AbsoluteUri);
+            sb.Append("comment character: ");
+            sb.AppendLine(commentCharacter.ToString());
+
+            return sb.ToString();
         }
     }
 }

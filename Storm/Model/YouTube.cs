@@ -11,13 +11,18 @@ namespace Storm.Model
     public class YouTube : StreamBase
     {
         #region Properties
+        public override Uri Api => null;
+
         private static BitmapImage _icon
             = new BitmapImage(new Uri("pack://application:,,,/Icons/YouTube.ico"));
         public override BitmapImage Icon => _icon;
+
+        public override bool HasStreamlinkSupport => true;
         #endregion
 
         public YouTube(Uri uri)
-            : base(uri) { }
+            : base(uri)
+        { }
 
         protected override string SetAccountName(Uri uri)
         {

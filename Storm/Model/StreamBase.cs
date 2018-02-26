@@ -16,23 +16,20 @@ namespace Storm.Model
     public abstract class StreamBase : ViewModelBase
     {
         #region Fields
-        private string _apiUri = string.Empty;
-        protected string ApiUri
-        {
-            get => _apiUri;
-            set => _apiUri = value;
-        }
-
         private bool _hasUpdatedDisplayName = false;
         protected bool HasUpdatedDisplayName
         {
             get => _hasUpdatedDisplayName;
             set => _hasUpdatedDisplayName = value;
         }
+
+        private const string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0";
         #endregion
 
         #region Properties
+        public abstract Uri Api { get; }
         public abstract BitmapImage Icon { get; }
+        public abstract bool HasStreamlinkSupport { get; }
 
         public virtual string MouseOverTooltip
         {
@@ -120,13 +117,6 @@ namespace Storm.Model
                 }
             }
         }
-        
-        private bool _hasStreamlinkSupport = false;
-        public bool HasStreamlinkSupport
-        {
-            get => _hasStreamlinkSupport;
-            protected set => _hasStreamlinkSupport = value;
-        }
         #endregion
 
         protected StreamBase(Uri accountUri)
@@ -192,15 +182,16 @@ namespace Storm.Model
 
         public abstract Task UpdateAsync();
         protected abstract Task DetermineIfLiveAsync();
-
+        
         public virtual void NotifyIsNowLive(string serviceName)
         {
             string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
             string description = string.Format(CultureInfo.CurrentCulture, "on {0}", serviceName);
 
-            Action action = () => Utils.OpenUriInBrowser(Uri);
+            //void action() => Utils.OpenUriInBrowser(Uri);
+            //NotificationService.Send(title, description, action);
 
-            NotificationService.Send(title, description, action);
+            NotificationService.Send(title, description, GoToStream);
         }
 
         public virtual void GoToStream()
@@ -229,7 +220,7 @@ namespace Storm.Model
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
             req.Timeout = 4000;
-            req.UserAgent = Constants.UserAgent;
+            req.UserAgent = userAgent;
             
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-encoding", "gzip, deflate");
@@ -244,7 +235,10 @@ namespace Storm.Model
         
         private void LaunchStreamlink()
         {
-            string args = $"/C streamlink.exe {Uri.AbsoluteUri} best";
+            string args = string.Format(
+                CultureInfo.InvariantCulture,
+                "/C streamlink.exe {0} best",
+                Uri.AbsoluteUri);
 
             ProcessStartInfo pInfo = new ProcessStartInfo
             {
@@ -261,11 +255,20 @@ namespace Storm.Model
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(GetType().ToString());
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Uri: {0}", Uri));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Name: {0}", Name));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Display name: {0}", DisplayName));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "Is Live: {0}", IsLive.ToString()));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "MouseOverToolTip: {0}", MouseOverTooltip));
+
+            sb.Append("Uri: ");
+            sb.AppendLine(Uri.AbsoluteUri);
+            
+            sb.Append("Name: ");
+            sb.AppendLine(Name);
+            
+            sb.Append("DisplayName: ");
+            sb.AppendLine(DisplayName);
+            
+            sb.AppendLine(IsLive ? "IsLive: true" : "IsLive: false");
+            
+            sb.Append("MouseOverTooltip: ");
+            sb.AppendLine(MouseOverTooltip);
 
             return sb.ToString();
         }

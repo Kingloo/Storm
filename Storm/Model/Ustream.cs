@@ -16,16 +16,18 @@ namespace Storm.Model
         #endregion
 
         #region Properties
+        public override Uri Api => new Uri("https://api.ustream.tv");
+
         private readonly static BitmapImage _icon
             = new BitmapImage(new Uri("pack://application:,,,/Icons/Ustream.ico"));
         public override BitmapImage Icon => _icon;
+
+        public override bool HasStreamlinkSupport => true;
         #endregion
 
         public Ustream(Uri uri)
             : base(uri)
-        {
-            ApiUri = "https://api.ustream.tv";
-        }
+        { }
 
         public async override Task UpdateAsync()
         {
@@ -71,12 +73,11 @@ namespace Storm.Model
 
         protected async override Task DetermineIfLiveAsync()
         {
-            string apiAddressToQuery = $"{ApiUri}/channels/{channelId}.json";
+            string apiAddressToQuery = $"{Api.AbsoluteUri}/channels/{channelId}.json";
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true)
-                .ConfigureAwait(false));
+            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
 
             bool live = IsLive;
 
@@ -89,8 +90,7 @@ namespace Storm.Model
                         TrySetDisplayName(json);
                     }
                     
-                    live = ((string)json["channel"]["status"])
-                        .Equals("live");
+                    live = ((string)json["channel"]["status"]).Equals("live");
                 }
             }
             

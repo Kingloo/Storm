@@ -9,18 +9,18 @@ namespace Storm.Model
     public class Beam : StreamBase
     {
         #region Properties
+        public override Uri Api => new Uri("https://beam.pro/api/v1");
+
         private readonly static BitmapImage _icon
             = new BitmapImage(new Uri("pack://application:,,,/Icons/Beam.ico"));
         public override BitmapImage Icon => _icon;
-        #endregion
 
+        public override bool HasStreamlinkSupport => false;
+        #endregion
+        
         public Beam(Uri accountUri)
             : base(accountUri)
-        {
-            ApiUri = "https://beam.pro/api/v1";
-
-            HasStreamlinkSupport = true;
-        }
+        { }
         
         public override async Task UpdateAsync()
         {
@@ -40,7 +40,7 @@ namespace Storm.Model
         
         protected override async Task DetermineIfLiveAsync()
         {
-            string apiCall = $"{ApiUri}/channels/{Name}";
+            string apiCall = $"{Api.AbsoluteUri}/channels/{Name}";
 
             HttpWebRequest request = BuildHttpWebRequest(new Uri(apiCall));
             

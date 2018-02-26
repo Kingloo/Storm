@@ -14,12 +14,16 @@ namespace Storm.Model
         #endregion
 
         #region Properties
+        public override Uri Api => null;
+
         public override string MouseOverTooltip
             => string.Format(CultureInfo.CurrentCulture, "{0} is an unsupported service", Name);
 
         private static BitmapImage _icon
             = new BitmapImage(new Uri("pack://application:,,,/Icons/UnsupportedService.ico"));
         public override BitmapImage Icon => _icon;
+
+        public override bool HasStreamlinkSupport => false;
         #endregion
 
         public UnsupportedService(string malFormatted)

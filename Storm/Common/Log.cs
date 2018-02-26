@@ -29,9 +29,10 @@ namespace Storm.Common
 
         private static FileInfo CreateLogFile(string fullPath)
         {
-            using (StreamWriter sw = File.CreateText(fullPath)) { }
-
-            return new FileInfo(fullPath);
+            using (StreamWriter sw = File.CreateText(fullPath))
+            {
+                return new FileInfo(fullPath);
+            }
         }
 
 
@@ -61,6 +62,8 @@ namespace Storm.Common
 
         public static void LogException(Exception ex, string message, bool includeStackTrace)
         {
+            if (ex == null) { return; }
+
             StringBuilder sb = new StringBuilder();
 
             if (String.IsNullOrWhiteSpace(message))
@@ -102,6 +105,8 @@ namespace Storm.Common
 
         public static async Task LogExceptionAsync(Exception ex, string message, bool includeStackTrace)
         {
+            if (ex == null) { return; }
+
             StringBuilder sb = new StringBuilder();
             
             if (String.IsNullOrWhiteSpace(message))
@@ -149,14 +154,14 @@ namespace Storm.Common
                 {
                     fs = null;
 
-                    sw.WriteLine(text);
+                    sw.Write(text);
                 }
             }
             catch (FileNotFoundException) { }
             catch (IOException) { }
             finally
             {
-                fs?.Dispose();
+                fs?.Close();
             }
         }
 
@@ -178,14 +183,14 @@ namespace Storm.Common
                 {
                     fsAsync = null;
 
-                    await sw.WriteLineAsync(text).ConfigureAwait(false);
+                    await sw.WriteAsync(text).ConfigureAwait(false);
                 }
             }
             catch (FileNotFoundException) { }
             catch (IOException) { }
             finally
             {
-                fsAsync?.Dispose();
+                fsAsync?.Close();
             }
         }
     }
