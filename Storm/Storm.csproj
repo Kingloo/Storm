@@ -37,8 +37,8 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>2</ApplicationRevision>
-    <ApplicationVersion>1.7.0.%2a</ApplicationVersion>
+    <ApplicationRevision>3</ApplicationRevision>
+    <ApplicationVersion>1.7.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -73,7 +73,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
-    <LangVersion>7</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <FileAlignment>4096</FileAlignment>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -88,7 +88,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
-    <LangVersion>7</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <FileAlignment>4096</FileAlignment>
@@ -158,10 +158,11 @@
     <Compile Include="Common\Log.cs" />
     <Compile Include="Common\NotificationService.cs" />
     <Compile Include="Common\Utils.cs" />
-    <Compile Include="DataAccess\TxtRepo.cs" />
+    <Compile Include="DataAccess\FileSystem.cs" />
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Common\Download.cs" />
     <Compile Include="Extensions\Collections.cs" />
+    <Compile Include="Extensions\FileInfo.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="Extensions\WebRequest.cs" />
     <Compile Include="Extensions\Window.cs" />

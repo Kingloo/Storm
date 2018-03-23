@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Storm.Common;
 using Storm.DataAccess;
+using Storm.Extensions;
 using Storm.Model;
 
 namespace Storm.ViewModels
@@ -21,7 +25,7 @@ namespace Storm.ViewModels
         #endregion
 
         #region Fields
-        private readonly TxtRepo urlsRepo = null;
+        private readonly FileInfo file = default;
 
         private readonly DispatcherTimer updateTimer = new DispatcherTimer
         {
@@ -96,7 +100,7 @@ namespace Storm.ViewModels
             }
         }
 
-        private void OpenUrlsFile() => urlsRepo.OpenFile();
+        private void OpenUrlsFile() => file.Launch();
 
         private DelegateCommandAsync _loadUrlsAsyncCommand = null;
         public DelegateCommandAsync LoadUrlsAsyncCommand
@@ -116,10 +120,15 @@ namespace Storm.ViewModels
         {
             _streams.Clear();
 
-            string[] loaded = await urlsRepo.LoadAsync();
+            string[] loaded = await FileSystem.GetLinesAsync(file, true);
 
             foreach (string each in loaded)
             {
+                if (each.StartsWith("#"))
+                {
+                    continue;
+                }
+
                 if (StreamFactory.TryCreate(each, out StreamBase stream))
                 {
                     _streams.Add(stream);
@@ -165,9 +174,9 @@ namespace Storm.ViewModels
         private bool CanExecuteAsync(object _) => !IsActive;
         #endregion
 
-        public MainWindowViewModel(TxtRepo urlsRepo)
+        public MainWindowViewModel(FileInfo file)
         {
-            this.urlsRepo = urlsRepo ?? throw new ArgumentNullException(nameof(urlsRepo));
+            this.file = file ?? throw new ArgumentNullException(nameof(file));
 
             updateTimer.Tick += async (s, e) => await UpdateAsync();
             updateTimer.Start();
@@ -181,9 +190,9 @@ namespace Storm.ViewModels
             sb.AppendLine(IsActive ? "IsActive: true" : "IsActive: false");
 
             sb.Append("no. of streams: ");
-            sb.AppendLine(Streams.Count.ToString());
+            sb.AppendLine(Streams.Count.ToString(CultureInfo.CurrentCulture));
 
-            sb.AppendLine(urlsRepo?.ToString() ?? "urlsRepo is null");
+            sb.AppendLine(file?.ToString() ?? "storm urls file is null");
             sb.AppendLine(updateTimer?.ToString() ?? "updateTimer is null");
 
             return sb.ToString();

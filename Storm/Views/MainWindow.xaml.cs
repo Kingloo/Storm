@@ -13,41 +13,35 @@ namespace Storm.Views
         #region Fields
         private IntPtr hWnd = IntPtr.Zero;
 
-        private readonly MainWindowViewModel vm = null;
+        private MainWindowViewModel vm = default;
         #endregion
 
-        public MainWindow(MainWindowViewModel viewModel)
+        public MainWindow()
         {
             InitializeComponent();
 
-            vm = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            vm.StatusChanged += Vm_StatusChanged;
-
-            DataContext = vm;
-
+            DataContextChanged += MainWindow_DataContextChanged;
             SourceInitialized += MainWindow_SourceInitialized;
             LocationChanged += MainWindow_LocationChanged;
             Loaded += MainWindow_Loaded;
             KeyDown += MainWindow_KeyDown;
         }
 
+        private void MainWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs args)
+        {
+            vm = (MainWindowViewModel)args.NewValue;
+
+            vm.StatusChanged += (s, e) => VisualStateManager.GoToState(this, e.IsUpdating ? "Updating" : "Stable", false);
+        }
+
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
-            switch (e.Key)
+            if (e.Key == Key.Escape)
             {
-                case Key.Escape:
-                    Close();
-                    break;
-                default:
-                    break;
+                Close();
             }
         }
         
-        private void Vm_StatusChanged(object sender, StatusChangedEventArgs e)
-        {
-            VisualStateManager.GoToState(this, e.IsUpdating ? "Updating" : "Stable", false);
-        }
-
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
         {
             hWnd = new WindowInteropHelper(this).EnsureHandle();
@@ -61,7 +55,10 @@ namespace Storm.Views
         {
             var currentMonitor = System.Windows.Forms.Screen.FromHandle(hWnd);
 
-            MaxHeight = (currentMonitor?.WorkingArea.Bottom ?? SystemParameters.WorkArea.Bottom) - 100d;
+            double height = currentMonitor?.WorkingArea.Bottom ?? SystemParameters.WorkArea.Bottom;
+            double leeway = 100d;
+
+            MaxHeight = height - leeway;
         }
         
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e) => await vm.LoadUrlsAsync();

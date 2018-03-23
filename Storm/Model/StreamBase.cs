@@ -140,9 +140,11 @@ namespace Storm.Model
         protected static async Task<object> GetApiResponseAsync(HttpWebRequest request, bool isJson)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
-            
+
             string response = await Download.WebsiteAsync(request).ConfigureAwait(false);
-            
+            //(DownloadResult result, string response) = await Download2.WebsiteAsync(request.RequestUri).ConfigureAwait(false);
+            //if (result != DownloadResult.Success) { return null; }
+
             if (String.IsNullOrWhiteSpace(response)) { return null; }
 
             if (isJson)

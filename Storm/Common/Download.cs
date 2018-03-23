@@ -37,6 +37,15 @@ namespace Storm.Common
 
     public class Download
     {
+        public static Task<string> WebsiteAsync(Uri uri)
+        {
+            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+
+            HttpWebRequest request = BuildStandardRequest(uri);
+
+            return WebsiteAsync(request);
+        }
+
         public static async Task<string> WebsiteAsync(HttpWebRequest request)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
@@ -53,20 +62,17 @@ namespace Storm.Common
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    using (StreamReader sr
-                        = new StreamReader(response.GetResponseStream()))
+                    using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                     {
                         try
                         {
-                            website = await sr.ReadToEndAsync()
-                                .ConfigureAwait(false);
+                            website = await sr.ReadToEndAsync().ConfigureAwait(false);
                         }
                         catch (IOException ex)
                         {
                             string message = Invariant($"Requesting {request.RequestUri.AbsoluteUri} failed: {response.StatusCode}");
 
-                            await Log.LogExceptionAsync(ex, message)
-                                .ConfigureAwait(false);
+                            await Log.LogExceptionAsync(ex, message).ConfigureAwait(false);
                         }
                         finally
                         {
@@ -77,16 +83,6 @@ namespace Storm.Common
             }
 
             return website;
-        }
-
-        public static async Task<string> WebsiteAsync(Uri uri)
-        {
-            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
-            
-            HttpWebRequest request = BuildStandardRequest(uri);
-
-            return await WebsiteAsync(request)
-                .ConfigureAwait(false);
         }
 
         private static HttpWebRequest BuildStandardRequest(Uri uri)

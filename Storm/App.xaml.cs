@@ -1,8 +1,8 @@
-﻿using System.Net;
+﻿using System.IO;
+using System.Net;
 using System.Windows;
 using System.Windows.Threading;
 using Storm.Common;
-using Storm.DataAccess;
 using Storm.ViewModels;
 using Storm.Views;
 
@@ -10,11 +10,14 @@ namespace Storm
 {
     public partial class App : Application
     {
-        public App(TxtRepo repo)
+        public App(FileInfo file)
         {
             InitializeComponent();
             
-            MainWindow = new MainWindow(new MainWindowViewModel(repo));
+            MainWindow = new MainWindow
+            {
+                DataContext = new MainWindowViewModel(file)
+            };
 
             MainWindow.Show();
 
