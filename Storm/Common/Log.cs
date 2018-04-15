@@ -147,7 +147,7 @@ namespace Storm.Common
                 {
                     fs = null;
 
-                    sw.Write(text);
+                    sw.WriteLine(text);
                 }
             }
             catch (FileNotFoundException) { }
@@ -176,7 +176,7 @@ namespace Storm.Common
                 {
                     fsAsync = null;
 
-                    await sw.WriteAsync(text).ConfigureAwait(false);
+                    await sw.WriteLineAsync(text).ConfigureAwait(false);
                 }
             }
             catch (FileNotFoundException) { }
