@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Net;
-using System.Net.Cache;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -22,8 +21,6 @@ namespace Storm.Model
             get => _hasUpdatedDisplayName;
             set => _hasUpdatedDisplayName = value;
         }
-
-        private const string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0";
         #endregion
 
         #region Properties
@@ -33,12 +30,9 @@ namespace Storm.Model
 
         public virtual string MouseOverTooltip
         {
-            get
-            {
-                return IsLive
-                    ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName)
-                    : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
-            }
+            get => IsLive
+                ? string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName)
+                : string.Format(CultureInfo.CurrentCulture, "{0} is offline", DisplayName);
         }
         
         private Uri _uri = null;
@@ -137,13 +131,11 @@ namespace Storm.Model
                 .IndexOf(path, "streamlink", CompareOptions.OrdinalIgnoreCase) > -1;
         }
 
-        protected static async Task<object> GetApiResponseAsync(HttpWebRequest request, bool isJson)
+        protected static async Task<object> GetApiResponseAsync(HttpRequestMessage request, bool isJson)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
             string response = await Download.WebsiteAsync(request).ConfigureAwait(false);
-            //(DownloadResult result, string response) = await Download2.WebsiteAsync(request.RequestUri).ConfigureAwait(false);
-            //if (result != DownloadResult.Success) { return null; }
 
             if (String.IsNullOrWhiteSpace(response)) { return null; }
 
@@ -159,7 +151,7 @@ namespace Storm.Model
         
         private static JObject ParseToJson(string response)
         {
-            if (response == null) { throw new ArgumentNullException(nameof(response)); }
+            if (String.IsNullOrEmpty(response)) { return null; }
 
             JObject j = null;
 
@@ -190,9 +182,6 @@ namespace Storm.Model
             string title = string.Format(CultureInfo.CurrentCulture, "{0} is LIVE", DisplayName);
             string description = string.Format(CultureInfo.CurrentCulture, "on {0}", serviceName);
 
-            //void action() => Utils.OpenUriInBrowser(Uri);
-            //NotificationService.Send(title, description, action);
-
             NotificationService.Send(title, description, GoToStream);
         }
 
@@ -208,33 +197,18 @@ namespace Storm.Model
             }
         }
 
-        protected virtual HttpWebRequest BuildHttpWebRequest(Uri uri)
+        protected virtual HttpRequestMessage BuildRequest(Uri uri)
         {
             if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
 
-            HttpWebRequest req = WebRequest.CreateHttp(uri);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri);
 
-            req.AllowAutoRedirect = true;
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-            req.Host = uri.DnsSafeHost;
-            req.KeepAlive = false;
-            req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version11;
-            req.Timeout = 4000;
-            req.UserAgent = userAgent;
-            
-            req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-encoding", "gzip, deflate");
+            request.Headers.Add("DNT", "1");
+            request.Headers.Add("Accept-encoding", "gzip, deflate");
 
-            if (ServicePointManager.SecurityProtocol != SecurityProtocolType.Tls12)
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            }
-            
-            return req;
+            return request;
         }
-        
+
         private void LaunchStreamlink()
         {
             string args = string.Format(

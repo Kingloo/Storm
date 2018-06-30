@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
@@ -42,14 +42,11 @@ namespace Storm.Model
         {
             string apiAddressToQuery = $"{Api.AbsoluteUri}/user/{Name}";
 
-            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpRequestMessage request = BuildRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true)
-                .ConfigureAwait(false));
-
             bool live = IsLive;
 
-            if (json != null)
+            if (await GetApiResponseAsync(request, true).ConfigureAwait(false) is JObject json)
             {
                 if (json.HasValues)
                 {

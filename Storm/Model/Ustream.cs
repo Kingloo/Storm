@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
@@ -52,12 +53,11 @@ namespace Storm.Model
 
         private async Task DetermineChannelIdAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(Uri);
+            HttpRequestMessage request = BuildRequest(Uri);
 
-            string response = (string)(await GetApiResponseAsync(req, false)
-                .ConfigureAwait(false));
+            string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
 
-            if (!String.IsNullOrWhiteSpace(response))
+            if (!String.IsNullOrEmpty(response))
             {
                 string beginning = "\"channelId\":";
                 string ending = ",";
@@ -75,13 +75,11 @@ namespace Storm.Model
         {
             string apiAddressToQuery = $"{Api.AbsoluteUri}/channels/{channelId}.json";
 
-            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
+            HttpRequestMessage request = BuildRequest(new Uri(apiAddressToQuery));
             
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
-
             bool live = IsLive;
 
-            if (json != null)
+            if (await GetApiResponseAsync(request, true).ConfigureAwait(false) is JObject json)
             {
                 if (json.HasValues)
                 {
@@ -89,11 +87,11 @@ namespace Storm.Model
                     {
                         TrySetDisplayName(json);
                     }
-                    
+
                     live = ((string)json["channel"]["status"]).Equals("live");
                 }
             }
-            
+
             IsLive = live;
         }
         
@@ -109,15 +107,13 @@ namespace Storm.Model
             }
         }
 
-        protected override HttpWebRequest BuildHttpWebRequest(Uri uri)
+        protected override HttpRequestMessage BuildRequest(Uri uri)
         {
-            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+            HttpRequestMessage request = base.BuildRequest(uri);
 
-            HttpWebRequest req = base.BuildHttpWebRequest(uri);
+            request.Headers.Add("Accept", "application/json; charset=UTF-8");
 
-            req.Accept = "application/json; charset=UTF-8";
-
-            return req;
+            return request;
         }
     }
 }

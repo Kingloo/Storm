@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -39,7 +39,7 @@ namespace Storm.Model
 
         protected override async Task DetermineIfLiveAsync()
         {
-            HttpWebRequest request = BuildHttpWebRequest(Uri);
+            HttpRequestMessage request = BuildRequest(Uri);
 
             string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
 

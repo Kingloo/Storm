@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
@@ -42,13 +42,11 @@ namespace Storm.Model
         {
             string apiCall = $"{Api.AbsoluteUri}/channels/{Name}";
 
-            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiCall));
-
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            HttpRequestMessage request = BuildRequest(new Uri(apiCall));
 
             bool live = IsLive;
 
-            if (json != null)
+            if (await GetApiResponseAsync(request, true).ConfigureAwait(false) is JObject json)
             {
                 if (!HasUpdatedDisplayName)
                 {
@@ -67,15 +65,13 @@ namespace Storm.Model
             IsLive = live;
         }
 
-        protected override HttpWebRequest BuildHttpWebRequest(Uri uri)
+        protected override HttpRequestMessage BuildRequest(Uri uri)
         {
-            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+            HttpRequestMessage request = base.BuildRequest(uri);
 
-            HttpWebRequest req = base.BuildHttpWebRequest(uri);
+            request.Headers.Add("Accept", "application/json; charset=UTF-8");
 
-            req.Accept = "application/json; charset=UTF-8";
-
-            return req;
+            return request;
         }
     }
 }

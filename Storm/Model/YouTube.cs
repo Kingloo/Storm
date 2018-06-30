@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Storm.Extensions;
@@ -80,10 +81,9 @@ namespace Storm.Model
 
         private async Task TrySetDisplayNameAsync()
         {
-            HttpWebRequest request = BuildHttpWebRequest(Uri);
+            HttpRequestMessage request = BuildRequest(Uri);
 
-            string response = (string)(await GetApiResponseAsync(request, false)
-                .ConfigureAwait(false));
+            string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
 
             if (!String.IsNullOrEmpty(response))
             {
@@ -103,10 +103,9 @@ namespace Storm.Model
 
         protected override async Task DetermineIfLiveAsync()
         {
-            HttpWebRequest request = BuildHttpWebRequest(Uri);
+            HttpRequestMessage request = BuildRequest(Uri);
 
-            string response = (string)(await GetApiResponseAsync(request, false)
-                .ConfigureAwait(false));
+            string response = (string)(await GetApiResponseAsync(request, false).ConfigureAwait(false));
 
             bool live = false;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -102,12 +102,9 @@ namespace Storm.Model
         {
             string apiAddressToQueryForDisplayName = $"{Api.AbsoluteUri}/channels/{Name}";
 
-            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQueryForDisplayName));
-            
-            JObject json = (JObject)(await GetApiResponseAsync(request, true)
-                .ConfigureAwait(false));
+            HttpRequestMessage request = BuildRequest(new Uri(apiAddressToQueryForDisplayName));
 
-            if (json != null)
+            if (await GetApiResponseAsync(request, true).ConfigureAwait(false) is JObject json)
             {
                 if (json["display_name"] != null)
                 {
@@ -122,11 +119,9 @@ namespace Storm.Model
         {
             string apiAddressToQuery = $"{Api.AbsoluteUri}/channels/{Name}";
 
-            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
-            
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            HttpRequestMessage request = BuildRequest(new Uri(apiAddressToQuery));
 
-            if (json != null)
+            if (await GetApiResponseAsync(request, true).ConfigureAwait(false) is JObject json)
             {
                 if (json["game"] is JToken token)
                 {
@@ -139,20 +134,18 @@ namespace Storm.Model
         {
             string apiAddressToQuery = $"{Api.AbsoluteUri}/streams/{Name}";
 
-            HttpWebRequest request = BuildHttpWebRequest(new Uri(apiAddressToQuery));
-
-            JObject json = (JObject)(await GetApiResponseAsync(request, true).ConfigureAwait(false));
+            HttpRequestMessage request = BuildRequest(new Uri(apiAddressToQuery));
 
             bool live = IsLive;
 
-            if (json != null)
+            if (await GetApiResponseAsync(request, true).ConfigureAwait(false) is JObject json)
             {
                 if (json["stream"] is JToken token)
                 {
                     live = token.HasValues;
                 }
             }
-            
+
             IsLive = live;
         }
 
@@ -171,21 +164,19 @@ namespace Storm.Model
                 NotificationService.Send(title, description, GoToStream);
             }
         }
-        
-        protected override HttpWebRequest BuildHttpWebRequest(Uri uri)
+
+        protected override HttpRequestMessage BuildRequest(Uri uri)
         {
-            if (uri == null) { throw new ArgumentNullException(nameof(uri)); }
+            HttpRequestMessage request = base.BuildRequest(uri);
 
-            HttpWebRequest req = base.BuildHttpWebRequest(uri);
-
-            req.Accept = "application/vnd.twitchtv.v3+json";
-            req.Headers.Add("Client-ID", "ewvlchtxgqq88ru9gmfp1gmyt6h2b93");
+            request.Headers.Add("Accept", "application/vnd.twitchtv.v3+json");
+            request.Headers.Add("Client-ID", "ewvlchtxgqq88ru9gmfp1gmyt6h2b93");
 
             // jzkbprff40iqj646a697cyrvl0zt2m6
             // lf8xspujnqfqcdlj11zq77dfen2tqjo
             // pwkzresl8kj2rdj6g7bvxl9ys1wly3j
 
-            return req;
+            return request;
         }
 
         public override string ToString()
