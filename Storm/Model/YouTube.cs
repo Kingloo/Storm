@@ -18,7 +18,7 @@ namespace Storm.Model
             = new BitmapImage(new Uri("pack://application:,,,/Icons/YouTube.ico"));
         public override BitmapImage Icon => _icon;
 
-        public override bool HasStreamlinkSupport => true;
+        public override bool HasStreamlinkSupport => false;
         #endregion
 
         public YouTube(Uri uri)

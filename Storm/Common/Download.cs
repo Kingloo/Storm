@@ -170,21 +170,11 @@ namespace Storm.Common
 
             try
             {
-                using (HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false))
+                using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false))
                 {
                     if (response.IsSuccessStatusCode)
                     {
                         text = await Task.Run(response.Content.ReadAsStringAsync, token).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        string message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            "downloading {0}: {1}",
-                            request.RequestUri.AbsoluteUri,
-                            response.StatusCode);
-
-                        await Log.LogMessageAsync(message).ConfigureAwait(false);
                     }
                 }
             }
