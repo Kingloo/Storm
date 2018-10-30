@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 
-namespace Storm.Wpf.StreamServices.Twitch
+namespace Storm.Wpf.Streams
 {
-    public class TwitchStream : StreamBase
+    public class ChaturbateStream : StreamBase
     {
-        public TwitchStream(Uri account)
+        public ChaturbateStream(Uri account)
             : base(account)
         { }
 
@@ -15,6 +15,6 @@ namespace Storm.Wpf.StreamServices.Twitch
         }
 
         protected override void SetAccountName()
-            => AccountName = AccountLink.Segments.Last(segment => segment != "/");
+            => AccountLink.Segments.Last(segment => segment != "/");
     }
 }

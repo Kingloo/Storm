@@ -12,16 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Storm.Wpf.Common;
 
 namespace Storm.Wpf.GUI
 {
     public partial class App : Application
     {
-        public App()
+        public App(FileLoader fileLoader)
         {
             InitializeComponent();
 
-            MainWindow = new MainWindow();
+            MainWindow = new MainWindow(fileLoader);
 
             MainWindow.Show();
         }

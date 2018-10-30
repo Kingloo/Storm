@@ -1,8 +1,11 @@
-﻿using System;
+﻿using System.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using Storm.Wpf.Common;
+using Storm.Wpf.Streams;
 using Storm.Wpf.StreamServices;
 
 namespace Storm.Wpf.ViewModels
@@ -39,11 +42,87 @@ namespace Storm.Wpf.ViewModels
                 return _exitCommand;
             }
         }
+
+        private DelegateCommandAsync _loadStreamsCommand = null;
+        public DelegateCommandAsync LoadStreamsCommand
+        {
+            get
+            {
+                if (_loadStreamsCommand == null)
+                {
+                    _loadStreamsCommand = new DelegateCommandAsync(LoadStreams, canExecuteAsync);
+                }
+
+                return _loadStreamsCommand;
+            }
+        }
+
+        private bool canExecuteAsync(object _) => !IsActive;
+
+        private bool canExecute(object _) => true;
         #endregion
 
         public MainWindowViewModel(FileLoader fileLoader)
         {
             this.fileLoader = fileLoader ?? throw new ArgumentNullException(nameof(fileLoader));
+        }
+
+        public Task RefreshAsync() => ServicesManager.UpdateAsync(Streams);
+
+        public async Task LoadStreams()
+        {
+            string[] lines = await fileLoader.LoadLinesAsync();
+
+            List<IStream> loadedStreams = new List<IStream>();
+
+            foreach (string line in lines)
+            {
+                if (StreamFactory.TryCreate(line, out IStream stream))
+                {
+                    loadedStreams.Add(stream);
+                }
+            }
+
+            RemoveOld(loadedStreams);
+
+            var newlyAdded = AddNew(loadedStreams);
+
+            await ServicesManager.UpdateAsync(newlyAdded);
+        }
+
+        private IEnumerable<IStream> AddNew(IEnumerable<IStream> loadedStreams)
+        {
+            List<IStream> added = new List<IStream>();
+
+            foreach (IStream each in loadedStreams)
+            {
+                if (!_streams.Contains(each))
+                {
+                    _streams.Add(each);
+
+                    added.Add(each);
+                }
+            }
+
+            return added;
+        }
+
+        private void RemoveOld(IEnumerable<IStream> loadedStreams)
+        {
+            List<IStream> toBeRemoved = new List<IStream>();
+
+            foreach (IStream each in _streams)
+            {
+                if (!loadedStreams.Contains(each))
+                {
+                    toBeRemoved.Add(each);
+                }
+            }
+
+            foreach (IStream each in toBeRemoved)
+            {
+                _streams.Remove(each);
+            }
         }
     }
 }

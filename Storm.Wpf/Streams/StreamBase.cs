@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Storm.Wpf.Common;
 
-namespace Storm.Wpf.StreamServices
+namespace Storm.Wpf.Streams
 {
-    public abstract class StreamBase : IStream
+    public abstract class StreamBase : BindableBase, IStream
     {
         public Uri AccountLink { get; } = null;
         public Uri AccountIcon { get; set; } = null;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Storm.Wpf.StreamServices
+namespace Storm.Wpf.Streams
 {
     public interface IStream
     {

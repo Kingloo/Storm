@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{6B48D600-482F-4AE4-997C-FFEA4014E2CA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>Storm.Wpf</RootNamespace>
     <AssemblyName>Storm.Wpf</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -60,16 +60,16 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamServices\ChaturbateService.cs" />
     <Compile Include="StreamServices\Helpers.cs" />
-    <Compile Include="StreamServices\IServiceRequest.cs" />
-    <Compile Include="StreamServices\IServiceResponse.cs" />
-    <Compile Include="StreamServices\IStream.cs" />
-    <Compile Include="StreamServices\StreamBase.cs" />
-    <Compile Include="StreamServices\Twitch\TwitchService.cs" />
-    <Compile Include="StreamServices\Twitch\TwitchServiceRequest.cs" />
-    <Compile Include="StreamServices\Twitch\TwitchServiceResponse.cs" />
-    <Compile Include="StreamServices\Twitch\TwitchStream.cs" />
-    <Compile Include="ViewModels\BindableBase.cs" />
+    <Compile Include="StreamServices\ServicesManager.cs" />
+    <Compile Include="Streams\ChaturbateStream.cs" />
+    <Compile Include="Streams\IStream.cs" />
+    <Compile Include="Streams\StreamBase.cs" />
+    <Compile Include="StreamServices\TwitchService.cs" />
+    <Compile Include="Streams\StreamFactory.cs" />
+    <Compile Include="Streams\TwitchStream.cs" />
+    <Compile Include="Common\BindableBase.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -85,10 +85,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="StreamServices\Chaturbate\" />
-    <Folder Include="StreamServices\Mixer\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>

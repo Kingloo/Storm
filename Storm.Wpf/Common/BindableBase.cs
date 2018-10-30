@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Storm.Wpf.ViewModels
+namespace Storm.Wpf.Common
 {
     public abstract class BindableBase : INotifyPropertyChanged
     {

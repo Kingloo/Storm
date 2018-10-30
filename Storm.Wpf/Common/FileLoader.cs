@@ -36,7 +36,7 @@ namespace Storm.Wpf.Common
             {
                 fsAsync = new FileStream(
                     File.FullName,
-                    FileMode.Open,
+                    FileMode.OpenOrCreate,
                     FileAccess.Read,
                     FileShare.None,
                     4096,
@@ -72,7 +72,7 @@ namespace Storm.Wpf.Common
             {
                 fsAsync = new FileStream(
                     File.FullName,
-                    FileMode.Open,
+                    FileMode.OpenOrCreate,
                     FileAccess.Read,
                     FileShare.None,
                     4096,

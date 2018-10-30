@@ -10,17 +10,21 @@ namespace Storm.Wpf.StreamServices
     {
         private static readonly HttpClient client = new HttpClient();
 
-        public static JObject ParseJson(string rawJson)
+        public static bool TryParseJson(string rawJson, out JObject json)
         {
             try
             {
-                return JObject.Parse(rawJson);
+                json = JObject.Parse(rawJson);
+                return true;
             }
             catch (JsonReaderException)
             {
-                return null;
+                json = null;
+                return false;
             }
         }
+
+        public static Task<(bool, string)> DownloadStringAsync(Uri uri) => DownloadStringAsync(uri, null);
 
         public static async Task<(bool, string)> DownloadStringAsync(Uri uri, Action<HttpRequestMessage> configureHeaders)
         {
