@@ -1,35 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Storm", "Storm\Storm.csproj", "{1EAB4B0B-9A53-4745-A782-6FB445DF561F}"
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2048
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Storm.Wpf", "Storm.Wpf\Storm.Wpf.csproj", "{6B48D600-482F-4AE4-997C-FFEA4014E2CA}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://kingloo.visualstudio.com/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Storm\\Storm.csproj
-		SccProjectName1 = Storm
-		SccLocalPath1 = Storm
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Debug|x64.ActiveCfg = Debug|x64
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Debug|x64.Build.0 = Debug|x64
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Release|x64.ActiveCfg = Release|x64
-		{1EAB4B0B-9A53-4745-A782-6FB445DF561F}.Release|x64.Build.0 = Release|x64
+		{6B48D600-482F-4AE4-997C-FFEA4014E2CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B48D600-482F-4AE4-997C-FFEA4014E2CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B48D600-482F-4AE4-997C-FFEA4014E2CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B48D600-482F-4AE4-997C-FFEA4014E2CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7D9143C4-63D9-4889-B379-EB68F71B3D85}
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,25 @@
+﻿<Window x:Class="Storm.Wpf.GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Storm.Wpf.GUI"
+        Name="mainWindow"
+        Loaded="Window_Loaded">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="Title" Value="Storm" />
+        </Style>
+    </Window.Style>
+
+    <Window.InputBindings>
+        <KeyBinding Key="Esc"
+                    Command="{Binding ExitCommand, Mode=OneTime}"
+                    CommandParameter="{Binding ElementName=mainWindow}" />
+        <KeyBinding Key="F5"
+                    Command="{Binding RefreshCommand, Mode=OneTime}" />
+    </Window.InputBindings>
+    
+    <Grid>
+            
+    </Grid>
+</Window>
