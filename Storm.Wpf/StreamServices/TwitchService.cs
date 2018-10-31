@@ -24,24 +24,37 @@ namespace Storm.Wpf.StreamServices
                 .Select(stream => stream.AccountName)
                 .ToList();
 
-            Dictionary<string, string> userNameDisplayName = await GetDisplayNamesAsync(userNames);
-            Dictionary<string, (bool, Int64)> userNameStatusAndGameId = await GetStatusesAsync(userNames);
+            //          key    Val.It1 Val.It2
+            //         userId  accName DisName
+            Dictionary<Int64, (string, string)> userIds = await GetUserIdAndDisplayNameAsync(userNames);
 
-            var gameIds = userNameStatusAndGameId
+            foreach (TwitchStream each in streams)
+            {
+                var userId = userIds.Single(id => id.Value.Item1 == each.AccountName);
+
+                each.UserId         =   userId.Key;
+                each.DisplayName    =   userId.Value.Item2;
+            }
+
+            //         key   Val.It1 Val.It2
+            //        userId  isLive gameId
+            Dictionary<Int64, (bool, Int64)> userIdIsLiveAndGameId = await GetStatusesAsync(userIds.Keys);
+
+            await AddOrUpdateGameNames(
+                userIdIsLiveAndGameId
                 .Select(kvp => kvp.Value.Item2)
-                .ToList();
+                .ToList()
+                );
 
-            await AddOrUpdateGameNames(gameIds);
-
-            ProcessTwitchResponses(streams, userNameDisplayName, userNameStatusAndGameId);
+            ProcessTwitchResponses(streams, userIdIsLiveAndGameId);
         }
 
 
-        private static async Task<Dictionary<string, string>> GetDisplayNamesAsync(IEnumerable<string> userNames)
+        private static async Task<Dictionary<Int64, (string, string)>> GetUserIdAndDisplayNameAsync(IEnumerable<string> userNames)
         {
-            var userNameDisplayNamePairs = new Dictionary<string, string>();
+            var userIdAccountNameAndDisplayName = new Dictionary<Int64, (string, string)>();
 
-            string query = BuildDisplayNamesQuery(userNames);
+            string query = BuildUserIdQuery(userNames);
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query.ToString()).ConfigureAwait(false);
 
@@ -49,22 +62,24 @@ namespace Storm.Wpf.StreamServices
 
             foreach (JObject each in data)
             {
-                bool couldFindUserName = each.TryGetValue("login", out JToken loginToken);
+                bool couldFindUserId = each.TryGetValue("id", out JToken idToken);
+                bool couldFindAccountName = each.TryGetValue("login", out JToken loginToken);
                 bool couldFindDisplayName = each.TryGetValue("display_name", out JToken displayNameToken);
 
-                if (couldFindUserName && couldFindDisplayName)
+                if (couldFindUserId && couldFindAccountName && couldFindDisplayName)
                 {
-                    string userName = (string)loginToken;
+                    Int64 userId = (Int64)idToken;
+                    string accountName = (string)loginToken;
                     string displayName = (string)displayNameToken;
 
-                    userNameDisplayNamePairs.Add(userName, displayName);
+                    userIdAccountNameAndDisplayName.Add(userId, (accountName, displayName));
                 }
             }
 
-            return userNameDisplayNamePairs;
+            return userIdAccountNameAndDisplayName;
         }
 
-        private static string BuildDisplayNamesQuery(IEnumerable<string> userNames)
+        private static string BuildUserIdQuery(IEnumerable<string> userNames)
         {
             StringBuilder query = new StringBuilder($"{apiRoot.AbsoluteUri}/users?");
 
@@ -77,42 +92,42 @@ namespace Storm.Wpf.StreamServices
         }
 
 
-        private static async Task<Dictionary<string, (bool, Int64)>> GetStatusesAsync(IEnumerable<string> userNames)
+        private static async Task<Dictionary<Int64, (bool, Int64)>> GetStatusesAsync(IEnumerable<Int64> userIds)
         {
-            var query = BuildStatusQuery(userNames);
+            var query = BuildStatusQuery(userIds);
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query.ToString()).ConfigureAwait(false);
 
             if (!success) { return null; }
 
-            var results = new Dictionary<string, (bool, long)>();
+            var results = new Dictionary<Int64, (bool, Int64)>();
 
             foreach (JObject each in data)
             {
-                bool couldFindUserName = each.TryGetValue("user_name", out JToken userNameToken);
+                bool couldFindUserId = each.TryGetValue("user_id", out JToken userIdToken);
                 bool couldFindType = each.TryGetValue("type", out JToken typeToken);
                 bool couldFindGameId = each.TryGetValue("game_id", out JToken gameIdToken);
 
-                if (couldFindUserName && couldFindType && couldFindGameId)
+                if (couldFindUserId && couldFindType && couldFindGameId)
                 {
-                    string userName = (string)userNameToken;
+                    Int64 userId = (Int64)userIdToken;
                     bool isLive = (string)typeToken == "live";
                     Int64 gameId = (Int64)gameIdToken;
 
-                    results.Add(userName, (isLive, gameId));
+                    results.Add(userId, (isLive, gameId));
                 }
             }
 
             return results;
         }
 
-        private static string BuildStatusQuery(IEnumerable<string> userNames)
+        private static string BuildStatusQuery(IEnumerable<Int64> userNames)
         {
             StringBuilder query = new StringBuilder($"{apiRoot.AbsoluteUri}/streams?");
 
-            foreach (string userName in userNames)
+            foreach (Int64 userId in userNames)
             {
-                query.Append($"user_login={userName}&");
+                query.Append($"user_id={userId}&");
             }
 
             return query.ToString();
@@ -155,23 +170,16 @@ namespace Storm.Wpf.StreamServices
         }
 
 
-        private static void ProcessTwitchResponses(IEnumerable<TwitchStream> streams, Dictionary<string, string> userNameDisplayName, Dictionary<string, (bool, Int64)> userNameStatusAndGameId)
+        private static void ProcessTwitchResponses(IEnumerable<TwitchStream> streams, Dictionary<Int64, (bool, Int64)> values)
         {
             foreach (TwitchStream stream in streams)
             {
-                if (userNameDisplayName.TryGetValue(stream.AccountName, out string displayName))
+                if (values.TryGetValue(stream.UserId, out (bool, Int64) value))
                 {
-                    stream.DisplayName = displayName;
-                }
+                    (bool isLive, Int64 gameId) = value;
 
-                if (userNameStatusAndGameId.TryGetValue(stream.AccountName, out (bool isLive, Int64 gameId) res))
-                {
-                    stream.IsLive = res.isLive;
-
-                    if (stream.IsLive)
-                    {
-                        stream.Game = gameIdCache[res.gameId];
-                    }
+                    stream.IsLive = isLive;
+                    stream.Game = gameIdCache[gameId];
                 }
             }
         }

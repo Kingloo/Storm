@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Storm.Wpf.Common;
 
 namespace Storm.Wpf.Streams
@@ -20,10 +21,24 @@ namespace Storm.Wpf.Streams
                 throw new ArgumentException($"account link invalid: {accountLink.AbsoluteUri}", nameof(accountLink));
             }
 
-            SetAccountName();
+            AccountName = SetAccountName().ToLower();
         }
 
         protected abstract bool ValidateAccountLink();
-        protected abstract void SetAccountName();
+        protected abstract string SetAccountName();
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(GetType().FullName);
+            sb.AppendLine($"account link: {AccountLink.AbsoluteUri}");
+            sb.AppendLine(AccountIcon == null ? "no account icon" : $"account icon: {AccountIcon.AbsoluteUri}");
+            sb.AppendLine($"account name: {AccountName}");
+            sb.AppendLine($"display name: {DisplayName}");
+            sb.AppendLine(IsLive ? "live" : "not live");
+
+            return sb.ToString();
+        }
     }
 }

@@ -7,6 +7,7 @@ using System.Windows;
 using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
 using Storm.Wpf.StreamServices;
+using System.Diagnostics;
 
 namespace Storm.Wpf.ViewModels
 {
@@ -77,9 +78,12 @@ namespace Storm.Wpf.ViewModels
 
             foreach (string line in lines)
             {
-                if (StreamFactory.TryCreate(line, out IStream stream))
+                if (!line.StartsWith("#"))
                 {
-                    loadedStreams.Add(stream);
+                    if (StreamFactory.TryCreate(line, out IStream stream))
+                    {
+                        loadedStreams.Add(stream);
+                    }
                 }
             }
 
@@ -88,6 +92,11 @@ namespace Storm.Wpf.ViewModels
             var newlyAdded = AddNew(loadedStreams);
 
             await ServicesManager.UpdateAsync(newlyAdded);
+
+            foreach (IStream each in Streams)
+            {
+                Debug.WriteLine(each.ToString());
+            }
         }
 
         private IEnumerable<IStream> AddNew(IEnumerable<IStream> loadedStreams)

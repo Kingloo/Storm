@@ -8,6 +8,8 @@
     <Window.Style>
         <Style TargetType="{x:Type Window}">
             <Setter Property="Title" Value="Storm" />
+            <Setter Property="Width" Value="500" />
+            <Setter Property="SizeToContent" Value="Height" />
         </Style>
     </Window.Style>
 
