@@ -7,10 +7,29 @@ namespace Storm.Wpf.Streams
     public abstract class StreamBase : BindableBase, IStream
     {
         public Uri AccountLink { get; } = null;
-        public Uri AccountIcon { get; set; } = null;
+
+        private Uri _accountIcon = null;
+        public Uri AccountIcon
+        {
+            get => _accountIcon;
+            set => SetProperty(ref _accountIcon, value, nameof(AccountIcon));
+        }
+
         public string AccountName { get; protected set; } = string.Empty;
-        public string DisplayName { get; set; }
-        public bool IsLive { get; set; }
+
+        private string _displayName = string.Empty;
+        public string DisplayName
+        {
+            get => _displayName;
+            set => SetProperty(ref _displayName, value, nameof(DisplayName));
+        }
+
+        private bool _isLive = false;
+        public bool IsLive
+        {
+            get => _isLive;
+            set => SetProperty(ref _isLive, value, nameof(IsLive));
+        }
 
         protected StreamBase(Uri accountLink)
         {
@@ -22,6 +41,7 @@ namespace Storm.Wpf.Streams
             }
 
             AccountName = SetAccountName().ToLower();
+            DisplayName = AccountName;
         }
 
         protected abstract bool ValidateAccountLink();

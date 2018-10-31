@@ -1,17 +1,29 @@
 ﻿<Window x:Class="Storm.Wpf.GUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:Storm.Wpf.GUI"
+        xmlns:streams="clr-namespace:Storm.Wpf.Streams"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         Name="mainWindow"
         Loaded="Window_Loaded">
 
     <Window.Style>
         <Style TargetType="{x:Type Window}">
             <Setter Property="Title" Value="Storm" />
-            <Setter Property="Width" Value="500" />
+            <Setter Property="Width" Value="470" />
             <Setter Property="SizeToContent" Value="Height" />
         </Style>
     </Window.Style>
+
+    <Window.Resources>
+        <CollectionViewSource Source="{Binding Streams}"
+                              x:Key="sortedStreams"
+                              IsLiveSortingRequested="True">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="IsLive" Direction="Descending" />
+                <scm:SortDescription PropertyName="DisplayName" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
 
     <Window.InputBindings>
         <KeyBinding Key="Esc"
@@ -21,7 +33,11 @@
                     Command="{Binding RefreshCommand, Mode=OneTime}" />
     </Window.InputBindings>
     
-    <Grid>
-            
-    </Grid>
+    <ItemsControl ItemsSource="{Binding Source={StaticResource sortedStreams}}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type streams:IStream}">
+                <Label Content="{Binding DisplayName}" />
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
 </Window>

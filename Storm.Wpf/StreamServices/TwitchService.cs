@@ -16,6 +16,7 @@ namespace Storm.Wpf.StreamServices
         private static readonly Uri apiRoot = new Uri("https://api.twitch.tv/helix");
         private static readonly ConcurrentDictionary<Int64, string> gameIdCache = new ConcurrentDictionary<Int64, string>();
 
+
         public static async Task UpdateAsync(IEnumerable<TwitchStream> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
@@ -26,11 +27,11 @@ namespace Storm.Wpf.StreamServices
 
             //          key    Val.It1 Val.It2
             //         userId  accName DisName
-            Dictionary<Int64, (string, string)> userIds = await GetUserIdAndDisplayNameAsync(userNames);
+            Dictionary<Int64, (string, string)> userIdAccountNameAndDisplayName = await GetUserIdAndDisplayNameAsync(userNames);
 
             foreach (TwitchStream each in streams)
             {
-                var userId = userIds.Single(id => id.Value.Item1 == each.AccountName);
+                var userId = userIdAccountNameAndDisplayName.Single(id => id.Value.Item1 == each.AccountName);
 
                 each.UserId         =   userId.Key;
                 each.DisplayName    =   userId.Value.Item2;
@@ -38,7 +39,7 @@ namespace Storm.Wpf.StreamServices
 
             //         key   Val.It1 Val.It2
             //        userId  isLive gameId
-            Dictionary<Int64, (bool, Int64)> userIdIsLiveAndGameId = await GetStatusesAsync(userIds.Keys);
+            Dictionary<Int64, (bool, Int64)> userIdIsLiveAndGameId = await GetStatusesAsync(userIdAccountNameAndDisplayName.Keys);
 
             await AddOrUpdateGameNames(
                 userIdIsLiveAndGameId

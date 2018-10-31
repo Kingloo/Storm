@@ -19,6 +19,9 @@ namespace Storm.Wpf.ViewModels
 
         #region Properties
         private bool _isActive = false;
+        /// <summary>
+        /// Is any asynchronous operation in progress.
+        /// </summary>
         public bool IsActive
         {
             get => _isActive;
@@ -26,6 +29,9 @@ namespace Storm.Wpf.ViewModels
         }
 
         private readonly ObservableCollection<IStream> _streams = new ObservableCollection<IStream>();
+        /// <summary>
+        /// The streams.
+        /// </summary>
         public IReadOnlyCollection<IStream> Streams => _streams;
         #endregion
 
@@ -68,8 +74,17 @@ namespace Storm.Wpf.ViewModels
             this.fileLoader = fileLoader ?? throw new ArgumentNullException(nameof(fileLoader));
         }
 
+        /// <summary>
+        /// Updates the status of every stream.
+        /// </summary>
+        /// <returns></returns>
         public Task RefreshAsync() => ServicesManager.UpdateAsync(Streams);
 
+        /// <summary>
+        /// Loads streams from the on disk file,
+        /// adds any new ones to the view model, and removes any that are no longer present.
+        /// </summary>
+        /// <returns></returns>
         public async Task LoadStreams()
         {
             string[] lines = await fileLoader.LoadLinesAsync();
@@ -78,12 +93,9 @@ namespace Storm.Wpf.ViewModels
 
             foreach (string line in lines)
             {
-                if (!line.StartsWith("#"))
+                if (StreamFactory.TryCreate(line, out IStream stream))
                 {
-                    if (StreamFactory.TryCreate(line, out IStream stream))
-                    {
-                        loadedStreams.Add(stream);
-                    }
+                    loadedStreams.Add(stream);
                 }
             }
 
@@ -92,30 +104,12 @@ namespace Storm.Wpf.ViewModels
             var newlyAdded = AddNew(loadedStreams);
 
             await ServicesManager.UpdateAsync(newlyAdded);
-
-            foreach (IStream each in Streams)
-            {
-                Debug.WriteLine(each.ToString());
-            }
         }
 
-        private IEnumerable<IStream> AddNew(IEnumerable<IStream> loadedStreams)
-        {
-            List<IStream> added = new List<IStream>();
-
-            foreach (IStream each in loadedStreams)
-            {
-                if (!_streams.Contains(each))
-                {
-                    _streams.Add(each);
-
-                    added.Add(each);
-                }
-            }
-
-            return added;
-        }
-
+        /// <summary>
+        /// Removes streams from the view model that are no longer in the on-disk file.
+        /// </summary>
+        /// <param name="loadedStreams">The streams newly loaded from disk.</param>
         private void RemoveOld(IEnumerable<IStream> loadedStreams)
         {
             List<IStream> toBeRemoved = new List<IStream>();
@@ -132,6 +126,28 @@ namespace Storm.Wpf.ViewModels
             {
                 _streams.Remove(each);
             }
+        }
+
+        /// <summary>
+        /// Adds streams from the on-disk file that the view model doesn't have yet.
+        /// </summary>
+        /// <param name="loadedStreams">The streams newly loaded from disk.</param>
+        /// <returns></returns>
+        private IEnumerable<IStream> AddNew(IEnumerable<IStream> loadedStreams)
+        {
+            List<IStream> added = new List<IStream>();
+
+            foreach (IStream each in loadedStreams)
+            {
+                if (!_streams.Contains(each))
+                {
+                    _streams.Add(each);
+
+                    added.Add(each);
+                }
+            }
+
+            return added;
         }
     }
 }

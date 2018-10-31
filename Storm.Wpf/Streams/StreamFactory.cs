@@ -4,11 +4,29 @@ namespace Storm.Wpf.Streams
 {
     public static class StreamFactory
     {
+        private const string http = "http://";
+        private const string https = "https://";
+
+        /// <summary>
+        /// Attempts to create the correct stream object from a line of text.
+        /// </summary>
+        /// <param name="rawAccountLink">The account link as raw text.</param>
+        /// <param name="stream">If succcessful, the IStream object, e.g. TwitchStream or ChaturbateStream.</param>
+        /// <returns>Will fail for several reasons, including if the line was a comment, or didn't parse as a Uri.</returns>
         public static bool TryCreate(string rawAccountLink, out IStream stream)
         {
-            if (!rawAccountLink.StartsWith("https://") && !rawAccountLink.StartsWith("http://"))
+            // comment character, each comment must be on its own line
+            if (rawAccountLink.StartsWith("/"))
             {
-                rawAccountLink = $"https://{rawAccountLink}";
+                stream = null;
+                return false;
+            }
+
+            // we don't replace http:// with https:// - we leave it up to the services to do 301 redirects
+
+            if (!rawAccountLink.StartsWith(https) && !rawAccountLink.StartsWith(http))
+            {
+                rawAccountLink = $"{https}{rawAccountLink}";
             }
 
             if (!Uri.TryCreate(rawAccountLink, UriKind.Absolute, out Uri uri))
