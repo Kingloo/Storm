@@ -53,13 +53,13 @@ namespace Storm.Wpf.StreamServices
 
         private static async Task<Dictionary<Int64, (string, string)>> GetUserIdAndDisplayNameAsync(IEnumerable<string> userNames)
         {
-            var userIdAccountNameAndDisplayName = new Dictionary<Int64, (string, string)>();
-
             string query = BuildUserIdQuery(userNames);
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query.ToString()).ConfigureAwait(false);
 
-            if (!success) { return null; }
+            var userIdAccountNameAndDisplayName = new Dictionary<Int64, (string, string)>();
+
+            if (!success) { return userIdAccountNameAndDisplayName; }
 
             foreach (JObject each in data)
             {
@@ -99,9 +99,9 @@ namespace Storm.Wpf.StreamServices
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query.ToString()).ConfigureAwait(false);
 
-            if (!success) { return null; }
-
             var results = new Dictionary<Int64, (bool, Int64)>();
+
+            if (!success) { return results; }
 
             foreach (JObject each in data)
             {

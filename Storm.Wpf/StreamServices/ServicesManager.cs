@@ -7,19 +7,15 @@ namespace Storm.Wpf.StreamServices
 {
     public static class ServicesManager
     {
-        public static async Task UpdateAsync(IEnumerable<IStream> streams)
+        public static Task UpdateAsync(IEnumerable<IStream> streams)
         {
-            await TwitchService.UpdateAsync(
-                streams
-                .Where(stream => stream.GetType() == typeof(TwitchStream))
-                .Cast<TwitchStream>()
-                );
+            var updateTasks = new List<Task>
+            {
+                TwitchService.UpdateAsync(streams.OfType<TwitchStream>()),
+                ChaturbateService.UpdateAsync(streams.OfType<ChaturbateStream>())
+            };
 
-            await ChaturbateService.UpdateAsync(
-                streams
-                .Where(stream => stream.GetType() == typeof(ChaturbateStream))
-                .Cast<ChaturbateStream>()
-                );
+            return Task.WhenAll(updateTasks);
         }
     }
 }
