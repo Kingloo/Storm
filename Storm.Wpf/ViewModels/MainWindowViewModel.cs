@@ -1,13 +1,12 @@
-﻿using System.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
 using Storm.Wpf.StreamServices;
-using System.Diagnostics;
 
 namespace Storm.Wpf.ViewModels
 {
@@ -75,10 +74,26 @@ namespace Storm.Wpf.ViewModels
         }
 
         /// <summary>
-        /// Updates the status of every stream.
+        /// Updates the status of every stream in Streams.
         /// </summary>
         /// <returns></returns>
-        public Task RefreshAsync() => ServicesManager.UpdateAsync(Streams);
+        public Task RefreshAsync() => RefreshAsync(Streams);
+
+        /// <summary>
+        /// Updates the status of the supplied streams.
+        /// </summary>
+        /// <param name="streams">The streams you want to update.</param>
+        /// <returns></returns>
+        public Task RefreshAsync(IEnumerable<IStream> streams)
+        {
+            var updateTasks = new List<Task>
+            {
+                TwitchService.UpdateAsync(_streams.OfType<TwitchStream>()),
+                ChaturbateService.UpdateAsync(_streams.OfType<ChaturbateStream>())
+            };
+
+            return Task.WhenAll(updateTasks);
+        }
 
         /// <summary>
         /// Loads streams from the on disk file,
@@ -103,7 +118,7 @@ namespace Storm.Wpf.ViewModels
 
             var newlyAdded = AddNew(loadedStreams);
 
-            await ServicesManager.UpdateAsync(newlyAdded);
+            await RefreshAsync(loadedStreams);
         }
 
         /// <summary>

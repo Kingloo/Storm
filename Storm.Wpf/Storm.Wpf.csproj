@@ -62,7 +62,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamServices\ChaturbateService.cs" />
     <Compile Include="StreamServices\Helpers.cs" />
-    <Compile Include="StreamServices\ServicesManager.cs" />
     <Compile Include="Streams\ChaturbateStream.cs" />
     <Compile Include="Streams\IStream.cs" />
     <Compile Include="Streams\StreamBase.cs" />
