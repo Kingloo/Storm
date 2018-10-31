@@ -20,6 +20,7 @@ namespace Storm.Wpf.StreamServices
         public static async Task UpdateAsync(IEnumerable<TwitchStream> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
+            if (!streams.Any()) { return; }
 
             IEnumerable<string> userNames = streams
                 .Select(stream => stream.AccountName)

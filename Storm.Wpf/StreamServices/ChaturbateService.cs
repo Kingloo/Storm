@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Storm.Wpf.Streams;
 using static Storm.Wpf.StreamServices.Helpers;
@@ -15,6 +16,9 @@ namespace Storm.Wpf.StreamServices
 
         public static async Task UpdateAsync(IEnumerable<ChaturbateStream> streams)
         {
+            if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
+            if (!streams.Any()) { return; }
+
             foreach (ChaturbateStream stream in streams)
             {
                 stream.IsLive = await GetIsLiveAsync(stream.AccountLink);
