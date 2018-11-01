@@ -88,8 +88,8 @@ namespace Storm.Wpf.ViewModels
         {
             var updateTasks = new List<Task>
             {
-                TwitchService.UpdateAsync(_streams.OfType<TwitchStream>()),
-                ChaturbateService.UpdateAsync(_streams.OfType<ChaturbateStream>())
+                TwitchService.UpdateAsync(streams.OfType<TwitchStream>()),
+                ChaturbateService.UpdateAsync(streams.OfType<ChaturbateStream>())
             };
 
             return Task.WhenAll(updateTasks);

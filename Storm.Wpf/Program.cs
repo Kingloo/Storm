@@ -17,7 +17,7 @@ namespace Storm.Wpf
         private static string streamsFilePath = Path.Combine(directory, fileName);
 
         [STAThread]
-        public static int Main(string[] args)
+        public static int Main()
         {
             FileInfo streamsFile = new FileInfo(streamsFilePath);
 
