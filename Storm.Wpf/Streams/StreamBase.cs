@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using Storm.Wpf.Common;
 
@@ -29,6 +30,13 @@ namespace Storm.Wpf.Streams
         {
             get => _isLive;
             set => SetProperty(ref _isLive, value, nameof(IsLive));
+        }
+
+        private bool _autoRecord = false;
+        public bool AutoRecord
+        {
+            get => _autoRecord;
+            set => SetProperty(ref _autoRecord, value, nameof(AutoRecord));
         }
 
         protected StreamBase(Uri accountLink)

@@ -9,5 +9,6 @@ namespace Storm.Wpf.Streams
         string AccountName { get; }
         string DisplayName { get; set; }
         bool IsLive { get; set; }
+        bool AutoRecord { get; set; }
     }
 }
