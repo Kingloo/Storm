@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Storm.Wpf.Streams;
 
 namespace Storm.Wpf.Common
 {
@@ -38,19 +37,11 @@ namespace Storm.Wpf.Common
     {
         private readonly Action<T> _execute = null;
         private readonly Predicate<T> _canExecute = null;
-        private DelegateCommand<StreamBase> openAccountPage;
-        private Func<object, bool> canExecute;
 
         public DelegateCommand(Action<T> execute, Predicate<T> canExecute)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
-        }
-
-        public DelegateCommand(DelegateCommand<StreamBase> openAccountPage, Func<object, bool> canExecute)
-        {
-            this.openAccountPage = openAccountPage;
-            this.canExecute = canExecute;
         }
 
         public override void Execute(object parameter)
