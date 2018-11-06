@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Common\FileLoader.cs" />
+    <Compile Include="Extensions\FileInfo.cs" />
     <Compile Include="GUI\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -67,11 +68,13 @@
     <Compile Include="StreamServices\Helpers.cs" />
     <Compile Include="Streams\ChaturbateStream.cs" />
     <Compile Include="Streams\IStream.cs" />
+    <Compile Include="Streams\MixerStream.cs" />
     <Compile Include="Streams\StreamBase.cs" />
     <Compile Include="StreamServices\TwitchService.cs" />
     <Compile Include="Streams\StreamFactory.cs" />
     <Compile Include="Streams\TwitchStream.cs" />
     <Compile Include="Common\BindableBase.cs" />
+    <Compile Include="Streams\UnsupportedStream.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -87,7 +90,20 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Icons\Chaturbate.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Icons\Mixer.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Icons\Twitch.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Icons\Unsupported.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>

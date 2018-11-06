@@ -5,6 +5,8 @@ namespace Storm.Wpf.Streams
 {
     public class ChaturbateStream : StreamBase
     {
+        public override Uri Icon { get; } = new Uri("pack://application:,,,/Icons/Chaturbate.ico");
+
         public ChaturbateStream(Uri account)
             : base(account)
         { }

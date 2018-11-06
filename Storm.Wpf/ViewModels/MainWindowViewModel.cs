@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Storm.Wpf.Common;
+using Storm.Wpf.Extensions;
 using Storm.Wpf.Streams;
 using Storm.Wpf.StreamServices;
 
@@ -27,7 +28,7 @@ namespace Storm.Wpf.ViewModels
             set => SetProperty(ref _isActive, value, nameof(IsActive));
         }
 
-        private readonly ObservableCollection<IStream> _streams = new ObservableCollection<IStream>();
+        private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
         /// <summary>
         /// The streams.
         /// </summary>
@@ -46,6 +47,34 @@ namespace Storm.Wpf.ViewModels
                 }
 
                 return _exitCommand;
+            }
+        }
+
+        private DelegateCommandAsync _refreshCommand = null;
+        public DelegateCommandAsync RefreshCommand
+        {
+            get
+            {
+                if (_refreshCommand == null)
+                {
+                    _refreshCommand = new DelegateCommandAsync(RefreshAsync, canExecuteAsync);
+                }
+
+                return _refreshCommand;
+            }
+        }
+
+        private DelegateCommand _openStreamsFileCommand = null;
+        public DelegateCommand OpenStreamsFileCommand
+        {
+            get
+            {
+                if (_openStreamsFileCommand == null)
+                {
+                    _openStreamsFileCommand = new DelegateCommand(OpenStreamsFile, canExecute);
+                }
+
+                return _openStreamsFileCommand;
             }
         }
 
@@ -104,11 +133,11 @@ namespace Storm.Wpf.ViewModels
         {
             string[] lines = await fileLoader.LoadLinesAsync();
 
-            List<IStream> loadedStreams = new List<IStream>();
+            List<StreamBase> loadedStreams = new List<StreamBase>();
 
             foreach (string line in lines)
             {
-                if (StreamFactory.TryCreate(line, out IStream stream))
+                if (StreamFactory.TryCreate(line, Char.Parse("#"), out StreamBase stream))
                 {
                     loadedStreams.Add(stream);
                 }
@@ -118,18 +147,18 @@ namespace Storm.Wpf.ViewModels
 
             var newlyAdded = AddNew(loadedStreams);
 
-            await RefreshAsync(loadedStreams);
+            await RefreshAsync(newlyAdded);
         }
 
         /// <summary>
         /// Removes streams from the view model that are no longer in the on-disk file.
         /// </summary>
         /// <param name="loadedStreams">The streams newly loaded from disk.</param>
-        private void RemoveOld(IEnumerable<IStream> loadedStreams)
+        private void RemoveOld(IEnumerable<StreamBase> loadedStreams)
         {
-            List<IStream> toBeRemoved = new List<IStream>();
+            List<StreamBase> toBeRemoved = new List<StreamBase>();
 
-            foreach (IStream each in _streams)
+            foreach (StreamBase each in _streams)
             {
                 if (!loadedStreams.Contains(each))
                 {
@@ -137,7 +166,7 @@ namespace Storm.Wpf.ViewModels
                 }
             }
 
-            foreach (IStream each in toBeRemoved)
+            foreach (StreamBase each in toBeRemoved)
             {
                 _streams.Remove(each);
             }
@@ -148,11 +177,11 @@ namespace Storm.Wpf.ViewModels
         /// </summary>
         /// <param name="loadedStreams">The streams newly loaded from disk.</param>
         /// <returns></returns>
-        private IEnumerable<IStream> AddNew(IEnumerable<IStream> loadedStreams)
+        private IEnumerable<StreamBase> AddNew(IEnumerable<StreamBase> loadedStreams)
         {
-            List<IStream> added = new List<IStream>();
+            List<StreamBase> added = new List<StreamBase>();
 
-            foreach (IStream each in loadedStreams)
+            foreach (StreamBase each in loadedStreams)
             {
                 if (!_streams.Contains(each))
                 {
@@ -164,5 +193,10 @@ namespace Storm.Wpf.ViewModels
 
             return added;
         }
+
+        /// <summary>
+        /// Opens the streams file in the .txt-handler program, typically notepad.exe
+        /// </summary>
+        private void OpenStreamsFile() => fileLoader.File.Launch();
     }
 }

@@ -5,16 +5,11 @@ using Storm.Wpf.Common;
 
 namespace Storm.Wpf.Streams
 {
-    public abstract class StreamBase : BindableBase, IStream
+    public abstract class StreamBase : BindableBase, IStream, IEquatable<StreamBase>
     {
         public Uri AccountLink { get; } = null;
 
-        private Uri _accountIcon = null;
-        public Uri AccountIcon
-        {
-            get => _accountIcon;
-            set => SetProperty(ref _accountIcon, value, nameof(AccountIcon));
-        }
+        public abstract Uri Icon { get; }
 
         public string AccountName { get; protected set; } = string.Empty;
 
@@ -61,12 +56,45 @@ namespace Storm.Wpf.Streams
 
             sb.AppendLine(GetType().FullName);
             sb.AppendLine($"account link: {AccountLink.AbsoluteUri}");
-            sb.AppendLine(AccountIcon == null ? "no account icon" : $"account icon: {AccountIcon.AbsoluteUri}");
+            sb.AppendLine(Icon == null ? "no account icon" : $"account icon: {Icon.AbsoluteUri}");
             sb.AppendLine($"account name: {AccountName}");
             sb.AppendLine($"display name: {DisplayName}");
             sb.AppendLine(IsLive ? "live" : "not live");
 
             return sb.ToString();
+        }
+
+        public bool Equals(StreamBase other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+
+            string thisMinimumLink = $"{AccountLink.DnsSafeHost}{AccountLink.AbsolutePath}";
+            string otherMinimumLink = $"{other.AccountLink.DnsSafeHost}{other.AccountLink.AbsolutePath}";
+
+            /*
+             We do this because all of the following URLs lead to the same account
+                
+                https://twitch.tv/john
+                https://www.twitch.tv/john
+                
+                http://twitch.tv/john
+                http://www.twitch.tv/john
+                
+                twitch.tv/john
+                www.twitch.tv/john
+                
+                twitch.tv/john?extra=something
+                www.twitch.tv/john?extra=something
+                
+            but Uri.Equals would find all of these to be different from each other
+             */
+
+            Debug.WriteLine($"{AccountLink.AbsoluteUri}: thisMinimumLink: {thisMinimumLink} - {other.AccountLink.AbsoluteUri}: otherMinimumLink: {otherMinimumLink}");
+
+            return thisMinimumLink.Equals(otherMinimumLink, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }
