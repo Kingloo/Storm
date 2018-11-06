@@ -15,6 +15,6 @@ namespace Storm.Wpf.Streams
         protected override bool ValidateAccountLink() => true;
 
         protected override string SetAccountName()
-            => AccountLink.Segments.Last(segment => segment != "/");
+            => AccountLink.Segments.First(segment => segment != "/");
     }
 }

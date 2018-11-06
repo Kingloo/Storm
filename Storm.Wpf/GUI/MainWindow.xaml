@@ -6,7 +6,8 @@
         xmlns:streams="clr-namespace:Storm.Wpf.Streams"
         xmlns:converters="clr-namespace:Storm.Wpf.GUI.Converters"
         Name="mainWindow"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded">
 
     <Window.Style>
         <Style TargetType="{x:Type Window}">
@@ -54,6 +55,7 @@
 
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
+                <!-- mirror of value for ItemTemplate.DataTemplate -->
                 <VirtualizingStackPanel Margin="7,0,7,7" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
@@ -67,9 +69,10 @@
                                                      False="{StaticResource Offline}" />
                 </DataTemplate.Resources>
 
+                <!-- mirror of value for ItemsPanel.ItemsPanelTemplate -->
                 <Grid Margin="0,7,0,0"
-                      Background="{Binding Path=IsLive, Converter={StaticResource liveBgColorConverter}}"
-                      Height="55">
+                      Height="55"
+                      Background="{Binding Path=IsLive, Converter={StaticResource liveBgColorConverter}}">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -87,10 +90,10 @@
 
                         <Label.InputBindings>
                             <MouseBinding MouseAction="LeftDoubleClick"
-                                          Command="{Binding Path=DataContext.OpenStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}, Mode=OneTime}"
+                                          Command="{Binding Path=DataContext.OpenStreamCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}}"
                                           CommandParameter="{Binding}" />
                             <MouseBinding MouseAction="RightDoubleClick"
-                                          Command="{Binding Path=DataContext.OpenAccountPageCommand, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}, Mode=OneTime}"
+                                          Command="{Binding Path=DataContext.OpenAccountPageCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}}"
                                           CommandParameter="{Binding}" />
                         </Label.InputBindings>
                     </Label>

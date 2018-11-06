@@ -23,6 +23,13 @@ namespace Storm.Wpf.GUI
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             viewModel.LoadStreamsCommand.Execute(null);
+
+            viewModel.StartUpdateTimer();
+        }
+
+        private void Window_Unloaded(object sender, RoutedEventArgs e)
+        {
+            viewModel.StopUpdateTimer();
         }
     }
 }

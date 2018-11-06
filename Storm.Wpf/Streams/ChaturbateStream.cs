@@ -18,6 +18,6 @@ namespace Storm.Wpf.Streams
         }
 
         protected override string SetAccountName()
-            => AccountLink.Segments.Last(segment => segment != "/");
+            => AccountLink.Segments.First(segment => segment != "/");
     }
 }

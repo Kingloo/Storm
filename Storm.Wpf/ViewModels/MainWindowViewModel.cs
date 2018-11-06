@@ -15,6 +15,8 @@ namespace Storm.Wpf.ViewModels
     {
         #region Fields
         private readonly FileLoader fileLoader = null;
+        private readonly TimeSpan updateInterval = TimeSpan.FromSeconds(120d);
+        private DispatcherCountdownTimer updateTimer = null;
         #endregion
 
         #region Properties
@@ -138,6 +140,23 @@ namespace Storm.Wpf.ViewModels
         public MainWindowViewModel(FileLoader fileLoader)
         {
             this.fileLoader = fileLoader ?? throw new ArgumentNullException(nameof(fileLoader));
+        }
+
+        public void StartUpdateTimer()
+        {
+            updateTimer = new DispatcherCountdownTimer(updateInterval, async () => await RefreshAsync());
+
+            updateTimer.Start();
+        }
+
+        public void StopUpdateTimer()
+        {
+            if (updateTimer is DispatcherCountdownTimer)
+            {
+                updateTimer.Stop();
+
+                updateTimer = null;
+            }
         }
 
         /// <summary>

@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\DelegateCommand.cs" />
+    <Compile Include="Common\DispatcherCountdownTimer.cs" />
     <Compile Include="Common\FileLoader.cs" />
     <Compile Include="Extensions\FileInfo.cs" />
     <Compile Include="Extensions\Uri.cs" />
