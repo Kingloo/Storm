@@ -56,9 +56,12 @@
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Common\FileLoader.cs" />
     <Compile Include="Extensions\FileInfo.cs" />
+    <Compile Include="Extensions\Uri.cs" />
     <Compile Include="GUI\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Converters\BooleanConverterBase.cs" />
+    <Compile Include="GUI\Converters\LiveBgColorConverter.cs" />
     <Compile Include="GUI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>

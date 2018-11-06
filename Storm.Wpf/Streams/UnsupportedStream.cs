@@ -4,7 +4,8 @@ namespace Storm.Wpf.Streams
 {
     public class UnsupportedStream : StreamBase
     {
-        public override Uri Icon { get; } = new Uri("pack://application:,,,/Icons/Unsupported.ico");
+        private static readonly Uri _icon = new Uri("pack://application:,,,/Icons/Unsupported.ico");
+        public override Uri Icon => _icon;
 
         public UnsupportedStream(Uri account)
             : base(account)

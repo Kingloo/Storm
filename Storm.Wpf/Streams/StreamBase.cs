@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 using Storm.Wpf.Common;
 
@@ -91,9 +90,7 @@ namespace Storm.Wpf.Streams
                 
             but Uri.Equals would find all of these to be different from each other
              */
-
-            Debug.WriteLine($"{AccountLink.AbsoluteUri}: thisMinimumLink: {thisMinimumLink} - {other.AccountLink.AbsoluteUri}: otherMinimumLink: {otherMinimumLink}");
-
+            
             return thisMinimumLink.Equals(otherMinimumLink, StringComparison.InvariantCultureIgnoreCase);
         }
     }

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 
 namespace Storm.Wpf.Streams
 {
     public class MixerStream : StreamBase
     {
-        public override Uri Icon { get; } = new Uri("pack://application:,,,/Icons/Mixer.ico");
+        private static readonly Uri _icon = new Uri("pack://application:,,,/Icons/Mixer.ico");
+        public override Uri Icon => _icon;
 
         public MixerStream(Uri account)
             : base(account)
@@ -13,8 +15,6 @@ namespace Storm.Wpf.Streams
         protected override bool ValidateAccountLink() => true;
 
         protected override string SetAccountName()
-        {
-            return AccountLink.AbsoluteUri;
-        }
+            => AccountLink.Segments.Last(segment => segment != "/");
     }
 }

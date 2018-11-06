@@ -27,17 +27,14 @@
 
         <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
             <!--<Setter Property="FontFamily" Value="Segoe UI" />-->
+            <Setter Property="FontFamily" Value="Calibri" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <!--<Setter Property="FontSize" Value="17" />-->
-            <!--<Setter Property="FontWeight" Value="Bold" />-->
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Bold" />
         </Style>
 
         <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Control}}" />
-
-        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Control}}">
-            <!--<Setter Property="FontWeight" Value="Normal" />-->
-        </Style>
 
         <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type Control}}">
             <!--<Setter Property="IsTabStop" Value="False" />-->
@@ -52,6 +49,10 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
+
+        <SolidColorBrush x:Key="Online" Color="LightGreen" />
+        <SolidColorBrush x:Key="Offline" Color="#FF4040" />
+        
     </Application.Resources>
     
 </Application>

@@ -92,8 +92,46 @@ namespace Storm.Wpf.ViewModels
             }
         }
 
+        private DelegateCommand<StreamBase> _openStreamCommand = null;
+        public DelegateCommand<StreamBase> OpenStreamCommand
+        {
+            get
+            {
+                if (_openStreamCommand == null)
+                {
+                    _openStreamCommand = new DelegateCommand<StreamBase>(OpenStream, canExecute);
+                }
+
+                return _openStreamCommand;
+            }
+        }
+
+        private DelegateCommand<StreamBase> _openAccountPageCommand = null;
+        public DelegateCommand<StreamBase> OpenAccountPageCommand
+        {
+            get
+            {
+                if (_openAccountPageCommand == null)
+                {
+                    _openAccountPageCommand = new DelegateCommand<StreamBase>(OpenAccountPage, canExecute);
+                }
+
+                return _openAccountPageCommand;
+            }
+        }
+
+        /// <summary>
+        /// Figures out whether an asynchronous command can start.
+        /// </summary>
+        /// <param name="_"></param>
+        /// <returns></returns>
         private bool canExecuteAsync(object _) => !IsActive;
 
+        /// <summary>
+        /// Figures out whether a synchronous command can start.
+        /// </summary>
+        /// <param name="_"></param>
+        /// <returns></returns>
         private bool canExecute(object _) => true;
         #endregion
 
@@ -198,5 +236,20 @@ namespace Storm.Wpf.ViewModels
         /// Opens the streams file in the .txt-handler program, typically notepad.exe
         /// </summary>
         private void OpenStreamsFile() => fileLoader.File.Launch();
+
+        /// <summary>
+        /// Opens a stream.
+        /// </summary>
+        /// <param name="stream"></param>
+        private void OpenStream(StreamBase stream)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Navigates to the stream account page in the OS-default web browser.
+        /// </summary>
+        /// <param name="stream"></param>
+        private void OpenAccountPage(StreamBase stream) => stream.AccountLink.OpenInBrowser();
     }
 }
