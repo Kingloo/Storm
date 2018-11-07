@@ -14,7 +14,7 @@ namespace Storm.Wpf.Common
     {
         private static bool canShowNotification = true;
 
-        private static Queue<Notification> notificationQueue = new Queue<Notification>();
+        private readonly static Queue<Notification> notificationQueue = new Queue<Notification>();
 
         private static DispatcherTimer queuePullTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
