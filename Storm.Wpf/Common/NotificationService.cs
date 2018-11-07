@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -88,7 +85,7 @@ namespace Storm.Wpf.Common
                 Left = 200d;
                 Top = 200d;
 
-                closeTimer = new DispatcherCountdownTimer(TimeSpan.FromSeconds(4d), Close);
+                closeTimer = new DispatcherCountdownTimer(TimeSpan.FromSeconds(7d), Close);
 
                 Loaded += (s, e) => closeTimer.Start();
             }

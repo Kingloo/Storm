@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows;
 using Storm.Wpf.Common;
 using Storm.Wpf.ViewModels;

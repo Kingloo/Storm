@@ -32,6 +32,9 @@ namespace Storm.Wpf.Streams
 
                 SetProperty(ref _isLive, value, nameof(IsLive));
 
+                // if they were not live before, but are live now
+                // without this check it will notifylive on every refresh
+                // but you only want to be notified once
                 if (!wasLive && IsLive)
                 {
                     NotifyLive();
@@ -66,9 +69,7 @@ namespace Storm.Wpf.Streams
 
         protected virtual void NotifyLive()
         {
-            Debug.WriteLine($"{AccountName} is now live!");
-
-            NotificationService.Send("my title", "my description", () => new Uri("https://server.newson.z:9092").OpenInBrowser());
+            NotificationService.Send($"{AccountName}", "is now live!", () => new Uri("https://server.newson.z:9092").OpenInBrowser());
         }
 
         public bool Equals(StreamBase other)
