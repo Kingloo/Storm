@@ -20,7 +20,6 @@
         <Style TargetType="{x:Type VirtualizingStackPanel}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
             <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
             <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
-            <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
             <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Pixel" />
             <Setter Property="VirtualizingPanel.CacheLength" Value="200" />
         </Style>
@@ -38,6 +37,8 @@
 
         <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type Control}}">
             <!--<Setter Property="IsTabStop" Value="False" />-->
+            <!-- keep .ScrollUnit here, NOT in {x:Type VirtualizingStackPanel}, otherwise it won't stick -->
+            <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
         </Style>
 
         <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Type Control}}">

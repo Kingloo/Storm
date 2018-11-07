@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 
 namespace Storm.Wpf.Streams
@@ -15,11 +14,6 @@ namespace Storm.Wpf.Streams
         public TwitchStream(Uri account)
             : base(account)
         { }
-
-        protected override bool ValidateAccountLink() => true;
-
-        protected override string SetAccountName()
-            => AccountLink.Segments.First(segment => segment != "/");
 
         public override string ToString()
         {

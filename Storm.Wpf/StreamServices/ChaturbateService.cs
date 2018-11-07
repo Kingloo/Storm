@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
 using static Storm.Wpf.StreamServices.Helpers;
 
@@ -39,9 +41,16 @@ namespace Storm.Wpf.StreamServices
                 while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                 {
                     if (line.Contains(offline)
-                        || line.Contains(login)
-                        || line.Contains(banned))
+                        || line.Contains(login))
                     {
+                        return false;
+                    }
+                    else if (line.Contains(banned))
+                    {
+                        string message = $"{uri.AbsoluteUri} was banned";
+
+                        await Log.LogMessageAsync(message).ConfigureAwait(false);
+
                         return false;
                     }
                 }

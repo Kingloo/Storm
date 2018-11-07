@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using Storm.Wpf.Common;
 using Storm.Wpf.Extensions;
 using Storm.Wpf.Streams;
@@ -14,12 +15,23 @@ namespace Storm.Wpf.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         #region Fields
+        private const string windowTitle = "Storm";
         private readonly FileLoader fileLoader = null;
-        private readonly TimeSpan updateInterval = TimeSpan.FromSeconds(120d);
-        private DispatcherCountdownTimer updateTimer = null;
+        private static readonly TimeSpan updateInterval = TimeSpan.FromSeconds(120d);
+        private DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = updateInterval
+        };
         #endregion
 
         #region Properties
+        public string Title
+        {
+            get => IsActive
+                ? $"{windowTitle} - updating..."
+                : windowTitle;
+        }
+
         private bool _isActive = false;
         /// <summary>
         /// Is any asynchronous operation in progress.
@@ -27,14 +39,21 @@ namespace Storm.Wpf.ViewModels
         public bool IsActive
         {
             get => _isActive;
-            set => SetProperty(ref _isActive, value, nameof(IsActive));
+            set
+            {
+                SetProperty(ref _isActive, value, nameof(IsActive));
+
+                RaisePropertyChanged(nameof(Title));
+
+                RaiseAllAsyncCommandCanExecuteChanged();
+            }
         }
 
         private readonly ObservableCollection<StreamBase> _streams = new ObservableCollection<StreamBase>();
         /// <summary>
         /// The streams.
         /// </summary>
-        public IReadOnlyCollection<IStream> Streams => _streams;
+        public IReadOnlyCollection<StreamBase> Streams => _streams;
         #endregion
 
         #region Commands
@@ -135,6 +154,12 @@ namespace Storm.Wpf.ViewModels
         /// <param name="_"></param>
         /// <returns></returns>
         private bool canExecute(object _) => true;
+
+        private void RaiseAllAsyncCommandCanExecuteChanged()
+        {
+            RefreshCommand.RaiseCanExecuteChanged();
+            LoadStreamsCommand.RaiseCanExecuteChanged();
+        }
         #endregion
 
         public MainWindowViewModel(FileLoader fileLoader)
@@ -142,16 +167,22 @@ namespace Storm.Wpf.ViewModels
             this.fileLoader = fileLoader ?? throw new ArgumentNullException(nameof(fileLoader));
         }
 
+        /// <summary>
+        /// Starts the update timer for automatic, timed refreshes.
+        /// </summary>
         public void StartUpdateTimer()
         {
-            updateTimer = new DispatcherCountdownTimer(updateInterval, async () => await RefreshAsync());
+            updateTimer.Tick += async (s, e) => await RefreshAsync();
 
             updateTimer.Start();
         }
 
+        /// <summary>
+        /// Stops the update timer for automatic, timed refreshes.
+        /// </summary>
         public void StopUpdateTimer()
         {
-            if (updateTimer is DispatcherCountdownTimer)
+            if (updateTimer is DispatcherTimer)
             {
                 updateTimer.Stop();
 
@@ -163,19 +194,29 @@ namespace Storm.Wpf.ViewModels
         /// Updates the status of every stream in Streams.
         /// </summary>
         /// <returns></returns>
-        public Task RefreshAsync() => RefreshAsync(Streams);
+        public async Task RefreshAsync()
+        {
+            IsActive = true;
+
+            await RefreshAsync(Streams);
+
+            IsActive = false;
+        }
 
         /// <summary>
         /// Updates the status of the supplied streams.
         /// </summary>
         /// <param name="streams">The streams you want to update.</param>
         /// <returns></returns>
-        public Task RefreshAsync(IEnumerable<IStream> streams)
+        public Task RefreshAsync(IEnumerable<StreamBase> streams)
         {
+            // don't set IsActive in here!
+
             var updateTasks = new List<Task>
             {
                 TwitchService.UpdateAsync(streams.OfType<TwitchStream>()),
-                ChaturbateService.UpdateAsync(streams.OfType<ChaturbateStream>())
+                ChaturbateService.UpdateAsync(streams.OfType<ChaturbateStream>()),
+                MixlrService.UpdateAsync(streams.OfType<MixlrStream>())
             };
 
             return Task.WhenAll(updateTasks);
@@ -188,6 +229,8 @@ namespace Storm.Wpf.ViewModels
         /// <returns></returns>
         public async Task LoadStreams()
         {
+            IsActive = true;
+
             string[] lines = await fileLoader.LoadLinesAsync();
 
             List<StreamBase> loadedStreams = new List<StreamBase>();
@@ -205,6 +248,8 @@ namespace Storm.Wpf.ViewModels
             var newlyAdded = AddNew(loadedStreams);
 
             await RefreshAsync(newlyAdded);
+
+            IsActive = false;
         }
 
         /// <summary>

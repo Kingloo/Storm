@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using Storm.Wpf.Common;
+using Storm.Wpf.Extensions;
 
 namespace Storm.Wpf.Streams
 {
@@ -23,7 +26,17 @@ namespace Storm.Wpf.Streams
         public bool IsLive
         {
             get => _isLive;
-            set => SetProperty(ref _isLive, value, nameof(IsLive));
+            set
+            {
+                bool wasLive = IsLive;
+
+                SetProperty(ref _isLive, value, nameof(IsLive));
+
+                if (!wasLive && IsLive)
+                {
+                    NotifyLive();
+                }
+            }
         }
 
         private bool _autoRecord = false;
@@ -46,21 +59,16 @@ namespace Storm.Wpf.Streams
             DisplayName = AccountName;
         }
 
-        protected abstract bool ValidateAccountLink();
-        protected abstract string SetAccountName();
+        protected virtual bool ValidateAccountLink() => true;
 
-        public override string ToString()
+        protected virtual string SetAccountName()
+            => AccountLink.Segments.First(segment => segment != "/");
+
+        protected virtual void NotifyLive()
         {
-            StringBuilder sb = new StringBuilder();
+            Debug.WriteLine($"{AccountName} is now live!");
 
-            sb.AppendLine(GetType().FullName);
-            sb.AppendLine($"account link: {AccountLink.AbsoluteUri}");
-            sb.AppendLine(Icon == null ? "no account icon" : $"account icon: {Icon.AbsoluteUri}");
-            sb.AppendLine($"account name: {AccountName}");
-            sb.AppendLine($"display name: {DisplayName}");
-            sb.AppendLine(IsLive ? "live" : "not live");
-
-            return sb.ToString();
+            NotificationService.Send("my title", "my description", () => new Uri("https://server.newson.z:9092").OpenInBrowser());
         }
 
         public bool Equals(StreamBase other)
@@ -92,6 +100,20 @@ namespace Storm.Wpf.Streams
              */
             
             return thisMinimumLink.Equals(otherMinimumLink, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(GetType().FullName);
+            sb.AppendLine($"account link: {AccountLink.AbsoluteUri}");
+            sb.AppendLine(Icon == null ? "no account icon" : $"account icon: {Icon.AbsoluteUri}");
+            sb.AppendLine($"account name: {AccountName}");
+            sb.AppendLine($"display name: {DisplayName}");
+            sb.AppendLine(IsLive ? "live" : "not live");
+
+            return sb.ToString();
         }
     }
 }

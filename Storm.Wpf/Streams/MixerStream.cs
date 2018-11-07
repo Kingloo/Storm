@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace Storm.Wpf.Streams
 {
@@ -11,10 +10,5 @@ namespace Storm.Wpf.Streams
         public MixerStream(Uri account)
             : base(account)
         { }
-
-        protected override bool ValidateAccountLink() => true;
-
-        protected override string SetAccountName()
-            => AccountLink.Segments.First(segment => segment != "/");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using Storm.Wpf.Common;
 using Storm.Wpf.ViewModels;
@@ -11,9 +12,9 @@ namespace Storm.Wpf.GUI
 
         public MainWindow(FileLoader fileLoader)
         {
-            InitializeComponent();
-
             if (fileLoader is null) { throw new ArgumentNullException(nameof(fileLoader)); }
+
+            InitializeComponent();
 
             viewModel = new MainWindowViewModel(fileLoader);
 

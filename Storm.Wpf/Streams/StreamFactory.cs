@@ -39,10 +39,26 @@ namespace Storm.Wpf.Streams
 
             try
             {
-                if (host.EndsWith("twitch.tv", sc)) { stream = new TwitchStream(uri); }
-                else if (host.EndsWith("chaturbate.com", sc)) { stream = new ChaturbateStream(uri); }
-                else if (host.EndsWith("mixer.com", sc)) { stream = new MixerStream(uri); }
-                else { stream = new UnsupportedStream(uri); }
+                if (host.EndsWith("twitch.tv", sc))
+                {
+                    stream = new TwitchStream(uri);
+                }
+                else if (host.EndsWith("chaturbate.com", sc))
+                {
+                    stream = new ChaturbateStream(uri);
+                }
+                else if (host.EndsWith("mixer.com", sc))
+                {
+                    stream = new MixerStream(uri);
+                }
+                else if (host.EndsWith("mixlr.com", sc))
+                {
+                    stream = new MixlrStream(uri);
+                }
+                else
+                {
+                    stream = new UnsupportedStream(uri);
+                }
             }
             catch (ArgumentException)
             {

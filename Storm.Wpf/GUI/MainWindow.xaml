@@ -10,8 +10,8 @@
         Unloaded="Window_Unloaded">
 
     <Window.Style>
-        <Style TargetType="{x:Type Window}">
-            <Setter Property="Title" Value="Storm" />
+        <Style TargetType="{x:Type gui:MainWindow}">
+            <Setter Property="Title" Value="{Binding Title}" />
             <Setter Property="Top" Value="50" />
             <Setter Property="Left" Value="150" />
             <Setter Property="Width" Value="400" />
@@ -61,7 +61,7 @@
         </ItemsControl.ItemsPanel>
         
         <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type streams:IStream}">
+            <DataTemplate DataType="{x:Type streams:StreamBase}">
 
                 <DataTemplate.Resources>
                     <converters:LiveBgColorConverter x:Key="liveBgColorConverter"
@@ -98,9 +98,9 @@
                         </Label.InputBindings>
                     </Label>
 
-                    <Image Grid.Column="1"
-                           Height="30"
-                           Width="30">
+                    <Image Grid.Column="1" 
+                           Height="25"
+                           Width="25">
                         <Image.Source>
                             <BitmapImage UriSource="{Binding Path=Icon, Mode=OneTime}" />
                         </Image.Source>

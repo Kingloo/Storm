@@ -34,9 +34,40 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <LangVersion>7.3</LangVersion>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Storm.Wpf.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>CODE_ANALYSIS;DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <FileAlignment>4096</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>CODE_ANALYSIS;TRACE</DefineConstants>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <Optimize>true</Optimize>
+    <FileAlignment>4096</FileAlignment>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -56,6 +87,8 @@
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Common\DispatcherCountdownTimer.cs" />
     <Compile Include="Common\FileLoader.cs" />
+    <Compile Include="Common\Log.cs" />
+    <Compile Include="Common\NotificationService.cs" />
     <Compile Include="Extensions\FileInfo.cs" />
     <Compile Include="Extensions\Uri.cs" />
     <Compile Include="GUI\App.xaml.cs">
@@ -70,9 +103,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamServices\ChaturbateService.cs" />
     <Compile Include="StreamServices\Helpers.cs" />
+    <Compile Include="StreamServices\MixlrService.cs" />
     <Compile Include="Streams\ChaturbateStream.cs" />
     <Compile Include="Streams\IStream.cs" />
     <Compile Include="Streams\MixerStream.cs" />
+    <Compile Include="Streams\MixlrStream.cs" />
     <Compile Include="Streams\StreamBase.cs" />
     <Compile Include="StreamServices\TwitchService.cs" />
     <Compile Include="Streams\StreamFactory.cs" />
@@ -99,6 +134,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Icons\Mixer.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Icons\Mixlr.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Icons\Twitch.ico">
