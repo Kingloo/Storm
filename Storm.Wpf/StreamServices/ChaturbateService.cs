@@ -10,13 +10,18 @@ using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
-    public class ChaturbateService
+    public class ChaturbateService : StreamServiceBase
     {
         private const string offline = "Room is currently offline";
         private const string login = "meta name=\"keywords\" content=\"Login, Chaturbate login\"";
         private const string banned = "has been banned";
 
-        public static async Task UpdateAsync(IEnumerable<ChaturbateStream> streams)
+        protected override Uri ApiRoot { get; } = new Uri("https://chaturbate.com");
+        public override Type HandlesStreamType { get; } = typeof(ChaturbateStream);
+
+        public ChaturbateService() { }
+
+        public override async Task UpdateAsync(IEnumerable<StreamBase> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
             if (!streams.Any()) { return; }

@@ -6,6 +6,8 @@
         xmlns:streams="clr-namespace:Storm.Wpf.Streams"
         xmlns:converters="clr-namespace:Storm.Wpf.GUI.Converters"
         Name="mainWindow"
+        SourceInitialized="Window_SourceInitialized"
+        LocationChanged="Window_LocationChanged"
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
 

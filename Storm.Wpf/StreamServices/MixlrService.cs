@@ -8,11 +8,14 @@ using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
-    public class MixlrService
+    public class MixlrService : StreamServiceBase
     {
-        private static readonly Uri apiRoot = new Uri("https://api.mixlr.com/users");
+        protected override Uri ApiRoot { get; } = new Uri("https://api.mixlr.com/users");
+        public override Type HandlesStreamType { get; } = typeof(MixlrStream);
 
-        public static Task UpdateAsync(IEnumerable<MixlrStream> streams)
+        public MixlrService() { }
+
+        public override Task UpdateAsync(IEnumerable<StreamBase> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
             if (!streams.Any()) { return Task.CompletedTask; }
@@ -22,9 +25,9 @@ namespace Storm.Wpf.StreamServices
             return Task.WhenAll(updateTasks);
         }
 
-        private static async Task UpdateMixlrStreamAsync(MixlrStream stream)
+        private async Task UpdateMixlrStreamAsync(StreamBase stream)
         {
-            Uri uri = new Uri($"{apiRoot}/{stream.AccountName}");
+            Uri uri = new Uri($"{ApiRoot}/{stream.AccountName}");
 
             (string displayName, bool isLive) = await GetMixlrApiResponseAsync(uri);
 

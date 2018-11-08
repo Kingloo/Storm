@@ -8,7 +8,7 @@ namespace Storm.Wpf.Streams
         public Int64 UserId { get; set; }
         public string Game { get; set; }
 
-        private static readonly Uri _icon = new Uri("pack://application:,,,/Icons/Twitch.ico");
+        private static readonly Uri _icon = new Uri($"{IconPackUriPrefix}Twitch.ico");
         public override Uri Icon => _icon;
 
         public TwitchStream(Uri account)

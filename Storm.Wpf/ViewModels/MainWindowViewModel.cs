@@ -208,16 +208,23 @@ namespace Storm.Wpf.ViewModels
         /// </summary>
         /// <param name="streams">The streams you want to update.</param>
         /// <returns></returns>
-        public Task RefreshAsync(IEnumerable<StreamBase> streams)
+        public static Task RefreshAsync(IEnumerable<StreamBase> streams)
         {
             // don't set IsActive in here!
 
-            var updateTasks = new List<Task>
+            var services = streams
+                .Select(stream => ServicesManager.GetService(stream.GetType()))
+                .Distinct()
+                .ToList();
+
+            List<Task> updateTasks = new List<Task>();
+
+            foreach (StreamServiceBase service in services)
             {
-                TwitchService.UpdateAsync(streams.OfType<TwitchStream>()),
-                ChaturbateService.UpdateAsync(streams.OfType<ChaturbateStream>()),
-                MixlrService.UpdateAsync(streams.OfType<MixlrStream>())
-            };
+                var streamsForService = streams.Where(stream => stream.GetType() == service.HandlesStreamType);
+
+                updateTasks.Add(service.UpdateAsync(streamsForService));
+            }
 
             return Task.WhenAll(updateTasks);
         }
@@ -305,10 +312,7 @@ namespace Storm.Wpf.ViewModels
         /// Opens a stream.
         /// </summary>
         /// <param name="stream"></param>
-        private void OpenStream(StreamBase stream)
-        {
-            throw new NotImplementedException();
-        }
+        private void OpenStream(StreamBase stream) => ServicesManager.StartWatching(stream);
 
         /// <summary>
         /// Navigates to the stream account page in the OS-default web browser.

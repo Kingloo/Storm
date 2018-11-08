@@ -7,6 +7,8 @@ namespace Storm.Wpf.Streams
         private const string http = "http://";
         private const string https = "https://";
 
+        private static readonly StringComparison sc = StringComparison.CurrentCultureIgnoreCase;
+
         /// <summary>
         /// Attempts to create the correct stream object from a line of text.
         /// </summary>
@@ -15,17 +17,23 @@ namespace Storm.Wpf.Streams
         /// <returns>Will fail for several reasons, including if the line was a comment, or didn't parse as a Uri.</returns>
         public static bool TryCreate(string rawAccountLink, char comment, out StreamBase stream)
         {
+            if (rawAccountLink is null) { throw new ArgumentNullException(nameof(rawAccountLink)); }
+
             // comment character, each comment must be on its own line
-            if (rawAccountLink.StartsWith(comment.ToString()))
+            if (rawAccountLink.StartsWith(comment.ToString(), sc))
             {
                 stream = null;
                 return false;
             }
 
-            // we don't replace http:// with https:// - we leave it up to the services to do 301 redirects
-            if (!rawAccountLink.StartsWith(https) && !rawAccountLink.StartsWith(http))
+            if (!rawAccountLink.StartsWith(https, sc) && !rawAccountLink.StartsWith(http, sc))
             {
                 rawAccountLink = $"{https}{rawAccountLink}";
+            }
+
+            if (rawAccountLink.StartsWith(http, sc))
+            {
+                rawAccountLink = rawAccountLink.Insert(4, "s");
             }
 
             if (!Uri.TryCreate(rawAccountLink, UriKind.Absolute, out Uri uri))
@@ -35,7 +43,6 @@ namespace Storm.Wpf.Streams
             }
 
             string host = uri.DnsSafeHost;
-            var sc = StringComparison.InvariantCultureIgnoreCase;
 
             try
             {
@@ -54,6 +61,14 @@ namespace Storm.Wpf.Streams
                 else if (host.EndsWith("mixlr.com", sc))
                 {
                     stream = new MixlrStream(uri);
+                }
+                else if (host.EndsWith("youtube.com", sc))
+                {
+                    stream = new YouTubeStream(uri);
+                }
+                else if (host.EndsWith("smashcast.tv", sc))
+                {
+                    stream = new SmashcastStream(uri);
                 }
                 else
                 {

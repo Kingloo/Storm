@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace Storm.Wpf.Common
@@ -18,9 +20,13 @@ namespace Storm.Wpf.Common
             Interval = TimeSpan.FromSeconds(2d)
         };
 
+
+
         public static void Send(string title) => Send(title, string.Empty, null);
 
         public static void Send(string title, string description) => Send(title, description, null);
+
+        public static void Send(string title, Action action) => Send(title, string.Empty, action);
 
         public static void Send(string title, string description, Action action)
         {
@@ -34,6 +40,8 @@ namespace Storm.Wpf.Common
 
             notificationQueue.Enqueue(notification);
         }
+
+
 
         private static void InitTimer()
         {
@@ -67,42 +75,168 @@ namespace Storm.Wpf.Common
 
         private sealed class Notification : Window
         {
-            private DispatcherCountdownTimer closeTimer = null;
+            private readonly DispatcherCountdownTimer closeTimer = null;
 
-            public string NotificationTitle { get; } = "untitled";
-            public string Description { get; } = string.Empty;
-            public Action Action { get; } = null;
-
-            public Notification(string title, string description, Action action)
+            internal Notification(string title, string description, Action action)
             {
-                NotificationTitle = title;
-                Description = description;
-                Action = action;
+                Style = BuildWindowStyle(action);
 
-                Width = 350d;
-                Height = 250d;
+                bool hasDescription = !String.IsNullOrWhiteSpace(description);
 
-                Left = 200d;
-                Top = 200d;
+                Grid grid = hasDescription ? BuildGrid(numRows: 2) : BuildGrid(numRows: 1);
 
-                closeTimer = new DispatcherCountdownTimer(TimeSpan.FromSeconds(7d), Close);
+                Label titleLabel = BuildLabel(BuildTitleLabelStyle(), title, FontStyles.Normal);
+
+                Grid.SetRow(titleLabel, 0);
+                grid.Children.Add(titleLabel);
+
+                if (hasDescription)
+                {
+                    Label descriptionLabel = BuildLabel(BuildDescriptionLabelStyle(), description, FontStyles.Italic);
+                    Grid.SetRow(descriptionLabel, 1);
+                    grid.Children.Add(descriptionLabel);
+                }
+
+                AddChild(grid);
+
+#if DEBUG
+                TimeSpan windowCloseInterval = TimeSpan.FromSeconds(4d);
+#else
+                TimeSpan windowCloseInterval = TimeSpan.FromSeconds(15d);
+#endif
+
+                closeTimer = new DispatcherCountdownTimer(windowCloseInterval, Close);
 
                 Loaded += (s, e) => closeTimer.Start();
+                Closing += (s, e) => closeTimer.Stop();
             }
 
-            public override string ToString()
+            private static Style BuildWindowStyle(Action action)
             {
-                StringBuilder sb = new StringBuilder();
+                Style style = new Style(typeof(Notification));
 
-                sb.AppendLine(GetType().FullName);
-                sb.AppendLine(NotificationTitle);
-                sb.AppendLine(Description);
-                sb.AppendLine(Action == null ? "no action" : $"action method: {Action.Method.Name}");
-                sb.AppendLine(IsActive ? "window active" : "window inactive");
-                sb.AppendLine(IsLoaded ? "window loaded" : "window not loaded");
-                sb.AppendLine(IsVisible ? "window visible" : "window not visible");
+                if (action != null)
+                {
+                    var handler = new MouseButtonEventHandler((s, e) => action());
+                    var leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
 
-                return sb.ToString();
+                    style.Setters.Add(leftMouseDoubleClick);
+                }
+
+                style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
+                style.Setters.Add(new Setter(ForegroundProperty, Brushes.Transparent));
+
+                style.Setters.Add(new Setter(TopmostProperty, true));
+                style.Setters.Add(new Setter(FocusableProperty, false));
+                style.Setters.Add(new Setter(ShowInTaskbarProperty, false));
+                style.Setters.Add(new Setter(ShowActivatedProperty, false));
+                style.Setters.Add(new Setter(IsTabStopProperty, false));
+                style.Setters.Add(new Setter(ResizeModeProperty, ResizeMode.NoResize));
+                style.Setters.Add(new Setter(WindowStyleProperty, WindowStyle.None));
+                style.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(0d)));
+
+                double desiredWidth = 475d;
+
+                double top = SystemParameters.WorkArea.Top + 50d;
+                double left = SystemParameters.WorkArea.Right - desiredWidth - 100d;
+
+                style.Setters.Add(new Setter(TopProperty, top));
+                style.Setters.Add(new Setter(LeftProperty, left));
+
+                style.Setters.Add(new Setter(SizeToContentProperty, SizeToContent.Height));
+                style.Setters.Add(new Setter(WidthProperty, desiredWidth));
+
+                return style;
+            }
+
+            private static Grid BuildGrid(int numRows)
+            {
+                if (numRows < 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(numRows));
+                }
+
+                Grid grid = new Grid
+                {
+                    Style = BuildGridStyle()
+                };
+
+                for (int i = 0; i < numRows; i++)
+                {
+                    grid.RowDefinitions.Add(new RowDefinition
+                    {
+                        Height = GridLength.Auto
+                    });
+                }
+
+                return grid;
+            }
+
+            private static Style BuildGridStyle()
+            {
+                Style style = new Style(typeof(Grid));
+
+                style.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
+
+                style.Setters.Add(new Setter(HeightProperty, Double.NaN));
+                style.Setters.Add(new Setter(VerticalAlignmentProperty, VerticalAlignment.Stretch));
+                style.Setters.Add(new Setter(VerticalContentAlignmentProperty, VerticalAlignment.Stretch));
+
+                style.Setters.Add(new Setter(WidthProperty, Double.NaN));
+                style.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Stretch));
+                style.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
+
+                return style;
+            }
+
+            private static Label BuildLabel(Style labelStyle, string text, FontStyle fontStyle)
+            {
+                return new Label
+                {
+                    Style = labelStyle,
+                    Content = new TextBlock
+                    {
+                        Text = text,
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        FontStyle = fontStyle
+                    }
+                };
+            }
+
+            private static Style BuildTitleLabelStyle()
+            {
+                Style style = new Style(typeof(Label));
+
+                style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
+                style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
+                style.Setters.Add(new Setter(MarginProperty, new Thickness(15d, 0d, 15d, 0d)));
+                style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
+                style.Setters.Add(new Setter(FontSizeProperty, 22d));
+                style.Setters.Add(new Setter(HeightProperty, 75d));
+                style.Setters.Add(new Setter(VerticalAlignmentProperty, VerticalAlignment.Stretch));
+                style.Setters.Add(new Setter(VerticalContentAlignmentProperty, VerticalAlignment.Center));
+                style.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Stretch));
+                style.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
+
+                return style;
+            }
+
+            private static Style BuildDescriptionLabelStyle()
+            {
+                Style style = new Style(typeof(Label));
+
+                style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
+                style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
+                style.Setters.Add(new Setter(MarginProperty, new Thickness(0d, 0d, 15d, 0d)));
+                style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
+                style.Setters.Add(new Setter(FontSizeProperty, 14d));
+                style.Setters.Add(new Setter(HeightProperty, 40d));
+                style.Setters.Add(new Setter(VerticalAlignmentProperty, VerticalAlignment.Stretch));
+                style.Setters.Add(new Setter(VerticalContentAlignmentProperty, VerticalAlignment.Top));
+                style.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Stretch));
+                style.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
+
+                return style;
             }
         }
     }

@@ -1,14 +1,16 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Storm.Wpf.Common;
 using Storm.Wpf.Extensions;
+using Storm.Wpf.StreamServices;
 
 namespace Storm.Wpf.Streams
 {
     public abstract class StreamBase : BindableBase, IStream, IEquatable<StreamBase>
     {
+        protected const string IconPackUriPrefix = "pack://application:,,,/Icons/";
+
         public Uri AccountLink { get; } = null;
 
         public abstract Uri Icon { get; }
@@ -38,6 +40,11 @@ namespace Storm.Wpf.Streams
                 if (!wasLive && IsLive)
                 {
                     NotifyLive();
+
+                    if (AutoRecord)
+                    {
+                        ServicesManager.StartRecording(this);
+                    }
                 }
             }
         }
@@ -69,7 +76,9 @@ namespace Storm.Wpf.Streams
 
         protected virtual void NotifyLive()
         {
-            NotificationService.Send($"{AccountName}", "is now live!", () => new Uri("https://server.newson.z:9092").OpenInBrowser());
+            string title = $"{DisplayName} is now LIVE";
+
+            NotificationService.Send(title, AccountLink.OpenInBrowser);
         }
 
         public bool Equals(StreamBase other)
@@ -100,7 +109,7 @@ namespace Storm.Wpf.Streams
             but Uri.Equals would find all of these to be different from each other
              */
             
-            return thisMinimumLink.Equals(otherMinimumLink, StringComparison.InvariantCultureIgnoreCase);
+            return thisMinimumLink.Equals(otherMinimumLink, StringComparison.CurrentCultureIgnoreCase);
         }
 
         public override string ToString()

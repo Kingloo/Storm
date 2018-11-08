@@ -11,13 +11,16 @@ using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
-    public static class TwitchService
+    public class TwitchService : StreamServiceBase
     {
-        private static readonly Uri apiRoot = new Uri("https://api.twitch.tv/helix");
         private static readonly ConcurrentDictionary<Int64, string> gameIdCache = new ConcurrentDictionary<Int64, string>();
 
+        protected override Uri ApiRoot { get; } = new Uri("https://api.twitch.tv/helix");
+        public override Type HandlesStreamType { get; } = typeof(TwitchStream);
 
-        public static async Task UpdateAsync(IEnumerable<TwitchStream> streams)
+        public TwitchService() { }
+
+        public override async Task UpdateAsync(IEnumerable<StreamBase> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
             if (!streams.Any()) { return; }
@@ -52,7 +55,7 @@ namespace Storm.Wpf.StreamServices
         }
 
 
-        private static async Task<Dictionary<Int64, (string, string)>> GetUserIdAndDisplayNameAsync(IEnumerable<string> userNames)
+        private async Task<Dictionary<Int64, (string, string)>> GetUserIdAndDisplayNameAsync(IEnumerable<string> userNames)
         {
             string query = BuildUserIdQuery(userNames);
 
@@ -81,9 +84,9 @@ namespace Storm.Wpf.StreamServices
             return userIdAccountNameAndDisplayName;
         }
 
-        private static string BuildUserIdQuery(IEnumerable<string> userNames)
+        private string BuildUserIdQuery(IEnumerable<string> userNames)
         {
-            StringBuilder query = new StringBuilder($"{apiRoot.AbsoluteUri}/users?");
+            StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/users?");
 
             foreach (string userName in userNames)
             {
@@ -94,7 +97,7 @@ namespace Storm.Wpf.StreamServices
         }
 
 
-        private static async Task<Dictionary<Int64, (bool, Int64)>> GetStatusesAsync(IEnumerable<Int64> userIds)
+        private async Task<Dictionary<Int64, (bool, Int64)>> GetStatusesAsync(IEnumerable<Int64> userIds)
         {
             var query = BuildStatusQuery(userIds);
 
@@ -123,9 +126,9 @@ namespace Storm.Wpf.StreamServices
             return results;
         }
 
-        private static string BuildStatusQuery(IEnumerable<Int64> userNames)
+        private string BuildStatusQuery(IEnumerable<Int64> userNames)
         {
-            StringBuilder query = new StringBuilder($"{apiRoot.AbsoluteUri}/streams?");
+            StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/streams?");
 
             foreach (Int64 userId in userNames)
             {
@@ -136,7 +139,7 @@ namespace Storm.Wpf.StreamServices
         }
 
 
-        private static async Task AddOrUpdateGameNames(IEnumerable<Int64> gameIds)
+        private async Task AddOrUpdateGameNames(IEnumerable<Int64> gameIds)
         {
             string query = BuildGameIdsQuery(gameIds);
 
@@ -159,9 +162,9 @@ namespace Storm.Wpf.StreamServices
             }
         }
 
-        private static string BuildGameIdsQuery(IEnumerable<Int64> gameIds)
+        private string BuildGameIdsQuery(IEnumerable<Int64> gameIds)
         {
-            StringBuilder query = new StringBuilder($"{apiRoot.AbsoluteUri}/games?");
+            StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/games?");
 
             foreach (Int64 id in gameIds)
             {
@@ -172,7 +175,7 @@ namespace Storm.Wpf.StreamServices
         }
 
 
-        private static void ProcessTwitchResponses(IEnumerable<TwitchStream> streams, Dictionary<Int64, (bool, Int64)> values)
+        private static void ProcessTwitchResponses(IEnumerable<StreamBase> streams, Dictionary<Int64, (bool, Int64)> values)
         {
             foreach (TwitchStream stream in streams)
             {

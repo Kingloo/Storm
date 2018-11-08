@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Threading;
 using Storm.Wpf.Common;
 
 namespace Storm.Wpf.GUI
@@ -25,6 +14,24 @@ namespace Storm.Wpf.GUI
             MainWindow = new MainWindow(fileLoader);
 
             MainWindow.Show();
+        }
+
+        private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            if (e.Exception is Exception ex)
+            {
+                Log.LogException(ex);
+
+                e.Handled = true;
+            }
+            else
+            {
+                string message = "an empty DispatcherUnhandledException was thrown";
+
+                Log.LogMessage(message);
+
+                e.Handled = false;
+            }
         }
     }
 }
