@@ -15,6 +15,8 @@ namespace Storm.Wpf.Common
 
         private readonly static Queue<Notification> notificationQueue = new Queue<Notification>();
 
+        private static int timerTickCount = 0;
+
         private static DispatcherTimer queuePullTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
             Interval = TimeSpan.FromSeconds(2d)
@@ -47,7 +49,10 @@ namespace Storm.Wpf.Common
         {
             queuePullTimer.Tick += QueuePullTimer_Tick;
 
-            queuePullTimer.Start();
+            if (!queuePullTimer.IsEnabled)
+            {
+                queuePullTimer.Start();
+            }
         }
 
         private static void QueuePullTimer_Tick(object sender, EventArgs e)
@@ -59,6 +64,17 @@ namespace Storm.Wpf.Common
                 Display(nextNotification);
 
                 canShowNotification = false;
+            }
+            else
+            {
+                timerTickCount++; // incr the number of times the timer.Tick found nothing to work on
+            }
+
+            if (timerTickCount > 10) // if there was nothing to pop for 10 ticks, we turn the timer off
+            {
+                queuePullTimer.Stop();
+
+                timerTickCount = 0; // and reset the counter
             }
         }
 
