@@ -21,15 +21,19 @@ namespace Storm.Wpf.StreamServices
 
         public ChaturbateService() { }
 
-        public override async Task UpdateAsync(IEnumerable<StreamBase> streams)
+        public override Task UpdateAsync(IEnumerable<StreamBase> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
-            if (!streams.Any()) { return; }
+            if (!streams.Any()) { return Task.CompletedTask; }
 
-            foreach (ChaturbateStream stream in streams)
-            {
-                stream.IsLive = await GetIsLiveAsync(stream.AccountLink);
-            }
+            List<Task> updateTasks = new List<Task>(streams.Select(stream => UpdateChaturbateStreamAsync(stream)));
+
+            return Task.WhenAll(updateTasks);
+        }
+
+        private static async Task UpdateChaturbateStreamAsync(StreamBase stream)
+        {
+            stream.IsLive = await GetIsLiveAsync(stream.AccountLink);
         }
 
         private static async Task<bool> GetIsLiveAsync(Uri uri)

@@ -20,6 +20,7 @@ namespace Storm.Wpf.StreamServices
 
         public TwitchService() { }
 
+
         public override async Task UpdateAsync(IEnumerable<StreamBase> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }

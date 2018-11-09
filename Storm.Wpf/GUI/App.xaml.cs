@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Windows;
 using System.Windows.Threading;
 using Storm.Wpf.Common;
@@ -10,6 +11,8 @@ namespace Storm.Wpf.GUI
         public App(FileLoader fileLoader)
         {
             InitializeComponent();
+
+            ServicePointManager.DefaultConnectionLimit = 10;
 
             MainWindow = new MainWindow(fileLoader);
 
