@@ -17,7 +17,8 @@ namespace Storm.Wpf.ViewModels
         #region Fields
         private const string windowTitle = "Storm";
         private readonly FileLoader fileLoader = null;
-        private static readonly TimeSpan updateInterval = TimeSpan.FromSeconds(120d);
+        private static readonly TimeSpan updateInterval = TimeSpan.FromMinutes(2d);
+
         private DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
             Interval = updateInterval
@@ -27,9 +28,7 @@ namespace Storm.Wpf.ViewModels
         #region Properties
         public string Title
         {
-            get => IsActive
-                ? $"{windowTitle} - updating..."
-                : windowTitle;
+            get => IsActive ? $"{windowTitle} - updating..." : windowTitle;
         }
 
         private bool _isActive = false;

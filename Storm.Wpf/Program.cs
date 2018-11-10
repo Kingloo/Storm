@@ -30,7 +30,9 @@ namespace Storm.Wpf
 
             if (exitCode != 0)
             {
-                // log
+                string message = $"Storm exited with code {exitCode}";
+
+                Log.LogMessage(message);
             }
 
             return exitCode;

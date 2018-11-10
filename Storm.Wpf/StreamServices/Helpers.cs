@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Storm.Wpf.Common;
 
 namespace Storm.Wpf.StreamServices
 {
@@ -50,7 +52,14 @@ namespace Storm.Wpf.StreamServices
                     }
                 }
             }
-            catch (Exception) { }
+            catch (HttpRequestException ex)
+            {
+                await Log.LogExceptionAsync(ex, request.RequestUri.AbsoluteUri).ConfigureAwait(false);
+            }
+            catch (IOException ex)
+            {
+                await Log.LogExceptionAsync(ex, request.RequestUri.AbsoluteUri).ConfigureAwait(false);
+            }
             finally
             {
                 request.Dispose();

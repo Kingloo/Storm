@@ -48,7 +48,7 @@ namespace Storm.Wpf.StreamServices
             (bool success, string rawJson) = await DownloadStringAsync(uri).ConfigureAwait(false);
 
             if (!success) { return failure; }
-            if (TryParseJson(rawJson, out JObject json)) { return failure; }
+            if (!TryParseJson(rawJson, out JObject json)) { return failure; }
             if (!json.HasValues) { return failure; }
 
             if (json.TryGetValue("token", out JToken userNameToken)
