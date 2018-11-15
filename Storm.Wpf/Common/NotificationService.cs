@@ -17,10 +17,7 @@ namespace Storm.Wpf.Common
         private static int timerTickCount = 0;
         private static int timerTickMax = 15;
 
-        private static DispatcherTimer queuePullTimer = new DispatcherTimer(DispatcherPriority.Background)
-        {
-            Interval = TimeSpan.FromSeconds(3d)
-        };
+        private static DispatcherTimer queuePullTimer = null;
 
 
 
@@ -45,7 +42,15 @@ namespace Storm.Wpf.Common
 
         private static void InitTimer()
         {
-            queuePullTimer.Tick += QueuePullTimer_Tick;
+            if (queuePullTimer is null)
+            {
+                queuePullTimer = new DispatcherTimer(DispatcherPriority.Background)
+                {
+                    Interval = TimeSpan.FromSeconds(1.5d)
+                };
+
+                queuePullTimer.Tick += QueuePullTimer_Tick;
+            }
 
             if (!queuePullTimer.IsEnabled)
             {
