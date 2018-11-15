@@ -11,6 +11,9 @@ namespace Storm.Wpf.StreamServices
     public class MixerService : StreamServiceBase
     {
         protected override Uri ApiRoot { get; } = new Uri("https://mixer.com/api/v1");
+        protected override bool HasStreamlinkSupport { get; } = true;
+        protected override bool HasYouTubeDlSupport { get; } = true;
+
         public override Type HandlesStreamType { get; } = typeof(MixerStream);
 
         public MixerService() { }

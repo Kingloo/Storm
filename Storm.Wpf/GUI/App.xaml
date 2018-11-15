@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:gui="clr-namespace:Storm.Wpf.GUI"
              ShutdownMode="OnMainWindowClose"
+             Startup="Application_Startup"
              DispatcherUnhandledException="Application_DispatcherUnhandledException">
 
     <Application.Resources>
@@ -54,6 +55,20 @@
 
         <SolidColorBrush x:Key="Online" Color="LightGreen" />
         <SolidColorBrush x:Key="Offline" Color="#FF4040" />
+        
+        <!--<LinearGradientBrush x:Key="Online"
+                             StartPoint="0.0,0.5"
+                             EndPoint="1.0,0.5">
+            <GradientStop Color="LightGreen" Offset="0.4" />
+            <GradientStop Color="DarkGreen" Offset="1.0" />
+        </LinearGradientBrush>-->
+        
+        <!--<LinearGradientBrush x:Key="Offline"
+                             StartPoint="0.0,0.5"
+                             EndPoint="1.0,0.5">
+            <GradientStop Color="#FF4040" Offset="0.4" />
+            <GradientStop Color="Maroon" Offset="1.0" />
+        </LinearGradientBrush>-->
         
     </Application.Resources>
     

@@ -16,6 +16,9 @@ namespace Storm.Wpf.StreamServices
         private const string banned = "has been banned";
 
         protected override Uri ApiRoot { get; } = new Uri("https://chaturbate.com");
+        protected override bool HasStreamlinkSupport { get; } = true;
+        protected override bool HasYouTubeDlSupport { get; } = true;
+
         public override Type HandlesStreamType { get; } = typeof(ChaturbateStream);
 
         public ChaturbateService() { }

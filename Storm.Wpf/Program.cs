@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using Storm.Wpf.Common;
 using Storm.Wpf.GUI;
 
@@ -7,24 +6,10 @@ namespace Storm.Wpf
 {
     public static class Program
     {
-#if DEBUG
-        private const string fileName = "StormUrls-test.txt";
-#else
-        private const string fileName = "StormUrls.txt";
-#endif
-
-        private static string directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        private static string streamsFilePath = Path.Combine(directory, fileName);
-
         [STAThread]
         public static int Main()
         {
-            FileInfo streamsFile = new FileInfo(streamsFilePath);
-
-            FileLoader fileLoader = new FileLoader(streamsFile);
-
-            App storm = new App(fileLoader);
-            storm.InitializeComponent();
+            App storm = new App();
 
             int exitCode = storm.Run();
 

@@ -15,6 +15,7 @@ namespace Storm.Wpf.StreamServices
         private const string displayNameEndMarker = "\">";
 
         protected override Uri ApiRoot { get; } = new Uri("https://www.youtube.com/user");
+        protected override bool HasYouTubeDlSupport { get; } = true;
         public override Type HandlesStreamType { get; } = typeof(YouTubeStream);
 
         public YouTubeService() { }

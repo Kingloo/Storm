@@ -4,7 +4,9 @@ namespace Storm.Wpf.Streams
 {
     public class YouTubeStream : StreamBase
     {
-        private static readonly Uri _icon = new Uri($"{IconPackUriPrefix}YouTube.ico");
+        protected override string ServiceName { get; } = "YouTube";
+
+        private static readonly Uri _icon = new Uri($"{IconPackPrefix}YouTube.ico");
         public override Uri Icon => _icon;
 
         public YouTubeStream(Uri accountLink)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -34,8 +33,6 @@ namespace Storm.Wpf.Common
         public static void Send(string title, string description, Action action)
         {
             InitTimer();
-
-            Debug.WriteLine($"send: {title}, {description}, {(action == null ? "no action" : "an action")}");
 
             Notification notification = new Notification(title, description, action);
 

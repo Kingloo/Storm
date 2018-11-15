@@ -28,7 +28,7 @@ namespace Storm.Wpf.StreamServices
 
         public static Task<(bool, string)> DownloadStringAsync(Uri uri) => DownloadStringAsync(uri, null);
 
-        public static async Task<(bool, string)> DownloadStringAsync(Uri uri, Action<HttpRequestMessage> configureHeaders)
+        public static async Task<(bool, string)> DownloadStringAsync(Uri uri, Action<HttpRequestMessage> configureRequest)
         {
             if (uri is null) { throw new ArgumentNullException(nameof(uri)); }
 
@@ -36,7 +36,7 @@ namespace Storm.Wpf.StreamServices
             string text = string.Empty;
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri);
-            configureHeaders?.Invoke(request);
+            configureRequest?.Invoke(request);
 
             try
             {

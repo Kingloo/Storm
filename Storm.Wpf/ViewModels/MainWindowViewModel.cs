@@ -311,7 +311,7 @@ namespace Storm.Wpf.ViewModels
         /// Opens a stream.
         /// </summary>
         /// <param name="stream"></param>
-        private void OpenStream(StreamBase stream) => ServicesManager.StartWatching(stream);
+        private void OpenStream(StreamBase stream) => ServicesManager.StartWatching(stream)?.Invoke();
 
         /// <summary>
         /// Navigates to the stream account page in the OS-default web browser.

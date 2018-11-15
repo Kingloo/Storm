@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Windows;
 using System.Windows.Threading;
@@ -8,13 +9,27 @@ namespace Storm.Wpf.GUI
 {
     public partial class App : Application
     {
-        public App(FileLoader fileLoader)
+#if DEBUG
+        private const string fileName = "StormUrls-test.txt";
+#else
+        private const string fileName = "StormUrls.txt";
+#endif
+
+        public App()
         {
             InitializeComponent();
 
-            ServicePointManager.DefaultConnectionLimit = 10;
+            ServicePointManager.DefaultConnectionLimit = 8;
+        }
 
-            MainWindow = new MainWindow(fileLoader);
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string streamsFilePath = Path.Combine(directory, fileName);
+
+            FileLoader loader = new FileLoader(new FileInfo(streamsFilePath));
+
+            MainWindow = new MainWindow(loader);
 
             MainWindow.Show();
         }

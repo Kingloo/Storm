@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using Storm.Wpf.Streams;
 
@@ -34,32 +33,18 @@ namespace Storm.Wpf.StreamServices
             }
         }
 
-        public static void StartWatching(StreamBase stream)
+        public static Action StartWatching(StreamBase stream)
         {
             var service = GetService(stream.GetType());
 
-            ProcessStartInfo watchingInfo = service.GetWatchingInstructions(stream);
-
-            Start(watchingInfo);
+            return service.GetWatchingInstructions(stream);
         }
 
-        public static void StartRecording(StreamBase stream)
+        public static Action StartRecording(StreamBase stream)
         {
             var service = GetService(stream.GetType());
 
-            ProcessStartInfo recordingInfo = service.GetRecordingInstructions(stream);
-
-            Start(recordingInfo);
-        }
-
-        private static void Start(ProcessStartInfo info)
-        {
-            Process process = new Process
-            {
-                StartInfo = info
-            };
-
-            process.Start();
+            return service.GetRecordingInstructions(stream);
         }
     }
 }

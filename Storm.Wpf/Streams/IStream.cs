@@ -2,6 +2,7 @@
 
 namespace Storm.Wpf.Streams
 {
+    // not used at the moment
     public interface IStream
     {
         Uri AccountLink { get; }

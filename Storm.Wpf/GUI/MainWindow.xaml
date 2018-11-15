@@ -90,6 +90,14 @@
                                        TextTrimming="CharacterEllipsis" />
                         </Label.Content>
 
+                        <Label.ToolTip>
+                            <ToolTip>
+                                <TextBlock DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource TemplatedParent}}"
+                                           Text="{Binding MouseOverToolTip}"
+                                           FontSize="16" />
+                            </ToolTip>
+                        </Label.ToolTip>
+
                         <Label.InputBindings>
                             <MouseBinding MouseAction="LeftDoubleClick"
                                           Command="{Binding Path=DataContext.OpenStreamCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}}"

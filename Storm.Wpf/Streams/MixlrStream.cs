@@ -4,7 +4,9 @@ namespace Storm.Wpf.Streams
 {
     public class MixlrStream : StreamBase
     {
-        private static readonly Uri _icon = new Uri($"{IconPackUriPrefix}Mixlr.ico");
+        protected override string ServiceName { get; } = "Mixlr";
+
+        private static readonly Uri _icon = new Uri($"{IconPackPrefix}Mixlr.ico");
         public override Uri Icon => _icon;
 
         public MixlrStream(Uri account)

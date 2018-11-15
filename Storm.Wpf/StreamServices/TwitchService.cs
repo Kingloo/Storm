@@ -16,10 +16,12 @@ namespace Storm.Wpf.StreamServices
         private static readonly ConcurrentDictionary<Int64, string> gameIdCache = new ConcurrentDictionary<Int64, string>();
 
         protected override Uri ApiRoot { get; } = new Uri("https://api.twitch.tv/helix");
+        protected override bool HasStreamlinkSupport { get; } = true;
+        protected override bool HasYouTubeDlSupport { get; } = true;
+
         public override Type HandlesStreamType { get; } = typeof(TwitchStream);
 
         public TwitchService() { }
-
 
         public override async Task UpdateAsync(IEnumerable<StreamBase> streams)
         {
@@ -54,7 +56,6 @@ namespace Storm.Wpf.StreamServices
 
             ProcessTwitchResponses(streams, userIdIsLiveAndGameId);
         }
-
 
         private async Task<Dictionary<Int64, (string, string)>> GetUserIdAndDisplayNameAsync(IEnumerable<string> userNames)
         {
@@ -97,7 +98,6 @@ namespace Storm.Wpf.StreamServices
             return query.ToString();
         }
 
-
         private async Task<Dictionary<Int64, (bool, Int64)>> GetStatusesAsync(IEnumerable<Int64> userIds)
         {
             var query = BuildStatusQuery(userIds);
@@ -139,7 +139,6 @@ namespace Storm.Wpf.StreamServices
             return query.ToString();
         }
 
-
         private async Task AddOrUpdateGameNames(IEnumerable<Int64> gameIds)
         {
             string query = BuildGameIdsQuery(gameIds);
@@ -175,7 +174,6 @@ namespace Storm.Wpf.StreamServices
             return query.ToString();
         }
 
-
         private static void ProcessTwitchResponses(IEnumerable<StreamBase> streams, Dictionary<Int64, (bool, Int64)> values)
         {
             foreach (TwitchStream stream in streams)
@@ -184,12 +182,14 @@ namespace Storm.Wpf.StreamServices
                 {
                     (bool isLive, Int64 gameId) = value;
 
-                    stream.IsLive = isLive;
                     stream.Game = gameIdCache[gameId];
+                    stream.IsLive = isLive;
+
+                    // !!!
+                    // Keep Game.set first, otherwise it will notify before Game is set
                 }
             }
         }
-
 
         private static async Task<(bool, JArray)> GetTwitchResponseAsync(string query)
         {

@@ -2,14 +2,22 @@
 using System.Linq;
 using System.Text;
 using Storm.Wpf.Common;
-using Storm.Wpf.Extensions;
 using Storm.Wpf.StreamServices;
 
 namespace Storm.Wpf.Streams
 {
-    public abstract class StreamBase : BindableBase, IStream, IEquatable<StreamBase>
+    public abstract class StreamBase : BindableBase, IEquatable<StreamBase>
     {
-        protected const string IconPackUriPrefix = "pack://application:,,,/Icons/";
+        protected const string IconPackPrefix = "pack://application:,,,/Icons/";
+
+        public virtual string MouseOverToolTip
+        {
+            get => IsLive
+                ? $"{DisplayName} is LIVE"
+                : $"{DisplayName} is offline";
+        }
+
+        protected abstract string ServiceName { get; }
 
         public Uri AccountLink { get; } = null;
 
@@ -34,6 +42,8 @@ namespace Storm.Wpf.Streams
 
                 SetProperty(ref _isLive, value, nameof(IsLive));
 
+                RaisePropertyChanged(nameof(MouseOverToolTip));
+
                 // if they were not live before, but are live now
                 // without this check it will notifylive on every refresh
                 // but you only want to be notified once
@@ -43,7 +53,7 @@ namespace Storm.Wpf.Streams
 
                     if (AutoRecord)
                     {
-                        ServicesManager.StartRecording(this);
+                        ServicesManager.StartRecording(this)?.Invoke();
                     }
                 }
             }
@@ -76,9 +86,12 @@ namespace Storm.Wpf.Streams
 
         protected virtual void NotifyLive()
         {
-            string title = $"{DisplayName} is now LIVE";
+            string title = $"{DisplayName} is LIVE";
+            string description = $"on {ServiceName}";
 
-            NotificationService.Send(title, AccountLink.OpenInBrowser);
+            Action startWatching = ServicesManager.StartWatching(this);
+
+            NotificationService.Send(title, description, startWatching);
         }
 
         public bool Equals(StreamBase other)
