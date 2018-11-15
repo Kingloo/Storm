@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Windows;
 using System.Windows.Threading;
 using Storm.Wpf.Common;
@@ -18,8 +17,6 @@ namespace Storm.Wpf.GUI
         public App()
         {
             InitializeComponent();
-
-            ServicePointManager.DefaultConnectionLimit = 8;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
