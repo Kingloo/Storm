@@ -29,7 +29,12 @@ namespace Storm.Wpf.Streams
         public string DisplayName
         {
             get => _displayName;
-            set => SetProperty(ref _displayName, value, nameof(DisplayName));
+            set
+            {
+                SetProperty(ref _displayName, value, nameof(DisplayName));
+
+                RaisePropertyChanged(nameof(MouseOverToolTip));
+            }
         }
 
         private bool _isLive = false;
