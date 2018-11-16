@@ -182,11 +182,19 @@ namespace Storm.Wpf.StreamServices
                 {
                     (bool isLive, Int64 gameId) = value;
 
-                    stream.Game = gameIdCache[gameId];
+                    if (gameIdCache.ContainsKey(gameId))
+                    {
+                        stream.Game = gameIdCache[gameId];
+                    }
+
                     stream.IsLive = isLive;
 
                     // !!!
                     // Keep Game.set first, otherwise it will notify before Game is set
+                }
+                else
+                {
+                    stream.IsLive = false;
                 }
             }
         }
