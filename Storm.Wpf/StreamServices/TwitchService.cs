@@ -194,6 +194,7 @@ namespace Storm.Wpf.StreamServices
                 }
                 else
                 {
+                    stream.Game = string.Empty;
                     stream.IsLive = false;
                 }
             }
