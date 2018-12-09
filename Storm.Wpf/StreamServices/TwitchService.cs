@@ -182,9 +182,9 @@ namespace Storm.Wpf.StreamServices
                 {
                     (bool isLive, Int64 gameId) = value;
 
-                    if (gameIdCache.ContainsKey(gameId))
+                    if (gameIdCache.TryGetValue(gameId, out string gameName))
                     {
-                        stream.Game = gameIdCache[gameId];
+                        stream.Game = gameName;
                     }
 
                     stream.IsLive = isLive;

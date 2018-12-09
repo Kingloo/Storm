@@ -52,14 +52,8 @@ namespace Storm.Wpf.StreamServices
                     }
                 }
             }
-            catch (HttpRequestException ex)
-            {
-                await Log.LogExceptionAsync(ex, request.RequestUri.AbsoluteUri).ConfigureAwait(false);
-            }
-            catch (IOException ex)
-            {
-                await Log.LogExceptionAsync(ex, request.RequestUri.AbsoluteUri).ConfigureAwait(false);
-            }
+            catch (HttpRequestException) { }
+            catch (IOException) { }
             finally
             {
                 request.Dispose();

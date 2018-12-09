@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
 
 namespace Storm.Wpf.StreamServices
@@ -23,7 +24,16 @@ namespace Storm.Wpf.StreamServices
 
             if (count == 1)
             {
-                return services.Single(service => service.HandlesStreamType == streamType);
+                try
+                {
+                    return services.Single(service => service.HandlesStreamType == streamType);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Log.LogException(ex, "StreamServices->GetService->.Single");
+
+                    return null;
+                }
             }
             else
             {
