@@ -48,11 +48,12 @@ namespace Storm.Wpf.StreamServices
             //        userId  isLive gameId
             Dictionary<Int64, (bool, Int64)> userIdIsLiveAndGameId = await GetStatusesAsync(userIdAccountNameAndDisplayName.Keys);
 
-            await AddOrUpdateGameNames(
-                userIdIsLiveAndGameId
+            List<Int64> unknownGameIds = userIdIsLiveAndGameId
                 .Select(kvp => kvp.Value.Item2)
-                .ToList()
-                );
+                .Where(id => !gameIdCache.ContainsKey(id))
+                .ToList();
+
+            await AddOrUpdateGameNames(unknownGameIds);
 
             ProcessTwitchResponses(streams, userIdIsLiveAndGameId);
         }
@@ -141,6 +142,8 @@ namespace Storm.Wpf.StreamServices
 
         private async Task AddOrUpdateGameNames(IEnumerable<Int64> gameIds)
         {
+            if (!gameIds.Any()) { return; }
+
             string query = BuildGameIdsQuery(gameIds);
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
@@ -150,9 +153,9 @@ namespace Storm.Wpf.StreamServices
             foreach (JObject each in data)
             {
                 bool couldFindId = each.TryGetValue("id", out JToken idToken);
-                bool couldFindName = each.TryGetValue("name", out JToken gameToken);
+                bool couldFindGameName = each.TryGetValue("name", out JToken gameToken);
 
-                if (couldFindId && couldFindName)
+                if (couldFindId && couldFindGameName)
                 {
                     Int64 gameId = (Int64)idToken;
                     string gameName = (string)gameToken;
