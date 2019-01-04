@@ -13,6 +13,9 @@ namespace Storm.Wpf.StreamServices
 {
     public class TwitchService : StreamServiceBase
     {
+        private const string clientIdHeaderName = "Client-ID";
+        private const string clientIdHeaderValue = "ewvlchtxgqq88ru9gmfp1gmyt6h2b93";
+
         private static readonly ConcurrentDictionary<Int64, string> gameIdCache = new ConcurrentDictionary<Int64, string>();
 
         protected override Uri ApiRoot { get; } = new Uri("https://api.twitch.tv/helix");
@@ -38,10 +41,13 @@ namespace Storm.Wpf.StreamServices
 
             foreach (TwitchStream each in streams)
             {
-                var userId = userIdAccountNameAndDisplayName.Single(id => id.Value.Item1 == each.AccountName);
+                var userId = userIdAccountNameAndDisplayName.SingleOrDefault(id => id.Value.Item1 == each.AccountName);
 
-                each.UserId         =   userId.Key;
-                each.DisplayName    =   userId.Value.Item2;
+                if (userId.Key > 0) // KeyValuePair is a value-type, so you cannot use a null-check
+                {
+                    each.UserId = userId.Key;
+                    each.DisplayName = userId.Value.Item2;
+                }
             }
 
             //         key   Val.It1 Val.It2
@@ -193,7 +199,7 @@ namespace Storm.Wpf.StreamServices
                     stream.IsLive = isLive;
 
                     // !!!
-                    // Keep Game.set first, otherwise it will notify before Game is set
+                    // Keep Game.set first, otherwise it will send notification before Game is set
                 }
                 else
                 {
@@ -209,7 +215,7 @@ namespace Storm.Wpf.StreamServices
 
             if (!Uri.TryCreate(query, UriKind.Absolute, out Uri uri)) { return failure; }
 
-            Action<HttpRequestMessage> configureHeaders = request => request.Headers.Add("Client-ID", "ewvlchtxgqq88ru9gmfp1gmyt6h2b93");
+            Action<HttpRequestMessage> configureHeaders = request => request.Headers.Add(clientIdHeaderName, clientIdHeaderValue);
 
             (bool success, string rawJson) = await DownloadStringAsync(uri, configureHeaders).ConfigureAwait(false);
 

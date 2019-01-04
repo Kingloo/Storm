@@ -171,9 +171,14 @@ namespace Storm.Wpf.ViewModels
         /// </summary>
         public void StartUpdateTimer()
         {
-            updateTimer.Tick += async (s, e) => await RefreshAsync();
+            updateTimer.Tick += UpdateTimer_Tick;
 
             updateTimer.Start();
+        }
+
+        private async void UpdateTimer_Tick(object sender, EventArgs e)
+        {
+            await RefreshAsync();
         }
 
         /// <summary>

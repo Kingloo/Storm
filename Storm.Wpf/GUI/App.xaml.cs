@@ -35,7 +35,7 @@ namespace Storm.Wpf.GUI
         {
             if (e.Exception is Exception ex)
             {
-                Log.LogException(ex);
+                Log.LogException(ex, true);
 
                 e.Handled = true;
             }

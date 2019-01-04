@@ -1,16 +1,25 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Storm.Wpf.Common;
 
 namespace Storm.Wpf.StreamServices
 {
     public static class Helpers
     {
-        private static readonly HttpClient client = new HttpClient();
+        private static readonly HttpClientHandler handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = true,
+            AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip,
+            MaxAutomaticRedirections = 3,
+            SslProtocols = SslProtocols.Tls12
+        };
+
+        private static readonly HttpClient client = new HttpClient(handler);
 
         public static bool TryParseJson(string rawJson, out JObject json)
         {
@@ -35,13 +44,14 @@ namespace Storm.Wpf.StreamServices
             bool success = false;
             string text = string.Empty;
 
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri);
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+
             configureRequest?.Invoke(request);
+
+            var httpOption = HttpCompletionOption.ResponseHeadersRead;
 
             try
             {
-                var httpOption = HttpCompletionOption.ResponseHeadersRead;
-
                 using (var response = await client.SendAsync(request, httpOption).ConfigureAwait(false))
                 {
                     if (response.IsSuccessStatusCode)
@@ -52,8 +62,18 @@ namespace Storm.Wpf.StreamServices
                     }
                 }
             }
-            catch (HttpRequestException) { }
-            catch (IOException) { }
+            catch (HttpRequestException)
+            {
+                success = false;
+            }
+            catch (IOException)
+            {
+                success = false;
+            }
+            catch (TaskCanceledException)
+            {
+                success = false;
+            }
             finally
             {
                 request.Dispose();
