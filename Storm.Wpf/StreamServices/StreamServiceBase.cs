@@ -70,8 +70,6 @@ namespace Storm.Wpf.StreamServices
 
             bool hasFeature = cc.CompareInfo.IndexOf(path, command, CompareOptions.OrdinalIgnoreCase) > -1;
 
-            Debug.WriteLine($"{command}: {hasFeature}");
-
             return hasFeature;
         }
 

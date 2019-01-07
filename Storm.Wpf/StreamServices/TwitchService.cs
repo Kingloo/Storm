@@ -24,96 +24,72 @@ namespace Storm.Wpf.StreamServices
 
         public override Type HandlesStreamType { get; } = typeof(TwitchStream);
 
+
         public TwitchService() { }
+
 
         public override async Task UpdateAsync(IEnumerable<StreamBase> streams)
         {
             if (streams is null) { throw new ArgumentNullException(nameof(streams)); }
             if (!streams.Any()) { return; }
 
-            IEnumerable<string> userNames = streams
-                .Select(stream => stream.AccountName)
-                .ToList();
+            var results = CreateResultsHolder(streams.Select(s => s.AccountName));
 
-            //          key    Val.It1 Val.It2
-            //         userId  accName DisName
-            Dictionary<Int64, (string, string)> userIdAccountNameAndDisplayName = await GetUserIdAndDisplayNameAsync(userNames);
+            await GetUserIdAndDisplayNameAsync(results);
 
-            foreach (TwitchStream each in streams)
-            {
-                var userId = userIdAccountNameAndDisplayName.SingleOrDefault(id => id.Value.Item1 == each.AccountName);
+            await GetIsLiveAndGameIdAsync(results);
 
-                if (userId.Key > 0) // KeyValuePair is a value-type, so you cannot use a null-check
-                {
-                    each.UserId = userId.Key;
-                    each.DisplayName = userId.Value.Item2;
-                }
-            }
+            await UpdateGameNameCache(results);
 
-            //         key   Val.It1 Val.It2
-            //        userId  isLive gameId
-            Dictionary<Int64, (bool, Int64)> userIdIsLiveAndGameId = await GetStatusesAsync(userIdAccountNameAndDisplayName.Keys);
-
-            List<Int64> unknownGameIds = userIdIsLiveAndGameId
-                .Select(kvp => kvp.Value.Item2)
-                .Where(id => !gameIdCache.ContainsKey(id))
-                .ToList();
-
-            await AddOrUpdateGameNames(unknownGameIds);
-
-            ProcessTwitchResponses(streams, userIdIsLiveAndGameId);
+            SetValues(streams, results);
         }
 
-        private async Task<Dictionary<Int64, (string, string)>> GetUserIdAndDisplayNameAsync(IEnumerable<string> userNames)
+        private static Dictionary<string, (Int64, string, bool, Int64)> CreateResultsHolder(IEnumerable<string> userNames)
         {
-            string query = BuildUserIdQuery(userNames);
+            var results = new Dictionary<string, (Int64, string, bool, Int64)>();
 
-            (bool success, JArray data) = await GetTwitchResponseAsync(query.ToString()).ConfigureAwait(false);
+            foreach (string eachAccountName in userNames)
+            {
+                var defaults = (Int64.MinValue, string.Empty, false, 0);
 
-            var userIdAccountNameAndDisplayName = new Dictionary<Int64, (string, string)>();
+                results.Add(eachAccountName, defaults);
+            }
 
-            if (!success) { return userIdAccountNameAndDisplayName; }
+            return results;
+        }
+
+        private async Task GetUserIdAndDisplayNameAsync(Dictionary<string, (Int64, string, bool, Int64)> results)
+        {
+            string query = BuildUserIdQuery(results.Keys);
+
+            (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
+
+            if (!success) { return; }
 
             foreach (JObject each in data)
             {
-                bool couldFindUserId = each.TryGetValue("id", out JToken idToken);
                 bool couldFindAccountName = each.TryGetValue("login", out JToken loginToken);
+                bool couldFindUserId = each.TryGetValue("id", out JToken idToken);
                 bool couldFindDisplayName = each.TryGetValue("display_name", out JToken displayNameToken);
 
-                if (couldFindUserId && couldFindAccountName && couldFindDisplayName)
+                if (couldFindAccountName && couldFindUserId && couldFindDisplayName)
                 {
-                    Int64 userId = (Int64)idToken;
                     string accountName = (string)loginToken;
+                    Int64 userId = (Int64)idToken;
                     string displayName = (string)displayNameToken;
 
-                    userIdAccountNameAndDisplayName.Add(userId, (accountName, displayName));
+                    results[accountName] = (userId, displayName, false, 0); // IsLive and GameId come later, so we keep them at default
                 }
             }
-
-            return userIdAccountNameAndDisplayName;
         }
 
-        private string BuildUserIdQuery(IEnumerable<string> userNames)
+        private async Task GetIsLiveAndGameIdAsync(Dictionary<string, (Int64, string, bool, Int64)> results)
         {
-            StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/users?");
+            var query = BuildStatusQuery(results.Values.Select(kvp => kvp.Item1)); // Item1 is userId
 
-            foreach (string userName in userNames)
-            {
-                query.Append($"login={userName}&");
-            }
+            (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
-            return query.ToString();
-        }
-
-        private async Task<Dictionary<Int64, (bool, Int64)>> GetStatusesAsync(IEnumerable<Int64> userIds)
-        {
-            var query = BuildStatusQuery(userIds);
-
-            (bool success, JArray data) = await GetTwitchResponseAsync(query.ToString()).ConfigureAwait(false);
-
-            var results = new Dictionary<Int64, (bool, Int64)>();
-
-            if (!success) { return results; }
+            if (!success) { return; }
 
             foreach (JObject each in data)
             {
@@ -127,27 +103,21 @@ namespace Storm.Wpf.StreamServices
                     bool isLive = (string)typeToken == "live";
                     Int64 gameId = (Int64)gameIdToken;
 
-                    results.Add(userId, (isLive, gameId));
+                    string accountNameKey = results.Keys.SingleOrDefault(key => results[key].Item1 == userId);
+
+                    var newValueForAccountNameKey = (results[accountNameKey].Item1, results[accountNameKey].Item2, isLive, gameId);
+
+                    results[accountNameKey] = newValueForAccountNameKey;
                 }
             }
-
-            return results;
         }
 
-        private string BuildStatusQuery(IEnumerable<Int64> userNames)
+        private async Task UpdateGameNameCache(Dictionary<string, (Int64, string, bool, Int64)> results)
         {
-            StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/streams?");
+            var gameIds = results
+                .Select(kvp => kvp.Value.Item4)
+                .Where(id => !gameIdCache.ContainsKey(id));
 
-            foreach (Int64 userId in userNames)
-            {
-                query.Append($"user_id={userId}&");
-            }
-
-            return query.ToString();
-        }
-
-        private async Task AddOrUpdateGameNames(IEnumerable<Int64> gameIds)
-        {
             if (!gameIds.Any()) { return; }
 
             string query = BuildGameIdsQuery(gameIds);
@@ -171,6 +141,49 @@ namespace Storm.Wpf.StreamServices
             }
         }
 
+        private static void SetValues(IEnumerable<StreamBase> streams, Dictionary<string, (Int64, string, bool, Int64)> results)
+        {
+            foreach (TwitchStream stream in streams)
+            {
+                if (results.TryGetValue(stream.AccountName, out (Int64, string, bool, Int64) data))
+                {
+                    stream.UserId = data.Item1;
+                    stream.DisplayName = data.Item2;
+                    
+                    stream.Game = gameIdCache.ContainsKey(data.Item4)
+                        ? gameIdCache[data.Item4]
+                        : string.Empty;
+
+                    stream.IsLive = data.Item3; // MUST set .Game before .IsLive otherwise notification will fire without game name
+                }
+            }
+        }
+
+
+        private string BuildUserIdQuery(IEnumerable<string> userNames)
+        {
+            StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/users?");
+
+            foreach (string userName in userNames)
+            {
+                query.Append($"login={userName}&");
+            }
+
+            return query.ToString();
+        }
+
+        private string BuildStatusQuery(IEnumerable<Int64> userIds)
+        {
+            StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/streams?");
+
+            foreach (Int64 userId in userIds)
+            {
+                query.Append($"user_id={userId}&");
+            }
+
+            return query.ToString();
+        }
+
         private string BuildGameIdsQuery(IEnumerable<Int64> gameIds)
         {
             StringBuilder query = new StringBuilder($"{ApiRoot.AbsoluteUri}/games?");
@@ -183,31 +196,6 @@ namespace Storm.Wpf.StreamServices
             return query.ToString();
         }
 
-        private static void ProcessTwitchResponses(IEnumerable<StreamBase> streams, Dictionary<Int64, (bool, Int64)> values)
-        {
-            foreach (TwitchStream stream in streams)
-            {
-                if (values.TryGetValue(stream.UserId, out (bool, Int64) value))
-                {
-                    (bool isLive, Int64 gameId) = value;
-
-                    if (gameIdCache.TryGetValue(gameId, out string gameName))
-                    {
-                        stream.Game = gameName;
-                    }
-
-                    stream.IsLive = isLive;
-
-                    // !!!
-                    // Keep Game.set first, otherwise it will send notification before Game is set
-                }
-                else
-                {
-                    stream.Game = string.Empty;
-                    stream.IsLive = false;
-                }
-            }
-        }
 
         private static async Task<(bool, JArray)> GetTwitchResponseAsync(string query)
         {
@@ -223,7 +211,7 @@ namespace Storm.Wpf.StreamServices
             if (!TryParseJson(rawJson, out JObject json)) { return failure; }
             if (!json.TryGetValue("data", out JToken dataToken)) { return failure; }
             if (!(dataToken is JArray data)) { return failure; }
-            if (!data.HasValues) { return failure; }
+            //if (!data.HasValues) { return failure; }
 
             return (true, data);
         }
