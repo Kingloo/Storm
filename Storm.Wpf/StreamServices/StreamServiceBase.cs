@@ -20,6 +20,11 @@ namespace Storm.Wpf.StreamServices
 
         public Action GetWatchingInstructions(StreamBase stream)
         {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream), "You asked for the watching instructions for a stream type, but provided null.");
+            }
+
             if (HasStreamlinkSupport && HasFeature("streamlink"))
             {
                 string command = $"/C streamlink {stream.AccountLink} best";
@@ -42,6 +47,11 @@ namespace Storm.Wpf.StreamServices
 
         public Action GetRecordingInstructions(StreamBase stream)
         {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream), "You asked for the recording instructions for a stream type, but provided null.");
+            }
+
             if (HasYouTubeDlSupport && HasFeature("youtube-dl"))
             {
                 string command = $"/C youtube-dl {stream.AccountLink}";

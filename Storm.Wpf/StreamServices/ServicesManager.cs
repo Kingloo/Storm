@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
 
 namespace Storm.Wpf.StreamServices
@@ -20,26 +19,13 @@ namespace Storm.Wpf.StreamServices
 
         public static StreamServiceBase GetService(Type streamType)
         {
-            int count = services.Count(service => service.HandlesStreamType == streamType);
-
-            if (count == 1)
+            try
             {
-                try
-                {
-                    return services.Single(service => service.HandlesStreamType == streamType);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Log.LogException(ex, "StreamServices->GetService->.Single");
-
-                    return null;
-                }
+                return services.SingleOrDefault(service => service.HandlesStreamType == streamType);
             }
-            else
+            catch (ArgumentNullException ex)
             {
-                string message = $"There were {count} registered services for {streamType.FullName}. There must only be one.";
-
-                throw new ServicesException(count, message, streamType);
+                throw new ServicesException(ex.Message, streamType);
             }
         }
 

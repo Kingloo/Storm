@@ -7,7 +7,6 @@ namespace Storm.Wpf.StreamServices
     public class ServicesException : Exception
     {
         public Type StreamType { get; } = null;
-        public int NumberOfRegisteredServices { get; } = 0;
 
         protected ServicesException(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -25,10 +24,9 @@ namespace Storm.Wpf.StreamServices
             : base(message, exception)
         { }
 
-        public ServicesException(int count, string message, Type streamType)
+        public ServicesException(string message, Type streamType)
             : base(message)
         {
-            NumberOfRegisteredServices = count;
             StreamType = streamType;
         }
 
