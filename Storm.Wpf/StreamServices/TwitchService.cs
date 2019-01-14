@@ -194,9 +194,9 @@ namespace Storm.Wpf.StreamServices
                 // MUST set .Game before .IsLive otherwise notification will fire without game name
                 // the notification would read "Fred is LIVE" instead of "Fred is LIVE and playing Sqoon"
 
-                if (gameIdCache.ContainsKey(response.GameId))
+                if (gameIdCache.TryGetValue(response.GameId, out string gameName))
                 {
-                    stream.Game = gameIdCache[response.GameId];
+                    stream.Game = gameName;
                 }
 
                 stream.IsLive = response.IsLive;
