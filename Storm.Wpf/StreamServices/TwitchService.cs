@@ -11,6 +11,26 @@ using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
+    public class TwitchServiceResponse
+    {
+        public string UserName { get; }
+
+        public Int64 UserId { get; set; } = Int64.MinValue;
+        public string DisplayName { get; set; } = string.Empty;
+        public bool IsLive { get; set; } = false;
+        public Int64 GameId { get; set; } = 0L;
+
+        public TwitchServiceResponse(string userName)
+        {
+            if (String.IsNullOrWhiteSpace(userName))
+            {
+                throw new ArgumentException($"{nameof(userName)} was .IsNullOrWhiteSpace", nameof(userName));
+            }
+
+            UserName = userName;
+        }
+    }
+
     public class TwitchService : StreamServiceBase
     {
         private const string clientIdHeaderName = "Client-ID";
@@ -49,23 +69,23 @@ namespace Storm.Wpf.StreamServices
         /// </summary>
         /// <param name="userNames">The Twitch user names we would like to update.</param>
         /// <returns>Key is Twitch username, Int64 is user id, string is display name, bool is IsLive, Int64 is game id.</returns>
-        private static Dictionary<string, (Int64, string, bool, Int64)> CreateResultsHolder(IEnumerable<string> userNames)
+        private static IReadOnlyList<TwitchServiceResponse> CreateResultsHolder(IEnumerable<string> userNames)
         {
-            var holder = new Dictionary<string, (Int64, string, bool, Int64)>();
+            var holder = new List<TwitchServiceResponse>();
 
             foreach (string eachAccountName in userNames)
             {
-                var defaults = (Int64.MinValue, string.Empty, false, 0);
+                var response = new TwitchServiceResponse(eachAccountName);
 
-                holder.Add(eachAccountName, defaults);
+                holder.Add(response);
             }
 
             return holder;
         }
 
-        private async Task GetUserIdAndDisplayNameAsync(Dictionary<string, (Int64, string, bool, Int64)> holder)
+        private async Task GetUserIdAndDisplayNameAsync(IReadOnlyList<TwitchServiceResponse> holder)
         {
-            string query = BuildUserIdQuery(holder.Keys);
+            string query = BuildUserIdQuery(holder.Select(each => each.UserName));
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
@@ -77,20 +97,28 @@ namespace Storm.Wpf.StreamServices
                 bool couldFindUserId = each.TryGetValue("id", out JToken idToken);
                 bool couldFindDisplayName = each.TryGetValue("display_name", out JToken displayNameToken);
 
-                if (couldFindAccountName && couldFindUserId && couldFindDisplayName)
+                if (couldFindAccountName)
                 {
                     string accountName = (string)loginToken;
-                    Int64 userId = (Int64)idToken;
-                    string displayName = (string)displayNameToken;
 
-                    holder[accountName] = (userId, displayName, false, 0); // IsLive and GameId come later, so we keep them at default
+                    var response = holder.Single(resp => resp.UserName == accountName);
+
+                    if (couldFindDisplayName)
+                    {
+                        response.DisplayName = (string)displayNameToken;
+                    }
+
+                    if (couldFindUserId)
+                    {
+                        response.UserId = (Int64)idToken;
+                    }
                 }
             }
         }
 
-        private async Task GetIsLiveAndGameIdAsync(Dictionary<string, (Int64, string, bool, Int64)> holder)
+        private async Task GetIsLiveAndGameIdAsync(IReadOnlyList<TwitchServiceResponse> holder)
         {
-            var query = BuildStatusQuery(holder.Values.Select(kvp => kvp.Item1)); // Item1 is userId
+            string query = BuildStatusQuery(holder.Select(each => each.UserId));
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
@@ -102,30 +130,34 @@ namespace Storm.Wpf.StreamServices
                 bool couldFindType = each.TryGetValue("type", out JToken typeToken);
                 bool couldFindGameId = each.TryGetValue("game_id", out JToken gameIdToken);
 
-                if (couldFindUserId && couldFindType && couldFindGameId)
+                if (couldFindUserId)
                 {
                     Int64 userId = (Int64)userIdToken;
-                    bool isLive = (string)typeToken == "live";
-                    Int64 gameId = (Int64)gameIdToken;
 
-                    string accountNameKey = holder.Keys.SingleOrDefault(key => holder[key].Item1 == userId);
+                    var response = holder.Single(resp => resp.UserId == userId);
 
-                    var newValueForAccountNameKey = (holder[accountNameKey].Item1, holder[accountNameKey].Item2, isLive, gameId);
+                    if (couldFindType)
+                    {
+                        response.IsLive = (string)typeToken == "live";
+                    }
 
-                    holder[accountNameKey] = newValueForAccountNameKey;
+                    if (couldFindGameId)
+                    {
+                        response.GameId = (Int64)gameIdToken;
+                    }
                 }
             }
         }
 
-        private async Task UpdateGameNameCache(Dictionary<string, (Int64, string, bool, Int64)> holder)
+        private async Task UpdateGameNameCache(IReadOnlyList<TwitchServiceResponse> holder)
         {
-            var gameIds = holder
-                .Select(kvp => kvp.Value.Item4)
+            var unknownGameIds = holder
+                .Select(each => each.GameId)
                 .Where(id => !gameIdCache.ContainsKey(id));
 
-            if (!gameIds.Any()) { return; }
+            if (!unknownGameIds.Any()) { return; }
 
-            string query = BuildGameIdsQuery(gameIds);
+            string query = BuildGameIdsQuery(unknownGameIds);
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
@@ -146,24 +178,28 @@ namespace Storm.Wpf.StreamServices
             }
         }
 
-        private static void SetValues(IEnumerable<StreamBase> streams, Dictionary<string, (Int64, string, bool, Int64)> holder)
+        private static void SetValues(IEnumerable<StreamBase> streams, IReadOnlyList<TwitchServiceResponse> holder)
         {
             foreach (TwitchStream stream in streams)
             {
-                if (holder.TryGetValue(stream.AccountName, out (Int64, string, bool, Int64) data))
-                {
-                    stream.UserId = data.Item1;
-                    stream.DisplayName = data.Item2;
-                    
-                    stream.Game = gameIdCache.ContainsKey(data.Item4)
-                        ? gameIdCache[data.Item4]
-                        : string.Empty;
+                var response = holder.Single(each => each.UserName == stream.AccountName);
 
-                    stream.IsLive = data.Item3;
-                    
-                    // MUST set .Game before .IsLive otherwise notification will fire without game name
-                    // the notification would read "Fred is LIVE" instead of "Fred is LIVE and playing Sqoon"
+                stream.UserId = response.UserId;
+
+                if (!String.IsNullOrWhiteSpace(response.DisplayName))
+                {
+                    stream.DisplayName = response.DisplayName;
                 }
+                
+                // MUST set .Game before .IsLive otherwise notification will fire without game name
+                // the notification would read "Fred is LIVE" instead of "Fred is LIVE and playing Sqoon"
+
+                if (gameIdCache.ContainsKey(response.GameId))
+                {
+                    stream.Game = gameIdCache[response.GameId];
+                }
+
+                stream.IsLive = response.IsLive;
             }
         }
 
