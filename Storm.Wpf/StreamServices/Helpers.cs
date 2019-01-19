@@ -11,16 +11,6 @@ namespace Storm.Wpf.StreamServices
 {
     public static class Helpers
     {
-        private static readonly HttpClientHandler handler = new HttpClientHandler
-        {
-            AllowAutoRedirect = true,
-            AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip,
-            MaxAutomaticRedirections = 3,
-            SslProtocols = SslProtocols.Tls12
-        };
-
-        private static readonly HttpClient client = new HttpClient(handler);
-
         public static bool TryParseJson(string rawJson, out JObject json)
         {
             try
@@ -34,6 +24,18 @@ namespace Storm.Wpf.StreamServices
                 return false;
             }
         }
+
+
+        private static readonly HttpClient client = new HttpClient(handler);
+
+        private static readonly HttpClientHandler handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = true,
+            AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip,
+            MaxAutomaticRedirections = 3,
+            SslProtocols = SslProtocols.Tls12
+        };
+
 
         public static Task<(bool, string)> DownloadStringAsync(Uri uri) => DownloadStringAsync(uri, null);
 
