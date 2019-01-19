@@ -73,9 +73,9 @@ namespace Storm.Wpf.StreamServices
         {
             var holder = new List<TwitchServiceResponse>();
 
-            foreach (string eachAccountName in userNames)
+            foreach (string userName in userNames)
             {
-                var response = new TwitchServiceResponse(eachAccountName);
+                var response = new TwitchServiceResponse(userName);
 
                 holder.Add(response);
             }
