@@ -31,6 +31,11 @@ namespace Storm.Wpf.Streams
             get => _displayName;
             set
             {
+                if (String.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentNullException(nameof(DisplayName), $"you tried to set {ServiceName}:{nameof(DisplayName)} to NullOrWhitespace");
+                }
+
                 SetProperty(ref _displayName, value, nameof(DisplayName));
 
                 RaisePropertyChanged(nameof(MouseOverToolTip));
