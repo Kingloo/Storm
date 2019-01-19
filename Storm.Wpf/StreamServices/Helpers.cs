@@ -26,8 +26,6 @@ namespace Storm.Wpf.StreamServices
         }
 
 
-        private static readonly HttpClient client = new HttpClient(handler);
-
         private static readonly HttpClientHandler handler = new HttpClientHandler
         {
             AllowAutoRedirect = true,
@@ -35,6 +33,8 @@ namespace Storm.Wpf.StreamServices
             MaxAutomaticRedirections = 3,
             SslProtocols = SslProtocols.Tls12
         };
+
+        private static readonly HttpClient client = new HttpClient(handler);
 
 
         public static Task<(bool, string)> DownloadStringAsync(Uri uri) => DownloadStringAsync(uri, null);
