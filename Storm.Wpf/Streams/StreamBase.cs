@@ -55,7 +55,7 @@ namespace Storm.Wpf.Streams
                 RaisePropertyChanged(nameof(MouseOverToolTip));
 
                 // if they were not live before, but are live now
-                // without this check it will notifylive on every refresh
+                // without this check it will NotifyLive() on every refresh
                 // but you only want to be notified once
                 if (!wasLive && IsLive)
                 {
