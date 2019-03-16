@@ -11,9 +11,17 @@ namespace Storm.Wpf.Streams
 
         public override string MouseOverToolTip
         {
-            get => String.IsNullOrWhiteSpace(Game)
-                ? base.MouseOverToolTip
-                : $"{DisplayName} is playing {Game}";
+            get
+            {
+                if (IsLive && !String.IsNullOrWhiteSpace(Game))
+                {
+                    return $"{DisplayName} is playing {Game}";
+                }
+                else
+                {
+                    return base.MouseOverToolTip;
+                }
+            }
         }
 
         private static readonly Uri _icon = new Uri($"{IconPackPrefix}Twitch.ico");
