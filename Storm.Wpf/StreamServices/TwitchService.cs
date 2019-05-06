@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
 using static Storm.Wpf.StreamServices.Helpers;
 
@@ -153,9 +155,23 @@ namespace Storm.Wpf.StreamServices
         {
             var unknownGameIds = holder
                 .Select(each => each.GameId)
+                .Where(id => id != 0) // game id is 0 (zero) when they are offline
                 .Where(id => !gameIdCache.ContainsKey(id));
 
             if (!unknownGameIds.Any()) { return; }
+
+
+            #region Temporary Logging - to be removed at some point
+            StringBuilder sb = new StringBuilder();
+
+            foreach (Int64 id in unknownGameIds)
+            {
+                sb.AppendLine($"{id} was not in the cache");
+            }
+
+            Log.Message(sb.ToString());
+            #endregion
+
 
             string query = BuildGameIdsQuery(unknownGameIds);
 
