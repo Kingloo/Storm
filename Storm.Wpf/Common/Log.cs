@@ -36,14 +36,14 @@ namespace Storm.Wpf.Common
         }
 
 
-        public static void LogMessage(string message)
+        public static void Message(string message)
         {
             string text = FormatMessage(message);
 
             WriteToFile(text);
         }
 
-        public static Task LogMessageAsync(string message)
+        public static Task MessageAsync(string message)
         {
             string text = FormatMessage(message);
 
@@ -51,40 +51,40 @@ namespace Storm.Wpf.Common
         }
 
 
-        public static void LogException(Exception ex)
-            => LogException(ex, string.Empty, false);
+        public static void Exception(Exception ex)
+            => Exception(ex, string.Empty, false);
 
-        public static void LogException(Exception ex, string message)
-            => LogException(ex, message, false);
+        public static void Exception(Exception ex, string message)
+            => Exception(ex, message, false);
 
-        public static void LogException(Exception ex, bool includeStackTrace)
-            => LogException(ex, string.Empty, includeStackTrace);
+        public static void Exception(Exception ex, bool includeStackTrace)
+            => Exception(ex, string.Empty, includeStackTrace);
 
-        public static void LogException(Exception ex, string message, bool includeStackTrace)
+        public static void Exception(Exception ex, string message, bool includeStackTrace)
         {
             if (ex is null) { throw new ArgumentNullException(nameof(ex)); }
 
             string text = FormatException(ex, message, includeStackTrace);
 
-            LogMessage(text);
+            Message(text);
         }
 
-        public static Task LogExceptionAsync(Exception ex)
-            => LogExceptionAsync(ex, string.Empty, false);
+        public static Task ExceptionAsync(Exception ex)
+            => ExceptionAsync(ex, string.Empty, false);
 
-        public static Task LogExceptionAsync(Exception ex, string message)
-            => LogExceptionAsync(ex, message, false);
+        public static Task ExceptionAsync(Exception ex, string message)
+            => ExceptionAsync(ex, message, false);
 
-        public static Task LogExceptionAsync(Exception ex, bool includeStackTrace)
-            => LogExceptionAsync(ex, string.Empty, includeStackTrace);
+        public static Task ExceptionAsync(Exception ex, bool includeStackTrace)
+            => ExceptionAsync(ex, string.Empty, includeStackTrace);
 
-        public static Task LogExceptionAsync(Exception ex, string message, bool includeStackTrace)
+        public static Task ExceptionAsync(Exception ex, string message, bool includeStackTrace)
         {
             if (ex is null) { throw new ArgumentNullException(nameof(ex)); }
 
             string text = FormatException(ex, message, includeStackTrace);
             
-            return LogMessageAsync(text);
+            return MessageAsync(text);
         }
 
 
@@ -140,6 +140,8 @@ namespace Storm.Wpf.Common
                     fs = null;
 
                     sw.WriteLine(text);
+
+                    sw.Flush();
                 }
             }
             catch (FileNotFoundException) { }
@@ -169,6 +171,8 @@ namespace Storm.Wpf.Common
                     fsAsync = null;
 
                     await sw.WriteLineAsync(text).ConfigureAwait(false);
+
+                    await sw.FlushAsync().ConfigureAwait(false);
                 }
             }
             catch (FileNotFoundException) { }

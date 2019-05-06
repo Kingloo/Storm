@@ -35,7 +35,7 @@ namespace Storm.Wpf.GUI
         {
             if (e.Exception is Exception ex)
             {
-                Log.LogException(ex, true);
+                Log.Exception(ex, true);
 
                 e.Handled = true;
             }
@@ -43,7 +43,7 @@ namespace Storm.Wpf.GUI
             {
                 string message = "an empty DispatcherUnhandledException was thrown";
 
-                Log.LogMessage(message);
+                Log.Message(message);
 
                 e.Handled = false;
             }

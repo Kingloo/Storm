@@ -60,7 +60,7 @@ namespace Storm.Wpf.StreamServices
                     {
                         string message = $"{uri.AbsoluteUri} was banned";
 
-                        await Log.LogMessageAsync(message).ConfigureAwait(false);
+                        await Log.MessageAsync(message).ConfigureAwait(false);
 
                         return false;
                     }
