@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
-using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
@@ -160,19 +157,6 @@ namespace Storm.Wpf.StreamServices
 
             if (!unknownGameIds.Any()) { return; }
 
-
-            #region Temporary Logging - to be removed at some point
-            StringBuilder sb = new StringBuilder();
-
-            foreach (Int64 id in unknownGameIds)
-            {
-                sb.AppendLine($"{id} was not in the cache");
-            }
-
-            Log.Message(sb.ToString());
-            #endregion
-
-
             string query = BuildGameIdsQuery(unknownGameIds);
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
@@ -265,10 +249,10 @@ namespace Storm.Wpf.StreamServices
 
             Action<HttpRequestMessage> configureHeaders = request => request.Headers.Add(clientIdHeaderName, clientIdHeaderValue);
 
-            (bool success, string rawJson) = await DownloadStringAsync(uri, configureHeaders).ConfigureAwait(false);
+            (bool success, string rawJson) = await Helpers.DownloadStringAsync(uri, configureHeaders).ConfigureAwait(false);
 
             if (!success) { return failure; }
-            if (!TryParseJson(rawJson, out JObject json)) { return failure; }
+            if (!Helpers.TryParseJson(rawJson, out JObject json)) { return failure; }
             if (!json.TryGetValue("data", out JToken dataToken)) { return failure; }
             if (!(dataToken is JArray data)) { return failure; }
 
