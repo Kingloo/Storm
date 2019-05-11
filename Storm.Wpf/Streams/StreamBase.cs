@@ -115,21 +115,10 @@ namespace Storm.Wpf.Streams
             string otherMinimumLink = $"{other.AccountLink.DnsSafeHost}{other.AccountLink.AbsolutePath}";
 
             /*
-             We do this because all of the following URLs lead to the same account
+             We do this because the following illustrates all the different ways a URL could be supplied,
+             and they must all lead to the same account object
                 
-                https://twitch.tv/john
-                https://www.twitch.tv/john
-                
-                http://twitch.tv/john
-                http://www.twitch.tv/john
-                
-                twitch.tv/john
-                www.twitch.tv/john
-                
-                twitch.tv/john?extra=something
-                www.twitch.tv/john?extra=something
-                
-            but Uri.Equals would find all of these to be different from each other
+                {http{s}://}{www.}twitch.tv/john{?query=blabla}
              */
             
             return thisMinimumLink.Equals(otherMinimumLink, StringComparison.CurrentCultureIgnoreCase);
