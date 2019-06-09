@@ -142,7 +142,19 @@ namespace Storm.Wpf.StreamServices
 
                     if (couldFindGameId)
                     {
-                        response.GameId = (Int64)gameIdToken;
+                        // game_id can be present in the json, but a have blank value e.g. "game_id": "",
+                        // under this circumstance, using the Json.Net cast ("(int)gameIdToken") throws a FormatException
+                        // hence the extra checking
+
+                        string gameIdString = (string)gameIdToken;
+
+                        if (!String.IsNullOrEmpty(gameIdString))
+                        {
+                            if (Int64.TryParse(gameIdString, out Int64 gameId))
+                            {
+                                response.GameId = gameId;
+                            }
+                        }
                     }
                 }
             }
