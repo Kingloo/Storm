@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Storm.Wpf.Common;
+using Storm.Wpf.Extensions;
 using Storm.Wpf.Streams;
-using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
@@ -48,9 +50,9 @@ namespace Storm.Wpf.StreamServices
         {
             (string, bool) failure = (string.Empty, false);
 
-            (bool success, string html) = await DownloadStringAsync(uri).ConfigureAwait(false);
+            (HttpStatusCode status, string html) = await Web.DownloadStringAsync(uri).ConfigureAwait(false);
 
-            if (!success) { return failure; }
+            if (status != HttpStatusCode.OK) { return failure; }
 
             bool isLive = false;
             string displayName = string.Empty;
@@ -61,20 +63,25 @@ namespace Storm.Wpf.StreamServices
 
                 while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                 {
+                    //if (line.Contains(displayNameStartMarker))
+                    //{
+                    //    int idxDisplayNameStart = line.IndexOf(displayNameStartMarker) + displayNameStartMarker.Length;
+                    //    int idxDisplayNameEnd = line.IndexOf(displayNameEndMarker, idxDisplayNameStart);
+
+                    //    int displayNameLength = idxDisplayNameEnd - idxDisplayNameStart;
+
+                    //    displayName = line.Substring(idxDisplayNameStart, displayNameLength);
+                    //}
+
                     if (line.Contains(displayNameStartMarker))
                     {
-                        int idxDisplayNameStart = line.IndexOf(displayNameStartMarker) + displayNameStartMarker.Length;
-                        int idxDisplayNameEnd = line.IndexOf(displayNameEndMarker, idxDisplayNameStart);
-
-                        int displayNameLength = idxDisplayNameEnd - idxDisplayNameStart;
-
-                        displayName = line.Substring(idxDisplayNameStart, displayNameLength);
+                        if (line.FindBetween(displayNameStartMarker, displayNameEndMarker).FirstOrDefault() is string name)
+                        {
+                            displayName = name;
+                        }
                     }
-
-                    if (line.Contains(isLiveMarker))
-                    {
-                        isLive = true;
-                    }
+                    
+                    isLive = line.Contains(isLiveMarker);
                 }
             }
 

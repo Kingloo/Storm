@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
-using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
@@ -34,10 +35,10 @@ namespace Storm.Wpf.StreamServices
 
         private static async Task<bool> GetSmashcastApiResponse(Uri uri)
         {
-            (bool downloadSuccess, string rawJson) = await DownloadStringAsync(uri).ConfigureAwait(false);
+            (HttpStatusCode status, string rawJson) = await Web.DownloadStringAsync(uri).ConfigureAwait(false);
 
-            if (!downloadSuccess) { return false; }
-            if (TryParseJson(rawJson, out JObject json)) { return false; }
+            if (status != HttpStatusCode.OK) { return false; }
+            if (!Json.TryParse(rawJson, out JObject json)) { return false; }
             if (!json.HasValues) { return false; }
 
             if (json.TryGetValue("is_live", out JToken isLiveToken))

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
-using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
@@ -43,10 +44,10 @@ namespace Storm.Wpf.StreamServices
         {
             (string, bool) failure = (string.Empty, false);
 
-            (bool success, string text) = await DownloadStringAsync(uri).ConfigureAwait(false);
+            (HttpStatusCode status, string text) = await Web.DownloadStringAsync(uri).ConfigureAwait(false);
 
-            if (!success) { return failure; }
-            if (!TryParseJson(text, out JObject json)) { return failure; }
+            if (status != HttpStatusCode.OK) { return failure; }
+            if (!Json.TryParse(text, out JObject json)) { return failure; }
             if (!json.HasValues) { return failure; }
 
             if (json.TryGetValue("username", out JToken usernameToken)

@@ -27,7 +27,7 @@
     <ProductName>Storm</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>7</ApplicationRevision>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>2.1.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -130,9 +130,12 @@
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Common\DispatcherCountdownTimer.cs" />
     <Compile Include="Common\FileLoader.cs" />
+    <Compile Include="Common\Json.cs" />
     <Compile Include="Common\Log.cs" />
     <Compile Include="Common\NotificationService.cs" />
+    <Compile Include="Common\Web.cs" />
     <Compile Include="Extensions\FileInfo.cs" />
+    <Compile Include="Extensions\String.cs" />
     <Compile Include="Extensions\Uri.cs" />
     <Compile Include="GUI\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -145,7 +148,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamServices\ChaturbateService.cs" />
-    <Compile Include="StreamServices\Helpers.cs" />
     <Compile Include="StreamServices\MixerService.cs" />
     <Compile Include="StreamServices\MixlrService.cs" />
     <Compile Include="StreamServices\ServicesException.cs" />

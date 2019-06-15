@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
-using static Storm.Wpf.StreamServices.Helpers;
 
 namespace Storm.Wpf.StreamServices
 {
@@ -40,9 +41,9 @@ namespace Storm.Wpf.StreamServices
 
         private static async Task<bool> GetIsLiveAsync(Uri uri)
         {
-            (bool success, string page) = await DownloadStringAsync(uri).ConfigureAwait(false);
+            (HttpStatusCode status, string page) = await Web.DownloadStringAsync(uri).ConfigureAwait(false);
 
-            if (!success) { return false; }
+            if (status != HttpStatusCode.OK) { Debug.WriteLine($"{uri.AbsoluteUri}: {status.ToString()}");  return false; }
             // if downloading the page fails we declare them offline no matter what
 
             using (StringReader sr = new StringReader(page))

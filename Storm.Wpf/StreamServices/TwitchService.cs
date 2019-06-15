@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Storm.Wpf.Common;
 using Storm.Wpf.Streams;
 
 namespace Storm.Wpf.StreamServices
@@ -84,11 +87,13 @@ namespace Storm.Wpf.StreamServices
 
         private async Task GetUserIdAndDisplayNameAsync(IReadOnlyList<TwitchServiceResponse> holder)
         {
+            Debug.WriteLine("begin GetUserIdAndDisplayNameAsync ...");
+
             string query = BuildUserIdQuery(holder.Select(each => each.UserName));
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
-            if (!success) { return; }
+            if (!success) { Debug.WriteLine("GetUserIdAndDisplayNameAsync failed!"); return; }
 
             foreach (JObject each in data)
             {
@@ -113,15 +118,21 @@ namespace Storm.Wpf.StreamServices
                     }
                 }
             }
+
+            Debug.WriteLine("... end GetUserIdAndDisplayNameAsync");
         }
 
         private async Task GetIsLiveAndGameIdAsync(IReadOnlyList<TwitchServiceResponse> holder)
         {
+            Debug.WriteLine("begin GetIsLiveAndGameIdAsync ...");
+
             string query = BuildStatusQuery(holder.Select(each => each.UserId));
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
-            if (!success) { return; }
+            if (!success) { Debug.WriteLine("GetIsLiveAndGameIdAsync failed!"); return; }
+
+            //Debug.WriteLine(data.ToString());
 
             foreach (JObject each in data)
             {
@@ -158,16 +169,20 @@ namespace Storm.Wpf.StreamServices
                     }
                 }
             }
+
+            Debug.WriteLine("... end GetIsLiveAndGameIdAsync");
         }
 
         private async Task UpdateGameNameCache(IReadOnlyList<TwitchServiceResponse> holder)
         {
+            Debug.WriteLine("begin UpdateGameNameCache ...");
+
             var unknownGameIds = holder
                 .Select(each => each.GameId)
                 .Where(id => id != 0) // game id is 0 (zero) when they are offline
                 .Where(id => !gameIdCache.ContainsKey(id));
 
-            if (!unknownGameIds.Any()) { return; }
+            if (!unknownGameIds.Any()) { Debug.WriteLine("UpdateGameNameCache failed!"); return; }
 
             string query = BuildGameIdsQuery(unknownGameIds);
 
@@ -188,6 +203,8 @@ namespace Storm.Wpf.StreamServices
                     gameIdCache.AddOrUpdate(gameId, gameName, (i, s) => gameName);
                 }
             }
+
+            Debug.WriteLine("... end UpdateGameNameCache");
         }
 
         private static void SetValues(IEnumerable<StreamBase> streams, IReadOnlyList<TwitchServiceResponse> holder)
@@ -261,10 +278,13 @@ namespace Storm.Wpf.StreamServices
 
             Action<HttpRequestMessage> configureHeaders = request => request.Headers.Add(clientIdHeaderName, clientIdHeaderValue);
 
-            (bool success, string rawJson) = await Helpers.DownloadStringAsync(uri, configureHeaders).ConfigureAwait(false);
+            (HttpStatusCode status, string rawJson) = await Web.DownloadStringAsync(uri, configureHeaders).ConfigureAwait(false);
 
-            if (!success) { return failure; }
-            if (!Helpers.TryParseJson(rawJson, out JObject json)) { return failure; }
+            if (status != HttpStatusCode.OK) { return failure; }
+            if (!Json.TryParse(rawJson, out JObject json)) { return failure; }
+
+            Debug.WriteLine(json.ToString());
+
             if (!json.TryGetValue("data", out JToken dataToken)) { return failure; }
             if (!(dataToken is JArray data)) { return failure; }
 
