@@ -1,4 +1,6 @@
-﻿using System;
+﻿# curl -X GET -H "Client-ID: ewvlchtxgqq88ru9gmfp1gmyt6h2b93" "https://api.twitch.tv/helix/streams?user_id=18074328&user_id=188854137"
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -32,7 +32,7 @@ namespace Storm.Wpf.GUI.Converters
             new PropertyMetadata(default(T)));
 
         public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => System.Convert.ToBoolean(value, culture) ? True : False;
+            => (bool)value ? True : False;
 
         public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => default(T);
