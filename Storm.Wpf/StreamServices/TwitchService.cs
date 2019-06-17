@@ -1,4 +1,4 @@
-﻿# curl -X GET -H "Client-ID: ewvlchtxgqq88ru9gmfp1gmyt6h2b93" "https://api.twitch.tv/helix/streams?user_id=18074328&user_id=188854137"
+﻿// curl -X GET -H "Client-ID: ewvlchtxgqq88ru9gmfp1gmyt6h2b93" "https://api.twitch.tv/helix/streams?user_id=18074328&user_id=188854137"
 
 using System;
 using System.Collections.Concurrent;
@@ -89,13 +89,11 @@ namespace Storm.Wpf.StreamServices
 
         private async Task GetUserIdAndDisplayNameAsync(IReadOnlyList<TwitchServiceResponse> holder)
         {
-            Debug.WriteLine("begin GetUserIdAndDisplayNameAsync ...");
-
             string query = BuildUserIdQuery(holder.Select(each => each.UserName));
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
-            if (!success) { Debug.WriteLine("GetUserIdAndDisplayNameAsync failed!"); return; }
+            if (!success) { return; }
 
             foreach (JObject each in data)
             {
@@ -120,21 +118,15 @@ namespace Storm.Wpf.StreamServices
                     }
                 }
             }
-
-            Debug.WriteLine("... end GetUserIdAndDisplayNameAsync");
         }
 
         private async Task GetIsLiveAndGameIdAsync(IReadOnlyList<TwitchServiceResponse> holder)
         {
-            Debug.WriteLine("begin GetIsLiveAndGameIdAsync ...");
-
             string query = BuildStatusQuery(holder.Select(each => each.UserId));
 
             (bool success, JArray data) = await GetTwitchResponseAsync(query).ConfigureAwait(false);
 
-            if (!success) { Debug.WriteLine("GetIsLiveAndGameIdAsync failed!"); return; }
-
-            //Debug.WriteLine(data.ToString());
+            if (!success) { return; }
 
             foreach (JObject each in data)
             {
@@ -171,20 +163,16 @@ namespace Storm.Wpf.StreamServices
                     }
                 }
             }
-
-            Debug.WriteLine("... end GetIsLiveAndGameIdAsync");
         }
 
         private async Task UpdateGameNameCache(IReadOnlyList<TwitchServiceResponse> holder)
         {
-            Debug.WriteLine("begin UpdateGameNameCache ...");
-
             var unknownGameIds = holder
                 .Select(each => each.GameId)
                 .Where(id => id != 0) // game id is 0 (zero) when they are offline
                 .Where(id => !gameIdCache.ContainsKey(id));
 
-            if (!unknownGameIds.Any()) { Debug.WriteLine("UpdateGameNameCache failed!"); return; }
+            if (!unknownGameIds.Any()) { return; }
 
             string query = BuildGameIdsQuery(unknownGameIds);
 
@@ -205,8 +193,6 @@ namespace Storm.Wpf.StreamServices
                     gameIdCache.AddOrUpdate(gameId, gameName, (i, s) => gameName);
                 }
             }
-
-            Debug.WriteLine("... end UpdateGameNameCache");
         }
 
         private static void SetValues(IEnumerable<StreamBase> streams, IReadOnlyList<TwitchServiceResponse> holder)
@@ -241,7 +227,7 @@ namespace Storm.Wpf.StreamServices
 
             foreach (string userName in userNames)
             {
-                query.Append($"login={userName}&");
+                query.Append($"&login={userName}");
             }
 
             return query.ToString();
@@ -253,7 +239,7 @@ namespace Storm.Wpf.StreamServices
 
             foreach (Int64 userId in userIds)
             {
-                query.Append($"user_id={userId}&");
+                query.Append($"&user_id={userId}");
             }
 
             return query.ToString();
@@ -265,7 +251,7 @@ namespace Storm.Wpf.StreamServices
 
             foreach (Int64 id in gameIds)
             {
-                query.Append($"id={id}&");
+                query.Append($"&id={id}");
             }
 
             return query.ToString();
@@ -282,11 +268,18 @@ namespace Storm.Wpf.StreamServices
 
             (HttpStatusCode status, string rawJson) = await Web.DownloadStringAsync(uri, configureHeaders).ConfigureAwait(false);
 
-            if (status != HttpStatusCode.OK) { return failure; }
+            if (status != HttpStatusCode.OK)
+            {
+                string message = $"{status.ToString()} for request to {query}";
+
+                await Log.MessageAsync(message).ConfigureAwait(false);
+
+                Debug.WriteLine($"{DateTime.Now.ToString("hh:mm:ss")} - status: {status.ToString()}, query: {query}");
+
+                return failure;
+            }
+
             if (!Json.TryParse(rawJson, out JObject json)) { return failure; }
-
-            Debug.WriteLine(json.ToString());
-
             if (!json.TryGetValue("data", out JToken dataToken)) { return failure; }
             if (!(dataToken is JArray data)) { return failure; }
 
