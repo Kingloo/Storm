@@ -22,7 +22,7 @@ namespace Storm.Wpf.Common
         /// <summary>
         /// After this many ticks of the timer where it found nothing to work on, we turn off the timer until a new notification is sent.
         /// </summary>
-        private static int timerTickMax = 15;
+        private static readonly int timerTickMax = 15;
 
         private static DispatcherTimer queuePullTimer = null;
 
@@ -244,7 +244,7 @@ namespace Storm.Wpf.Common
 
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
-                style.Setters.Add(new Setter(PaddingProperty, new Thickness(15d, 0d, 15d, 0d)));
+                style.Setters.Add(new Setter(MarginProperty, new Thickness(15d, 0d, 15d, 0d)));
                 style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
                 style.Setters.Add(new Setter(FontSizeProperty, 22d));
                 style.Setters.Add(new Setter(HeightProperty, 75d));
@@ -262,7 +262,7 @@ namespace Storm.Wpf.Common
 
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
-                style.Setters.Add(new Setter(PaddingProperty, new Thickness(0d, 0d, 15d, 0d)));
+                style.Setters.Add(new Setter(MarginProperty, new Thickness(0d, 0d, 15d, 0d)));
                 style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
                 style.Setters.Add(new Setter(FontSizeProperty, 14d));
                 style.Setters.Add(new Setter(HeightProperty, 40d));

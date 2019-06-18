@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -270,11 +269,12 @@ namespace Storm.Wpf.StreamServices
 
             if (status != HttpStatusCode.OK)
             {
-                string message = $"{status.ToString()} for request to {query}";
+                if (status.ToString() == "429") // rate limiting, HttpStatusCode enum does not contain a 429 option
+                {
+                    string message = $"HTTP 429 (rate limit) on request to {query}";
 
-                await Log.MessageAsync(message).ConfigureAwait(false);
-
-                Debug.WriteLine($"{DateTime.Now.ToString("hh:mm:ss")} - status: {status.ToString()}, query: {query}");
+                    await Log.MessageAsync(message).ConfigureAwait(false);
+                }
 
                 return failure;
             }
