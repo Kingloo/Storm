@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -226,7 +227,9 @@ namespace Storm.Wpf.StreamServices
 
             foreach (string userName in userNames)
             {
-                query.Append($"&login={userName}");
+                string queryPart = string.Format(CultureInfo.InvariantCulture, "&login={0}", userName);
+
+                query.Append(queryPart);
             }
 
             return query.ToString();
@@ -238,7 +241,9 @@ namespace Storm.Wpf.StreamServices
 
             foreach (Int64 userId in userIds)
             {
-                query.Append($"&user_id={userId}");
+                string queryPart = string.Format(CultureInfo.InvariantCulture, "&user_id={0}", userId);
+
+                query.Append(queryPart);
             }
 
             return query.ToString();
@@ -250,7 +255,9 @@ namespace Storm.Wpf.StreamServices
 
             foreach (Int64 id in gameIds)
             {
-                query.Append($"&id={id}");
+                string queryPart = string.Format(CultureInfo.InvariantCulture, "&id={0}", id);
+
+                query.Append(queryPart);
             }
 
             return query.ToString();
@@ -263,7 +270,7 @@ namespace Storm.Wpf.StreamServices
 
             if (!Uri.TryCreate(query, UriKind.Absolute, out Uri uri)) { return failure; }
 
-            Action<HttpRequestMessage> configureHeaders = request => request.Headers.Add(clientIdHeaderName, clientIdHeaderValue);
+            void configureHeaders(HttpRequestMessage request) => request.Headers.Add(clientIdHeaderName, clientIdHeaderValue);
 
             (HttpStatusCode status, string rawJson) = await Web.DownloadStringAsync(uri, configureHeaders).ConfigureAwait(false);
 
@@ -271,7 +278,7 @@ namespace Storm.Wpf.StreamServices
             {
                 if (status.ToString() == "429") // rate limiting, HttpStatusCode enum does not contain a 429 option
                 {
-                    string message = $"HTTP 429 (rate limit) on request to {query}";
+                    string message = string.Format(CultureInfo.CurrentCulture, "HTTP 429 (rate limit) on request to {0}", query);
 
                     await Log.MessageAsync(message).ConfigureAwait(false);
                 }

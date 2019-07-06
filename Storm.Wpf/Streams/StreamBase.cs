@@ -31,14 +31,12 @@ namespace Storm.Wpf.Streams
             get => _displayName;
             set
             {
-                if (String.IsNullOrWhiteSpace(value))
+                if (!String.IsNullOrWhiteSpace(value))
                 {
-                    throw new ArgumentNullException(nameof(DisplayName), $"you tried to set {ServiceName}:{nameof(DisplayName)} to NullOrWhitespace");
+                    SetProperty(ref _displayName, value, nameof(DisplayName));
+
+                    RaisePropertyChanged(nameof(MouseOverToolTip));
                 }
-
-                SetProperty(ref _displayName, value, nameof(DisplayName));
-
-                RaisePropertyChanged(nameof(MouseOverToolTip));
             }
         }
 
@@ -85,7 +83,8 @@ namespace Storm.Wpf.Streams
                 throw new ArgumentException($"account link invalid: {accountLink.AbsoluteUri}", nameof(accountLink));
             }
 
-            AccountName = SetAccountName().ToLower();
+            AccountName = SetAccountName().ToLowerInvariant();
+
             DisplayName = AccountName;
         }
 

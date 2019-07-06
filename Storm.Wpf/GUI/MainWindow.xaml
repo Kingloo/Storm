@@ -91,7 +91,8 @@
                         </Label.Content>
 
                         <Label.ToolTip>
-                            <ToolTip>
+                            <ToolTip ToolTipService.HorizontalOffset="17"
+                                     ToolTipService.InitialShowDelay="175">
                                 <TextBlock DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource TemplatedParent}}"
                                            Text="{Binding MouseOverToolTip}"
                                            FontSize="16" />

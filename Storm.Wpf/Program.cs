@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Storm.Wpf.Common;
 using Storm.Wpf.GUI;
 
@@ -15,7 +16,7 @@ namespace Storm.Wpf
 
             if (exitCode != 0)
             {
-                string message = $"Storm exited with code {exitCode}";
+                string message = string.Format(CultureInfo.CurrentCulture, "Storm exited with code {0}", exitCode);
 
                 Log.Message(message);
             }

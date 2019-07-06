@@ -31,6 +31,8 @@ namespace Storm.Wpf.StreamServices
 
         public static Action StartWatching(StreamBase stream)
         {
+            if (stream is null) { throw new ArgumentNullException(nameof(stream)); }
+
             var service = GetService(stream.GetType());
 
             return service.GetWatchingInstructions(stream);
@@ -38,6 +40,8 @@ namespace Storm.Wpf.StreamServices
 
         public static Action StartRecording(StreamBase stream)
         {
+            if (stream is null) { throw new ArgumentNullException(nameof(stream)); }
+
             var service = GetService(stream.GetType());
 
             return service.GetRecordingInstructions(stream);

@@ -89,15 +89,17 @@ namespace Storm.Wpf.Extensions
 
         public static string EnsureStartsWithHttps(this string input)
         {
+            if (input is null) { throw new ArgumentNullException(nameof(input)); }
+
             const string https = "https://";
             const string http = "http://";
 
-            if (input.StartsWith(https))
+            if (input.StartsWith(https, StringComparison.OrdinalIgnoreCase))
             {
                 return input;
             }
 
-            if (input.StartsWith(http))
+            if (input.StartsWith(http, StringComparison.OrdinalIgnoreCase))
             {
                 return input.Insert(4, "s");
             }

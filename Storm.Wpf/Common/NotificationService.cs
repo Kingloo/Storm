@@ -22,7 +22,7 @@ namespace Storm.Wpf.Common
         /// <summary>
         /// After this many ticks of the timer where it found nothing to work on, we turn off the timer until a new notification is sent.
         /// </summary>
-        private static readonly int timerTickMax = 15;
+        private const int timerTickMax = 15;
 
         private static DispatcherTimer queuePullTimer = null;
 

@@ -29,7 +29,7 @@ namespace Storm.Wpf.Common
             if (uri is null) { throw new ArgumentNullException(nameof(uri)); }
 
             HttpStatusCode status = HttpStatusCode.Unused;
-            string html = string.Empty;
+            string text = string.Empty;
 
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
 
@@ -39,18 +39,21 @@ namespace Storm.Wpf.Common
             {
                 using (var response = await client.SendAsync(request).ConfigureAwait(false))
                 {
-                    html = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                     status = response.StatusCode;
                 }
             }
             catch (HttpRequestException) { }
+            catch (InvalidOperationException) { }
+            catch (TaskCanceledException) { }
+            catch (OperationCanceledException) { }
             finally
             {
                 request?.Dispose();
             }
 
-            return (status, html);
+            return (status, text);
         }
     }
 }

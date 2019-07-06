@@ -36,9 +36,9 @@ namespace Storm.Wpf.Common
         }
 
 
-        public static void Message(string message)
+        public static void Message(string msg)
         {
-            string text = FormatMessage(message);
+            string text = FormatMessage(msg);
 
             WriteToFile(text);
         }

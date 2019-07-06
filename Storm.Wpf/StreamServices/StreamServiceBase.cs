@@ -27,7 +27,9 @@ namespace Storm.Wpf.StreamServices
 
             if (HasStreamlinkSupport && HasFeature("streamlink"))
             {
-                string command = $"/C streamlink {stream.AccountLink} best";
+                //string command = $"/C streamlink {stream.AccountLink} best";
+
+                string command = string.Format(CultureInfo.InvariantCulture, "/C streamlink {0} best", stream.AccountLink);
 
                 var info = new ProcessStartInfo
                 {
@@ -54,7 +56,9 @@ namespace Storm.Wpf.StreamServices
 
             if (HasYouTubeDlSupport && HasFeature("youtube-dl"))
             {
-                string command = $"/C youtube-dl {stream.AccountLink}";
+                //string command = $"/C youtube-dl {stream.AccountLink}";
+
+                string command = string.Format(CultureInfo.CurrentCulture, "/C youtube-dl {0}", stream.AccountLink);
 
                 var info = new ProcessStartInfo
                 {

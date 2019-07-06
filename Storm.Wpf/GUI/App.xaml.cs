@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
@@ -41,9 +42,7 @@ namespace Storm.Wpf.GUI
             }
             else
             {
-                string message = "an empty DispatcherUnhandledException was thrown";
-
-                Log.Message(message);
+                Log.Message("a Dispatcher Unhandled Exception was thrown with a null Exception");
 
                 e.Handled = false;
             }
