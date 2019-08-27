@@ -28,7 +28,18 @@ namespace Storm.Wpf.Streams
         public override Uri Icon => _icon;
 
         public Int64 UserId { get; set; }
-        public string Game { get; set; }
+
+        private string _game = string.Empty;
+        public string Game
+        {
+            get => _game;
+            set
+            {
+                SetProperty(ref _game, value, nameof(Game));
+
+                RaisePropertyChanged(nameof(MouseOverToolTip));
+            }
+        }
 
         public TwitchStream(Uri account)
             : base(account)
