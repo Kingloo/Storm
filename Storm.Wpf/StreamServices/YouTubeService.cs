@@ -54,7 +54,7 @@ namespace Storm.Wpf.StreamServices
 
             if (status != HttpStatusCode.OK) { return failure; }
 
-            bool isLive = false;
+            bool isLive = html.Contains(isLiveMarker);
             string displayName = string.Empty;
 
             using (StringReader sr = new StringReader(html))
@@ -63,25 +63,15 @@ namespace Storm.Wpf.StreamServices
 
                 while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                 {
-                    //if (line.Contains(displayNameStartMarker))
-                    //{
-                    //    int idxDisplayNameStart = line.IndexOf(displayNameStartMarker) + displayNameStartMarker.Length;
-                    //    int idxDisplayNameEnd = line.IndexOf(displayNameEndMarker, idxDisplayNameStart);
-
-                    //    int displayNameLength = idxDisplayNameEnd - idxDisplayNameStart;
-
-                    //    displayName = line.Substring(idxDisplayNameStart, displayNameLength);
-                    //}
-
                     if (line.Contains(displayNameStartMarker))
                     {
                         if (line.FindBetween(displayNameStartMarker, displayNameEndMarker).FirstOrDefault() is string name)
                         {
                             displayName = name;
+
+                            break;
                         }
                     }
-                    
-                    isLive = line.Contains(isLiveMarker);
                 }
             }
 
