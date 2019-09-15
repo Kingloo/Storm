@@ -16,7 +16,8 @@ namespace Storm.Wpf.StreamServices
         private const string displayNameStartMarker = "<meta property=\"og:title\" content=\"";
         private const string displayNameEndMarker = "\">";
 
-        protected override Uri ApiRoot { get; } = new Uri("https://www.youtube.com/user");
+        //protected override Uri ApiRoot { get; } = new Uri("https://www.youtube.com/user");
+        protected override Uri ApiRoot { get; } = new Uri("https://www.youtube.com/");
         protected override bool HasYouTubeDlSupport { get; } = true;
         public override Type HandlesStreamType { get; } = typeof(YouTubeStream);
 
@@ -48,6 +49,8 @@ namespace Storm.Wpf.StreamServices
 
         private static async Task<(string, bool)> GetYouTubeApiResponseAsync(Uri uri)
         {
+            if (uri is null) { throw new ArgumentNullException(nameof(uri)); }
+
             (string, bool) failure = (string.Empty, false);
 
             (HttpStatusCode status, string html) = await Web.DownloadStringAsync(uri).ConfigureAwait(false);
