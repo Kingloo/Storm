@@ -1,0 +1,112 @@
+﻿<Window x:Class="StormDesktop.Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:stormlib="clr-namespace:StormLib.Interfaces;assembly=StormLib"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        Name="mainWindow"
+        SourceInitialized="mainWindow_SourceInitialized"
+        Loaded="mainWindow_Loaded"
+        LocationChanged="mainWindow_LocationChanged"
+        Closing="mainWindow_Closing">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type Window}}">
+            <Setter Property="Title" Value="Storm" />
+            <Setter Property="Top" Value="50" />
+            <Setter Property="Left" Value="150" />
+            <Setter Property="Width" Value="400" />
+            <Setter Property="SizeToContent" Value="Height" />
+            <Setter Property="ResizeMode" Value="CanMinimize" />
+            <Setter Property="Background" Value="Black" />
+        </Style>
+    </Window.Style>
+
+    <Window.InputBindings>
+        <KeyBinding Key="Esc"
+                    Command="{Binding Path=ExitCommand, Mode=OneTime}"
+                    CommandParameter="{Binding ElementName=mainWindow}" />
+        <KeyBinding Key="F5"
+                    Command="{Binding Path=UpdateCommand, Mode=OneTime}" />
+        <KeyBinding Key="F11"
+                    Command="{Binding Path=OpenStreamsFileCommand, Mode=OneTime}" />
+        <KeyBinding Key="F12"
+                    Command="{Binding Path=LoadStreamsCommand, Mode=OneTime}" />
+    </Window.InputBindings>
+
+    <Window.Resources>
+        <CollectionViewSource Source="{Binding Path=Streams, Mode=OneTime}"
+                              x:Key="sortedStreams"
+                              IsLiveSortingRequested="True">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Status" Direction="Ascending" />
+                <scm:SortDescription PropertyName="DisplayName" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+
+    <ItemsControl ItemsSource="{Binding Source={StaticResource sortedStreams}}">
+        <ItemsControl.Style>
+            <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type ItemsControl}}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <ScrollViewer CanContentScroll="True">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="HasItems" Value="False">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate>
+                                    <Label Content="No streams"
+                                           Height="70"
+                                           Foreground="LightGray" />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ItemsControl.Style>
+
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <VirtualizingStackPanel Margin="7,0,7,7" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type stormlib:IStream}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="50" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0">
+                        <Label.Content>
+                            <TextBlock Text="{Binding DisplayName}"
+                                       Foreground="White"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Label.Content>
+
+                        <Label.InputBindings>
+                            
+                        </Label.InputBindings>
+                    </Label>
+
+                    <Image Grid.Column="1"
+                           Height="28"
+                           Width="28">
+                        <Image.Source>
+                            <BitmapImage UriSource="{Binding Path=Icon}" />
+                        </Image.Source>
+                    </Image>
+                </Grid>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</Window>

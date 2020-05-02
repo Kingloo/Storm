@@ -1,0 +1,65 @@
+﻿<Application x:Class="StormDesktop.Gui.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:StormDesktop"
+             xmlns:gui="clr-namespace:StormDesktop.Gui"
+             ShutdownMode="OnMainWindowClose"
+             Startup="Application_Startup"
+             DispatcherUnhandledException="Application_DispatcherUnhandledException">
+    
+    <Application.Resources>
+        <SolidColorBrush x:Key="None" Color="Gray" />
+        <SolidColorBrush x:Key="Public" Color="LightGreen" />
+        <SolidColorBrush x:Key="Private" Color="Orange" />
+        <SolidColorBrush x:Key="Rerun" Color="LightGreen" />
+        <SolidColorBrush x:Key="Offline" Color="#FF4040" />
+        <SolidColorBrush x:Key="Banned" Color="Magenta" />
+        <SolidColorBrush x:Key="Unsupported" Color="Yellow" />
+        <SolidColorBrush x:Key="Unknown" Color="MediumAquamarine" />
+        
+        <Style TargetType="{x:Type FrameworkElement}">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+        </Style>
+
+        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
+        <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
+        <Style TargetType="{x:Type gui:MainWindow}" BasedOn="{StaticResource {x:Type Window}}" />
+        <Style TargetType="{x:Type ItemsPresenter}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
+        <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
+
+        <Style TargetType="{x:Type VirtualizingStackPanel}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+            <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Pixel" />
+            <Setter Property="VirtualizingPanel.CacheLength" Value="200" />
+        </Style>
+
+        <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="19" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+
+        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Control}}" />
+
+        <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type Control}}">
+            <!-- keep .ScrollUnit here, NOT in {x:Type VirtualizingStackPanel}, otherwise it won't stick -->
+            <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
+        </Style>
+
+        <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Type Control}}">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+        </Style>
+
+        <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Type Control}}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        
+    </Application.Resources>
+</Application>
