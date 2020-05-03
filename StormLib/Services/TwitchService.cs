@@ -14,7 +14,7 @@ using StormLib.Streams;
 
 namespace StormLib.Services
 {
-    public class TwitchService : IService
+    public class TwitchService : IService, IDisposable
     {
         //27471,     // "Minecraft"
         //417752,    // "Talk Shows & Podcasts"
@@ -25,6 +25,7 @@ namespace StormLib.Services
 
         private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
         {
+            26936,     // "Music & Performing Arts"
             509660,    // "Art"
             509481     // "Twitch Sings"
         };
@@ -39,7 +40,7 @@ namespace StormLib.Services
             { "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
             { "Origin", "https://www.twitch.tv" },
             { "DNT", "1" },
-            { "Connection", "keep-alive" },
+            //{ "Connection", "keep-alive" },
             { "Upgrade-Insecure-Requests", "1" },
             { "Pragma", "no-cache" },
             { "Cache-Control", "no-cache" }
@@ -147,7 +148,8 @@ namespace StormLib.Services
 
                 string displayName = (string)user["displayName"];
 
-                if (stream.DisplayName != displayName)
+                if (!String.IsNullOrWhiteSpace(displayName)
+                    && stream.DisplayName != displayName)
                 {
                     stream.DisplayName = displayName;
                 }
@@ -195,6 +197,27 @@ namespace StormLib.Services
                 }
             }
 #nullable enable
+        }
+
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    download.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

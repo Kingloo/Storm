@@ -11,7 +11,7 @@ using StormLib.Streams;
 
 namespace StormLib.Services
 {
-    public class MixerService : IService
+    public class MixerService : IService, IDisposable
     {
         private readonly IDownload download;
 
@@ -57,7 +57,8 @@ namespace StormLib.Services
             {
                 string displayName = (string)userNameToken;
 
-                if (stream.DisplayName != displayName)
+                if (!String.IsNullOrWhiteSpace(displayName)
+                    && stream.DisplayName != displayName)
                 {
                     stream.DisplayName = displayName;
                 }
@@ -95,6 +96,27 @@ namespace StormLib.Services
             Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
 
             return results.OrderByDescending(r => r).First();
+        }
+
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    download.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

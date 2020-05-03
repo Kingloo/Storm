@@ -4,14 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using StormLib.Common;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
 
 namespace StormLib.Services
 {
-    public class MixlrService : IService
+    public class MixlrService : IService, IDisposable
     {
         private readonly IDownload download;
 
@@ -56,7 +55,8 @@ namespace StormLib.Services
             {
                 string username = (string)usernameToken;
 
-                if (stream.DisplayName != username)
+                if (!String.IsNullOrWhiteSpace(username)
+                    && (stream.DisplayName != username))
                 {
                     stream.DisplayName = username;
                 }
@@ -86,6 +86,27 @@ namespace StormLib.Services
             Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
 
             return results.OrderByDescending(r => r).First();
+        }
+
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    download.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -9,7 +9,7 @@ using StormLib.Streams;
 
 namespace StormLib.Services
 {
-    public class ChaturbateService : IService
+    public class ChaturbateService : IService, IDisposable
     {
         private const string offlineMarker = "Room is currently offline";
         private const string loginMarker = "meta name=\"keywords\" content=\"Login, Chaturbate login\"";
@@ -79,6 +79,27 @@ namespace StormLib.Services
             Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
 
             return results.OrderByDescending(r => r).First();
+        }
+
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    download.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
