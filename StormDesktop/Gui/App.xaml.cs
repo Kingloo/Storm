@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -8,6 +9,7 @@ using System.Security.Authentication;
 using System.Windows;
 using System.Windows.Threading;
 using StormDesktop.Common;
+using StormDesktop.Interfaces;
 using StormLib;
 using StormLib.Helpers;
 using StormLib.Interfaces;
@@ -32,8 +34,6 @@ namespace StormDesktop.Gui
 
         public App(string filePath)
         {
-            InitializeComponent();
-
             this.filePath = filePath;
         }
 
@@ -77,7 +77,7 @@ namespace StormDesktop.Gui
             }
             else
             {
-                string message = $"an empty {nameof(DispatcherUnhandledException)} was thrown";
+                string message = string.Format(CultureInfo.CurrentCulture, "an empty {0} was thrown", nameof(DispatcherUnhandledException));
 
                 LogStatic.Message(message, Severity.Error);
             }

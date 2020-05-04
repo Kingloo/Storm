@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using StormDesktop.Common;
+using StormDesktop.Interfaces;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 
@@ -129,27 +131,35 @@ namespace StormDesktop.Gui
 
             if (lines.Length == 0) { return; }
 
-            IReadOnlyCollection<IStream> streams = StreamFactory.CreateMany(lines, "#");
+            IReadOnlyCollection<IStream> loadedStreams = StreamFactory.CreateMany(lines, "#");
 
-            AddNew(streams);
-            RemoveOld(streams);
+            var addedStreams = AddNew(loadedStreams);
+            RemoveOld(loadedStreams);
+
+            await UpdateAsync(addedStreams);
         }
 
-        private void AddNew(IReadOnlyCollection<IStream> streams)
+        private IReadOnlyCollection<IStream> AddNew(IReadOnlyCollection<IStream> loadedStreams)
         {
-            foreach (IStream stream in streams)
+            Collection<IStream> addedStreams = new Collection<IStream>();
+
+            foreach (IStream stream in loadedStreams)
             {
                 if (!Streams.Contains(stream))
                 {
                     _streams.Add(stream);
+                    
+                    addedStreams.Add(stream);
                 }
             }
+
+            return addedStreams;
         }
 
-        private void RemoveOld(IReadOnlyCollection<IStream> streams)
+        private void RemoveOld(IReadOnlyCollection<IStream> loadedStreams)
         {
-            var toRemove = streams
-                .Where(s => !Streams.Contains(s))
+            var toRemove = Streams
+                .Where(s => !loadedStreams.Contains(s))
                 .ToList();
 
             foreach (IStream stream in toRemove)
@@ -190,11 +200,15 @@ namespace StormDesktop.Gui
 
         public async Task UpdateAsync(IEnumerable<IStream> streams)
         {
+            Debug.WriteLine("start update");
+
             IsActive = true;
 
             await servicesManager.UpdateAsync(streams);
 
             IsActive = false;
+
+            Debug.WriteLine("stop update");
         }
 
         private void OpenPage(IStream stream)

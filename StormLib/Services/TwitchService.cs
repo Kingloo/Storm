@@ -80,7 +80,7 @@ namespace StormLib.Services
 #nullable disable
             try
             {
-                ParseJson(streams, json["dummy"]);
+                ParseJson(streams, (JArray)json["dummy"]);
 
                 return Result.Success;
             }
@@ -127,32 +127,27 @@ namespace StormLib.Services
             // to remove the unwanted comma after the last entry
             // C# 8 ranges might work here
             sb.Remove(sb.Length - 1, 1);
-            
+
             sb.Append("]");
 
             return sb.ToString();
         }
 
-        private static void ParseJson(IEnumerable<IStream> streams, JToken results)
+        private void ParseJson(IEnumerable<IStream> streams, JArray results)
         {
 #nullable disable
             foreach (TwitchStream stream in streams)
             {
-                JToken token = results
-                    .Where(r => stream.Name == (string)r["data"]["user"]["login"])
-                    .FirstOrDefault();
-
-                if (token is null) { continue; }
-
-                JToken user = token["data"]["user"];
-
-                string displayName = (string)user["displayName"];
-
-                if (!String.IsNullOrWhiteSpace(displayName)
-                    && stream.DisplayName != displayName)
+                if (!TryGetUserDataForName(results, stream.Name, out JToken user))
                 {
-                    stream.DisplayName = displayName;
+                    LogStatic.Message($"{stream.Name}: getting user data failed", Severity.Error);
+
+                    stream.Status = Status.Banned;
+
+                    continue;
                 }
+
+                SetDisplayName(stream, user);
 
                 bool isLive = (user["stream"].HasValues) && ((string)user["stream"]["type"] == "live");
                 bool isRerun = (user["stream"].HasValues) && ((string)user["stream"]["type"] == "rerun");
@@ -160,13 +155,13 @@ namespace StormLib.Services
                 if (isLive)
                 {
                     stream.ViewersCount = (int)user["stream"]["viewersCount"];
-                    
+
                     bool isPlayingGame = user["stream"]["game"].HasValues;
 
                     if (isPlayingGame)
                     {
                         int gameId = (int)user["stream"]["game"]["id"];
-                        
+
                         bool isUnwantedTopic = unwantedIds.Contains(gameId);
 
                         if (isUnwantedTopic)
@@ -176,8 +171,6 @@ namespace StormLib.Services
                         }
                         else
                         {
-                            LogStatic.Message($"{(string)user["stream"]["game"]["displayName"]}: {gameId}", Severity.Error);
-
                             stream.Game = (string)user["stream"]["game"]["displayName"];
                             stream.Status = Status.Public;
                         }
@@ -195,6 +188,49 @@ namespace StormLib.Services
                 {
                     stream.Status = Status.Offline;
                 }
+            }
+#nullable enable
+        }
+
+        private bool TryGetUserDataForName(JToken results, string name, out JToken? user)
+        {
+#nullable disable
+            var tmp = results.Where(r =>
+            {
+                if (r.SelectToken("data.user.login", false) is JToken loginToken)
+                {
+                    return name == (string)loginToken;
+                }
+                else
+                {
+                    return false;
+                }
+            }).SingleOrDefault();
+
+            if (tmp != null)
+            {
+                user = tmp["data"]["user"];
+
+                return true;
+            }
+            else
+            {
+                user = null;
+
+                return false;
+            }
+#nullable enable
+        }
+
+        private static void SetDisplayName(TwitchStream stream, JToken user)
+        {
+#nullable disable
+            string displayName = (string)user["displayName"];
+
+            if (!String.IsNullOrWhiteSpace(displayName)
+                && stream.DisplayName != displayName)
+            {
+                stream.DisplayName = displayName;
             }
 #nullable enable
         }

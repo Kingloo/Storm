@@ -5,7 +5,7 @@ using System.Windows;
 using StormDesktop.Common;
 using StormLib.Interfaces;
 
-namespace StormDesktop.Gui
+namespace StormDesktop.Interfaces
 {
     public interface IMainWindowViewModel
     {

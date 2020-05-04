@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Interop;
+using StormDesktop.Interfaces;
 
 namespace StormDesktop.Gui
 {
@@ -29,8 +30,6 @@ namespace StormDesktop.Gui
         {
             await viewModel.LoadStreamsAsync();
 
-            viewModel.UpdateCommand.Execute(null);
-
             viewModel.StartUpdateTimer(TimeSpan.FromMinutes(2d));
         }
 
@@ -41,9 +40,12 @@ namespace StormDesktop.Gui
 
         private void mainWindow_Closing(object sender, CancelEventArgs e)
         {
-            viewModel.CleanUp();
-
             viewModel.StopUpdateTimer();
+        }
+
+        private void mainWindow_Closed(object sender, EventArgs e)
+        {
+            viewModel.CleanUp();
         }
 
         private void SetMaxHeight()

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace StormLib.Interfaces
 {
-    public interface IService
+    public interface IService : IDisposable
     {
         Type HandlesStreamType { get; }
         bool HasStreamlinkSupport { get; set; }
