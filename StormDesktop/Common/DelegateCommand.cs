@@ -6,7 +6,7 @@ namespace StormDesktop.Common
 {
     public abstract class Command : ICommand
     {
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         public abstract void Execute(object parameter);
         public abstract bool CanExecute(object parameter);
