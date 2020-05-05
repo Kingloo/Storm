@@ -25,8 +25,6 @@ namespace StormLib.Services
 
         public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
         {
-            LogStatic.Message($"top: {stream.Name}");
-
             UriBuilder apiUri = new UriBuilder
             {
                 Host = "mixer.com",
@@ -52,8 +50,6 @@ namespace StormLib.Services
             {
                 return Result.Failure;
             }
-
-            LogStatic.Message(text);
 
             if (json.TryGetValue("token", out JToken userNameToken)
                 && json.TryGetValue("online", out JToken onlineToken)
