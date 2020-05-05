@@ -16,7 +16,7 @@ namespace StormDesktop.Common
         Error = 4
     }
 
-    public interface ILogClass
+    public interface ILog
     {
         string Path { get; }
         Severity Severity { get; }
@@ -35,12 +35,12 @@ namespace StormDesktop.Common
         Task ExceptionAsync(Exception ex, string message, bool includeStackTrace);
     }
 
-    public class LogClass : ILogClass
+    public class Log : ILog
     {
         public string Path { get; } = string.Empty;
         public Severity Severity { get; } = Severity.None;
 
-        public LogClass(string path, Severity severity)
+        public Log(string path, Severity severity)
         {
             Path = path;
             Severity = severity;
@@ -202,7 +202,7 @@ namespace StormDesktop.Common
         }
     }
 
-    public class NullLog : ILogClass
+    public class NullLog : ILog
     {
         public string Path => string.Empty;
 
@@ -228,10 +228,10 @@ namespace StormDesktop.Common
         private static readonly string defaultDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         private static readonly string defaultPath = Path.Combine(defaultDirectory, defaultFileName);
 
-        private static readonly LogClass instance = new LogClass(defaultPath, Severity.Information);
+        private static readonly Log instance = new Log(defaultPath, Severity.Information);
 
-        public static void Message(string message, Severity severity) => instance.Message(message, severity);
-        public static Task MessageAsync(string message, Severity severity) => instance.MessageAsync(message, severity);
+        public static void Message(string message) => instance.Message(message, Severity.Error);
+        public static Task MessageAsync(string message) => instance.MessageAsync(message, Severity.Error);
 
         public static void Exception(Exception ex) => instance.Exception(ex);
         public static void Exception(Exception ex, string message) => instance.Exception(ex, message);

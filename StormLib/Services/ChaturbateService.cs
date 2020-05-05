@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using StormLib.Common;
 using StormLib.Interfaces;
 using StormLib.Streams;
 
@@ -11,14 +16,11 @@ namespace StormLib.Services
 {
     public class ChaturbateService : IService, IDisposable
     {
-        private const string offlineMarker = "Room is currently offline";
-        private const string loginMarker = "meta name=\"keywords\" content=\"Login, Chaturbate login\"";
         private const string bannedMarker = "has been banned";
 
         private readonly IDownload download;
 
         public Type HandlesStreamType { get; } = typeof(ChaturbateStream);
-        public bool HasStreamlinkSupport { get; set; } = false;
         
         public ChaturbateService(IDownload download)
         {
@@ -40,27 +42,41 @@ namespace StormLib.Services
 
                 while ((line = await sr.ReadLineAsync().ConfigureAwait(preserveSynchronizationContext)) != null)
                 {
-                    if (line.Contains(offlineMarker))
-                    {
-                        stream.Status = Status.Offline;
-                        return Result.Success;
-                    }
+                    //string result = Regex.Replace(
+                    //    line,
+                    //    @"\\[Uu]([0-9A-Fa-f]{4})",
+                    //    m => char.ToString((char)ushort.Parse(m.Groups[1].Value, NumberStyles.AllowHexSpecifier)));
 
-                    if (line.Contains(loginMarker))
+                    if (line.Contains("room_status"))
                     {
-                        stream.Status = Status.Private;
-                        return Result.Success;
-                    }
+                        if (line.Contains("public"))
+                        {
+                            stream.Status = Status.Public;
+                            break;
+                        }
 
-                    if (line.Contains(bannedMarker))
+                        if (line.Contains("offline")
+                            || line.Contains("away"))
+                        {
+                            stream.Status = Status.Offline;
+                            break;
+                        }
+
+                        if (line.Contains("private"))
+                        {
+                            stream.Status = Status.Private;
+                            break;
+                        }
+                    }
+                    else if (line.Contains(bannedMarker))
                     {
                         stream.Status = Status.Banned;
-                        return Result.Success;
+                        break;
                     }
                 }
             }
 
-            return Result.Failure;
+            return Result.Success;
         }
 
         public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)

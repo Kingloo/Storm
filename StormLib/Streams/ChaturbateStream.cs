@@ -59,6 +59,8 @@ namespace StormLib.Streams
             }
         }
 
+        public bool HasStreamlinkSupport => true;
+
         public ChaturbateStream(Uri uri)
         {
             Link = uri;

@@ -11,6 +11,11 @@ namespace StormDesktop.Common
             return File.Exists(path) ? Launch(path) : false;
         }
 
+        public static bool Process(ProcessStartInfo pInfo)
+        {
+            return Launch(pInfo);
+        }
+
         public static bool Uri(Uri uri)
         {
             return uri.IsAbsoluteUri ? Launch(uri.AbsoluteUri) : false;
@@ -23,6 +28,11 @@ namespace StormDesktop.Common
                 UseShellExecute = true
             };
 
+            return Launch(pInfo);
+        }
+
+        private static bool Launch(ProcessStartInfo pInfo)
+        {
             using Process p = new Process
             {
                 StartInfo = pInfo

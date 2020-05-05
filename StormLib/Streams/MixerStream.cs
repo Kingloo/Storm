@@ -40,6 +40,13 @@ namespace StormLib.Streams
             set => SetProperty(ref _viewersCount, value, nameof(ViewersCount));
         }
 
+        private string _game = string.Empty;
+        public string Game
+        {
+            get => _game;
+            set => SetProperty(ref _game, value, nameof(Game));
+        }
+
         private Uri? _icon = null;
         public Uri Icon
         {
@@ -59,6 +66,8 @@ namespace StormLib.Streams
                 return _icon;
             }
         }
+
+        public bool HasStreamlinkSupport => true;
 
         public MixerStream(Uri uri)
         {

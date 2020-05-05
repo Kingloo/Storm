@@ -34,12 +34,17 @@ namespace StormDesktop.Gui
 
         public App(string filePath)
         {
+            if (String.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath), "URLs file path was null or whitespace");
+            }
+
             this.filePath = filePath;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            ILogClass logger = new LogClass(defaultLogFilePath, Severity.Warning);
+            ILog logger = new Log(defaultLogFilePath, Severity.Warning);
 
             SocketsHttpHandler handler = new SocketsHttpHandler
             {
@@ -79,7 +84,7 @@ namespace StormDesktop.Gui
             {
                 string message = string.Format(CultureInfo.CurrentCulture, "an empty {0} was thrown", nameof(DispatcherUnhandledException));
 
-                LogStatic.Message(message, Severity.Error);
+                LogStatic.Message(message);
             }
         }
     }

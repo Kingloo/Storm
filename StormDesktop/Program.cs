@@ -19,7 +19,7 @@ namespace StormDesktop
             {
                 string message = string.Format(CultureInfo.CurrentCulture, "exited with code {0}", exitCode);
 
-                LogStatic.Message(message, Severity.Error);
+                LogStatic.Message(message);
             }
 
             return exitCode;

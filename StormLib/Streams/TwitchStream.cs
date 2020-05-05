@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -48,6 +47,8 @@ namespace StormLib.Streams
             set => SetProperty(ref _game, value, nameof(Game));
         }
 
+        public bool HasStreamlinkSupport => true;
+
         private Uri? _icon = null;
         public Uri Icon
         {
@@ -68,33 +69,11 @@ namespace StormLib.Streams
             }
         }
 
-        public string Message => GetMessage();
-
         public TwitchStream(Uri uri)
         {
             Link = uri;
             
             _name = Link.Segments.Last(s => s != "/");
-        }
-
-        private string GetMessage()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(DisplayName);
-            
-            if (Status == Status.Public)
-            {
-                sb.Append(" is LIVE");
-
-                if (!String.IsNullOrWhiteSpace(Game))
-                {
-                    sb.Append(" and playing ");
-                    sb.Append(Game);
-                }
-            }
-
-            return sb.ToString();
         }
 
         public bool Equals(IStream other) => Link.Equals(other.Link);
@@ -111,7 +90,7 @@ namespace StormLib.Streams
 
             sb.AppendLine(base.ToString());
             sb.AppendLine($"display name: {DisplayName}");
-            sb.AppendLine($"status: {Status.ToString()}");
+            sb.AppendLine($"status: {Status}");
             sb.AppendLine($"viewers: {ViewersCount}");
 
             return sb.ToString();

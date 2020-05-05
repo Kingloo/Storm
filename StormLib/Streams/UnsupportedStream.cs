@@ -36,13 +36,6 @@ namespace StormLib.Streams
             set => throw new NotImplementedException("setting ViewersCount of an UnsupportedStream is unsupported");
         }
 
-        public UnsupportedStream(Uri uri)
-        {
-            Link = uri;
-
-            Name = Link.Segments.Last(s => s != "/");
-        }
-
         private Uri? _icon = null;
         public Uri Icon
         {
@@ -61,6 +54,15 @@ namespace StormLib.Streams
 
                 return _icon;
             }
+        }
+
+        public bool HasStreamlinkSupport => false;
+
+        public UnsupportedStream(Uri uri)
+        {
+            Link = uri;
+
+            Name = Link.Segments.Last(s => s != "/");
         }
 
         public int CompareTo(IStream other) => Name.CompareTo(other.Name);

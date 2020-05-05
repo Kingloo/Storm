@@ -30,7 +30,7 @@ namespace StormDesktop.Gui
         {
             await viewModel.LoadStreamsAsync();
 
-            viewModel.StartUpdateTimer(TimeSpan.FromMinutes(2d));
+            viewModel.StartUpdateTimer(TimeSpan.FromSeconds(90d));
         }
 
         private void mainWindow_LocationChanged(object sender, EventArgs e)

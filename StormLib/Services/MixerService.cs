@@ -16,7 +16,6 @@ namespace StormLib.Services
         private readonly IDownload download;
 
         public Type HandlesStreamType { get; } = typeof(MixerStream);
-        public bool HasStreamlinkSupport { get; set; } = false;
 
         public MixerService(IDownload download)
         {
@@ -51,6 +50,8 @@ namespace StormLib.Services
                 return Result.Failure;
             }
 
+            LogStatic.Message(text);
+
             if (json.TryGetValue("token", out JToken userNameToken)
                 && json.TryGetValue("online", out JToken onlineToken)
                 && json.TryGetValue("viewersCurrent", out JToken viewersToken))
@@ -62,7 +63,6 @@ namespace StormLib.Services
                 {
                     stream.DisplayName = displayName;
                 }
-#nullable enable
 
                 if ((bool)onlineToken)
                 {
@@ -73,7 +73,13 @@ namespace StormLib.Services
                 {
                     stream.Status = Status.Offline;
                 }
-                
+
+                if (json.SelectToken("type.name", false) is JToken gameToken)
+                {
+                    (stream as MixerStream).Game = (string)gameToken;
+                }
+#nullable enable
+
                 return Result.Success;
             }
 

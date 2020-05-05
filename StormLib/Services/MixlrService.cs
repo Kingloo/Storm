@@ -15,8 +15,7 @@ namespace StormLib.Services
         private readonly IDownload download;
 
         public Type HandlesStreamType { get; } = typeof(MixlrStream);
-        public bool HasStreamlinkSupport { get; set; } = false;
-
+        
         public MixlrService(IDownload download)
         {
             this.download = download;

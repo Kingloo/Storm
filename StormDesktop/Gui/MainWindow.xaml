@@ -1,7 +1,10 @@
 ﻿<Window x:Class="StormDesktop.Gui.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gui="clr-namespace:StormDesktop.Gui"
         xmlns:stormlib="clr-namespace:StormLib.Interfaces;assembly=StormLib"
+        xmlns:stream="clr-namespace:StormLib.Streams;assembly=StormLib"
+        xmlns:converter="clr-namespace:StormDesktop.Converters"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         Name="mainWindow"
         SourceInitialized="mainWindow_SourceInitialized"
@@ -15,7 +18,7 @@
             <Setter Property="Title" Value="Storm" />
             <Setter Property="Top" Value="50" />
             <Setter Property="Left" Value="150" />
-            <Setter Property="Width" Value="400" />
+            <Setter Property="Width" Value="425" />
             <Setter Property="SizeToContent" Value="Height" />
             <Setter Property="ResizeMode" Value="CanMinimize" />
             <Setter Property="Background" Value="Black" />
@@ -43,6 +46,164 @@
                 <scm:SortDescription PropertyName="DisplayName" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+
+        <converter:StatusConverter x:Key="statusConverter"
+                                   None="Gray"
+                                   Public="LightGreen"
+                                   Private="Orange"
+                                   Rerun="LightBlue"
+                                   Offline="#FF4040"
+                                   Banned="Magenta"
+                                   Unsupported="Yellow"
+                                   Unknown="MediumAquamarine" />
+
+        <Style TargetType="{x:Type StackPanel}" BasedOn="{StaticResource {x:Type StackPanel}}" x:Key="stackPanelStyle">
+            <!-- paired with ItemsPanelTemplate VirtualizingStackPanel Margin in the ItemsControl below -->
+            <Setter Property="Margin" Value="0,7,0,0" />
+            <Setter Property="Background" Value="{Binding Status, Converter={StaticResource statusConverter}}" />
+        </Style>
+
+        <Style TargetType="{x:Type ContentPresenter}" x:Key="contentPresenterStyle">
+            <Setter Property="Height" Value="65" />
+        </Style>
+
+        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" x:Key="messageLabelStyle">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontStretch" Value="UltraExpanded" />
+        </Style>
+
+        <DataTemplate DataType="{x:Type stormlib:IStream}" x:Key="IStreamTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="50" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0">
+                    <Label.Style>
+                        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+                            <Setter Property="FontSize" Value="19" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="Public">
+                                    <Setter Property="FontSize" Value="24" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Label.Style>
+                    <Label.Content>
+                        <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+                    </Label.Content>
+
+                    <Label.InputBindings>
+                        <MouseBinding MouseAction="LeftDoubleClick"
+                                      Command="{Binding Path=DataContext.OpenStreamCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}}"
+                                      CommandParameter="{Binding}" />
+                        <MouseBinding MouseAction="RightDoubleClick"
+                                      Command="{Binding Path=DataContext.OpenPageCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}}"
+                                      CommandParameter="{Binding}" />
+                    </Label.InputBindings>
+                </Label>
+
+                <Image Grid.Column="1"
+                       Height="28"
+                       Width="28">
+                    <Image.Source>
+                        <BitmapImage UriSource="{Binding Path=Icon}" />
+                    </Image.Source>
+                </Image>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type stream:TwitchStream}">
+            <StackPanel Style="{StaticResource stackPanelStyle}">
+                <ContentPresenter Grid.Row="0" Grid.ColumnSpan="2"
+                                  ContentTemplate="{StaticResource IStreamTemplate}"
+                                  Style="{StaticResource contentPresenterStyle}" />
+                <Grid Grid.Row="1" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" MaxWidth="100" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="Public">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Label Grid.Column="0"
+                           HorizontalContentAlignment="Left"
+                           Style="{StaticResource messageLabelStyle}">
+                        <Label.Content>
+                            <TextBlock Text="{Binding Game}" TextTrimming="CharacterEllipsis" />
+                        </Label.Content>
+                    </Label>
+
+                    <Label Grid.Column="1"
+                           Style="{StaticResource messageLabelStyle}"
+                           HorizontalContentAlignment="Right">
+                        <Label.Content>
+                            <TextBlock Text="{Binding ViewersCount, StringFormat='\{0\} viewers'}" />
+                        </Label.Content>
+                    </Label>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type stream:MixerStream}">
+            <StackPanel Style="{StaticResource stackPanelStyle}">
+                <ContentPresenter ContentTemplate="{StaticResource IStreamTemplate}"
+                                  Style="{StaticResource contentPresenterStyle}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" MaxWidth="100" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="Offline">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Label Grid.Column="0" Style="{StaticResource messageLabelStyle}">
+                        <Label.Content>
+                            <TextBlock Text="{Binding Game}" TextTrimming="CharacterEllipsis" />
+                        </Label.Content>
+                    </Label>
+                    
+                    <Label Grid.Column="1" Style="{StaticResource messageLabelStyle}">
+                        <Label.Content>
+                            <TextBlock Text="{Binding ViewersCount, StringFormat='\{0\} viewers'}" />
+                        </Label.Content>
+                    </Label>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type stream:MixlrStream}">
+            <StackPanel Style="{StaticResource stackPanelStyle}">
+                <ContentPresenter ContentTemplate="{StaticResource IStreamTemplate}"
+                                  Style="{StaticResource contentPresenterStyle}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type stream:ChaturbateStream}">
+            <StackPanel Style="{StaticResource stackPanelStyle}">
+                <ContentPresenter ContentTemplate="{StaticResource IStreamTemplate}"
+                                  Style="{StaticResource contentPresenterStyle}" />
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
 
     <ItemsControl ItemsSource="{Binding Source={StaticResource sortedStreams}}">
@@ -64,6 +225,7 @@
                                 <ControlTemplate>
                                     <Label Content="No streams"
                                            Height="70"
+                                           FontSize="14"
                                            Foreground="LightGray" />
                                 </ControlTemplate>
                             </Setter.Value>
@@ -78,36 +240,5 @@
                 <VirtualizingStackPanel Margin="7,0,7,7" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
-
-        <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type stormlib:IStream}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="50" />
-                    </Grid.ColumnDefinitions>
-
-                    <Label Grid.Column="0">
-                        <Label.Content>
-                            <TextBlock Text="{Binding DisplayName}"
-                                       Foreground="White"
-                                       TextTrimming="CharacterEllipsis" />
-                        </Label.Content>
-
-                        <Label.InputBindings>
-                            
-                        </Label.InputBindings>
-                    </Label>
-
-                    <Image Grid.Column="1"
-                           Height="28"
-                           Width="28">
-                        <Image.Source>
-                            <BitmapImage UriSource="{Binding Path=Icon}" />
-                        </Image.Source>
-                    </Image>
-                </Grid>
-            </DataTemplate>
-        </ItemsControl.ItemTemplate>
     </ItemsControl>
 </Window>

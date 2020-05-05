@@ -16,10 +16,7 @@ namespace StormLib.Services
 {
     public class TwitchService : IService, IDisposable
     {
-        //27471,     // "Minecraft"
         //417752,    // "Talk Shows & Podcasts"
-        //490359,    // "Final Fantasy VII Remake"
-        //516575,    // "VALORANT"
         //509658,    // "Just Chatting"
         //509670,    // "Science & Technology"
 
@@ -33,7 +30,7 @@ namespace StormLib.Services
         private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
         {
             { "Host", "gql.twitch.tv" },
-            { "User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/74.0" },
+            { "User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/75.0" },
             { "Accept", "*/*" },
             { "Accept-Language", "en-GB" },
             { "Accept-Encoding", "gzip, deflate, br" },
@@ -51,8 +48,7 @@ namespace StormLib.Services
         private readonly IDownload download;
 
         public Type HandlesStreamType { get; } = typeof(TwitchStream);
-        public bool HasStreamlinkSupport { get; set; } = false;
-
+        
         public TwitchService(IDownload download)
         {
             this.download = download;
@@ -140,8 +136,6 @@ namespace StormLib.Services
             {
                 if (!TryGetUserDataForName(results, stream.Name, out JToken user))
                 {
-                    LogStatic.Message($"{stream.Name}: getting user data failed", Severity.Error);
-
                     stream.Status = Status.Banned;
 
                     continue;
@@ -162,9 +156,9 @@ namespace StormLib.Services
                     {
                         int gameId = (int)user["stream"]["game"]["id"];
 
-                        bool isUnwantedTopic = unwantedIds.Contains(gameId);
+                        bool isUnwantedId = unwantedIds.Contains(gameId);
 
-                        if (isUnwantedTopic)
+                        if (isUnwantedId)
                         {
                             stream.Game = string.Empty;
                             stream.Status = Status.Offline;
@@ -183,6 +177,8 @@ namespace StormLib.Services
                 else if (isRerun)
                 {
                     stream.Status = Status.Rerun;
+
+                    LogStatic.Message($"{stream.Name} is in reruns");
                 }
                 else
                 {

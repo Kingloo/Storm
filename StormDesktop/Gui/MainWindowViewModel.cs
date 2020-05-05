@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,14 +10,16 @@ using System.Windows;
 using System.Windows.Threading;
 using StormDesktop.Common;
 using StormDesktop.Interfaces;
+using StormLib;
 using StormLib.Helpers;
 using StormLib.Interfaces;
+using StormLib.Streams;
 
 namespace StormDesktop.Gui
 {
     public class MainWindowViewModel : BindableBase, IMainWindowViewModel
     {
-        private readonly ILogClass logger;
+        private readonly ILog logger;
         private readonly IServicesManager servicesManager;
         private readonly string filePath = string.Empty;
         
@@ -118,7 +121,7 @@ namespace StormDesktop.Gui
 
         private bool CanExecuteAsync(object _) => !IsActive;
 
-        public MainWindowViewModel(ILogClass logger, IServicesManager servicesManager, string filePath)
+        public MainWindowViewModel(ILog logger, IServicesManager servicesManager, string filePath)
         {
             this.logger = logger;
             this.servicesManager = servicesManager;
@@ -200,15 +203,48 @@ namespace StormDesktop.Gui
 
         public async Task UpdateAsync(IEnumerable<IStream> streams)
         {
-            Debug.WriteLine("start update");
-
             IsActive = true;
+
+            var notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
 
             await servicesManager.UpdateAsync(streams);
 
-            IsActive = false;
+            var liveAfterUpdate = Streams.Where(s => s.Status == Status.Public).ToList();
 
-            Debug.WriteLine("stop update");
+            var forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
+
+            SendNotifications(forWhichToNotify);
+
+            IsActive = false;
+        }
+
+        private void SendNotifications(List<IStream> forWhichToNotify)
+        {
+            foreach (IStream toNotify in forWhichToNotify)
+            {
+                string title = $"{toNotify.DisplayName} is LIVE";
+                string description = string.Empty;
+
+                if (toNotify is TwitchStream ts)
+                {
+                    description = ts.Game;
+                }
+                else if (toNotify is MixerStream ms)
+                {
+                    description = ms.Game;
+                }
+
+                void notify() => OpenStream(toNotify);
+
+                if (String.IsNullOrEmpty(description))
+                {
+                    NotificationService.Send(title, notify);
+                }
+                else
+                {
+                    NotificationService.Send(title, description, notify);
+                }
+            }
         }
 
         private void OpenPage(IStream stream)
@@ -221,7 +257,30 @@ namespace StormDesktop.Gui
 
         private void OpenStream(IStream stream)
         {
+            if (stream.HasStreamlinkSupport)
+            {
+                string command = string.Format(CultureInfo.CurrentCulture, "/C streamlink {0} best", stream.Link);
 
+                ProcessStartInfo pInfo = new ProcessStartInfo()
+                {
+                    Arguments = command,
+                    ErrorDialog = true, // maybe remove
+                    FileName = "powershell.exe",
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    UseShellExecute = true
+                };
+
+                if (!SystemLaunch.Process(pInfo))
+                {
+                    string message = $"launching streamlink for {stream.Name} failed!";
+
+                    logger.Message(message, Severity.Error);
+                }
+            }
+            else
+            {
+                OpenPage(stream);
+            }
         }
 
         private void OpenStreamsFile()
