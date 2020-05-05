@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Markup;
 using StormDesktop.Interfaces;
 
 namespace StormDesktop.Gui
@@ -14,6 +16,8 @@ namespace StormDesktop.Gui
         public MainWindow(IMainWindowViewModel viewModel)
         {
             InitializeComponent();
+
+            Language = XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag);
 
             this.viewModel = viewModel;
             DataContext = this.viewModel;

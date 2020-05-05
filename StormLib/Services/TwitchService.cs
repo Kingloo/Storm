@@ -20,6 +20,7 @@ namespace StormLib.Services
         //509658,    // "Just Chatting"
         //509670,    // "Science & Technology"
 
+        private const int maxStreamsPerUpdate = 35;
         private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
         {
             26936,     // "Music & Performing Arts"
@@ -61,15 +62,49 @@ namespace StormLib.Services
         {
             if (!streams.Any()) { return Result.NothingToDo; }
 
+            List<IStream> streamsList = new List<IStream>(streams);
+            Collection<Result> results = new Collection<Result>();
+
+            while (true)
+            {
+                List<IStream> updateWave = streamsList.Take(maxStreamsPerUpdate).ToList();
+
+                if (updateWave.Any())
+                {
+                    Result result = await UpdateAsyncInternal(updateWave, preserveSynchronizationContext).ConfigureAwait(preserveSynchronizationContext);
+
+                    results.Add(result);
+
+                    foreach (IStream toRemove in updateWave)
+                    {
+                        streamsList.Remove(toRemove);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return results.OrderBy(r => r).FirstOrDefault();
+        }
+
+        private async Task<Result> UpdateAsyncInternal(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
+        {
             (HttpStatusCode status, string text) = await RequestGraphQlDataAsync(streams).ConfigureAwait(preserveSynchronizationContext);
 
             if (status != HttpStatusCode.OK)
             {
+                LogStatic.Message($"updating Twitch streams failed: {status}");
+                LogStatic.Message(text);
+
                 return Result.WebFailure;
             }
 
             if (!Json.TryParse("{\"dummy\":" + text + "}", out JObject? json))
             {
+                LogStatic.Message("TwitchService: parsing JSON failed");
+
                 return Result.ParsingJsonFailed;
             }
 

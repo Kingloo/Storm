@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using StormLib.Common;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Services;
@@ -81,12 +82,17 @@ namespace StormLib
                     .Where(stream => stream.GetType() == service.HandlesStreamType)
                     .ToList();
 
-                Task<Result> task = Task<Result>.Run(() => service.UpdateAsync(streamsForService, preserveSynchronizationContext));
+                Task<Result> task = Task.Run(() => service.UpdateAsync(streamsForService, preserveSynchronizationContext));
 
                 tasks.Add(task);
             }
 
-            await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
+            Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
+
+            foreach (Result each in results.Where(r => r != Result.Success))
+            {
+                LogStatic.Message($"updating failed: {each}");
+            }
         }
 
         private bool disposedValue = false;

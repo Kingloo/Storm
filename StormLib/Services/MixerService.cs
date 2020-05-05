@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using StormLib.Common;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -49,8 +48,6 @@ namespace StormLib.Services
             {
                 return Result.Failure;
             }
-
-            LogStatic.Message(text);
 
             if (json.TryGetValue("token", out JToken userNameToken)
                 && json.TryGetValue("online", out JToken onlineToken)

@@ -149,7 +149,7 @@
                            Style="{StaticResource messageLabelStyle}"
                            HorizontalContentAlignment="Right">
                         <Label.Content>
-                            <TextBlock Text="{Binding ViewersCount, StringFormat='\{0\} viewers'}" />
+                            <TextBlock Text="{Binding ViewersCount, StringFormat='{}{0:#,#} viewers'}"  />
                         </Label.Content>
                     </Label>
                 </Grid>
