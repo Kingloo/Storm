@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -71,6 +72,11 @@ namespace StormLib.Services
                     else if (line.Contains(bannedMarker))
                     {
                         stream.Status = Status.Banned;
+                        break;
+                    }
+                    else
+                    {
+                        stream.Status = Status.Unknown;
                         break;
                     }
                 }

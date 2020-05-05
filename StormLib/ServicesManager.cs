@@ -87,12 +87,7 @@ namespace StormLib
                 tasks.Add(task);
             }
 
-            Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
-
-            foreach (Result each in results.Where(r => r != Result.Success))
-            {
-                LogStatic.Message($"updating failed: {each}");
-            }
+            await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
         }
 
         private bool disposedValue = false;

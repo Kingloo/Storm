@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using StormLib.Common;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -23,6 +25,8 @@ namespace StormLib.Services
 
         public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
         {
+            LogStatic.Message($"top: {stream.Name}");
+
             UriBuilder apiUri = new UriBuilder
             {
                 Host = "mixer.com",
@@ -49,6 +53,8 @@ namespace StormLib.Services
                 return Result.Failure;
             }
 
+            LogStatic.Message(text);
+
             if (json.TryGetValue("token", out JToken userNameToken)
                 && json.TryGetValue("online", out JToken onlineToken)
                 && json.TryGetValue("viewersCurrent", out JToken viewersToken))
@@ -63,17 +69,19 @@ namespace StormLib.Services
 
                 if ((bool)onlineToken)
                 {
-                    stream.Status = Status.Public;
                     stream.ViewersCount = (int)viewersToken;
+                    stream.Status = Status.Public;
+
+                    if (json.SelectToken("type.name", false) is JToken gameToken)
+                    {
+                        (stream as MixerStream).Game = (string)gameToken;
+                    }
                 }
                 else
                 {
+                    stream.ViewersCount = -1;
                     stream.Status = Status.Offline;
-                }
-
-                if (json.SelectToken("type.name", false) is JToken gameToken)
-                {
-                    (stream as MixerStream).Game = (string)gameToken;
+                    (stream as MixerStream).Game = string.Empty;
                 }
 #nullable enable
 
@@ -85,18 +93,24 @@ namespace StormLib.Services
 
         public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
         {
+            /*
+             * Doing these simultaneously in the way the others do didn't work.
+             * Don't know why!
+             * One would start, but then the other would finish.
+             * I observed both finishing properly only once.
+             * So we do them sequentially.
+             */
+
             if (!streams.Any()) { return Result.NothingToDo; }
 
-            List<Task<Result>> tasks = new List<Task<Result>>();
+            Collection<Result> results = new Collection<Result>();
 
-            foreach (IStream stream in streams)
+            foreach (IStream each in streams)
             {
-                Task<Result> task = Task.Run(() => UpdateAsync(stream, preserveSynchronizationContext));
+                Result result = await UpdateAsync(each, preserveSynchronizationContext).ConfigureAwait(preserveSynchronizationContext);
 
-                tasks.Add(task);
+                results.Add(result);
             }
-
-            Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
 
             return results.OrderByDescending(r => r).First();
         }
