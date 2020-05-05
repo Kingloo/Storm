@@ -206,17 +206,21 @@ namespace StormLib.Services
                     }
                     else
                     {
+                        stream.Game = string.Empty;
                         stream.Status = Status.Public;
                     }
                 }
                 else if (isRerun)
                 {
+                    stream.Game = string.Empty;
                     stream.Status = Status.Rerun;
 
                     LogStatic.Message($"{stream.Name} is in reruns");
                 }
                 else
                 {
+                    stream.ViewersCount = -1;
+                    stream.Game = string.Empty;
                     stream.Status = Status.Offline;
                 }
             }
