@@ -7,15 +7,6 @@
              DispatcherUnhandledException="Application_DispatcherUnhandledException">
     
     <Application.Resources>
-        <SolidColorBrush x:Key="None" Color="Gray" />
-        <SolidColorBrush x:Key="Public" Color="LightGreen" />
-        <SolidColorBrush x:Key="Private" Color="Orange" />
-        <SolidColorBrush x:Key="Rerun" Color="LightGreen" />
-        <SolidColorBrush x:Key="Offline" Color="#FF4040" />
-        <SolidColorBrush x:Key="Banned" Color="Magenta" />
-        <SolidColorBrush x:Key="Unsupported" Color="Yellow" />
-        <SolidColorBrush x:Key="Unknown" Color="MediumAquamarine" />
-        
         <Style TargetType="{x:Type FrameworkElement}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="SnapsToDevicePixels" Value="True" />

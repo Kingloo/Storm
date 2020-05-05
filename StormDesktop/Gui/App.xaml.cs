@@ -23,7 +23,11 @@ namespace StormDesktop.Gui
         private static readonly string defaultLogFilePath = Path.Combine(defaultLogFileDirectory, defaultLogFileName);
 
         private static readonly string defaultStreamsFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+#if DEBUG
+        private static readonly string defaultStreamsFileName = "StormUrls-test.txt";
+#else
         private static readonly string defaultStreamsFileName = "StormUrls.txt";
+#endif
         private static readonly string defaultStreamsFilePath = Path.Combine(defaultStreamsFileDirectory, defaultStreamsFileName);
 
         private readonly string filePath = string.Empty;
@@ -64,13 +68,11 @@ namespace StormDesktop.Gui
             IDownload downloader = new Download(handler);
 
             IServicesManager servicesManager = new ServicesManager(downloader);
-
             servicesManager.AddDefaultServices();
 
             IMainWindowViewModel viewModel = new MainWindowViewModel(logger, servicesManager, filePath);
 
             MainWindow = new MainWindow(viewModel);
-
             MainWindow.Show();
         }
 
