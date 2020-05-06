@@ -18,6 +18,11 @@ namespace StormLib.Services
     public class ChaturbateService : IService, IDisposable
     {
         private const string bannedMarker = "has been banned";
+        private const string roomStatus = "room_status";
+        private const string publicStatus = "public";
+        private const string offlineStatus = "offline";
+        private const string awayStatus = "away";
+        private const string privateStatus = "private";
 
         private readonly IDownload download;
 
@@ -37,49 +42,42 @@ namespace StormLib.Services
                 return Result.WebFailure;
             }
 
-            using (StringReader sr = new StringReader(text))
+            if (text.Contains(bannedMarker))
             {
-                string line = string.Empty;
+                stream.Status = Status.Banned;
+                return Result.Success;
+            }
 
-                while ((line = await sr.ReadLineAsync().ConfigureAwait(preserveSynchronizationContext)) != null)
-                {
-                    //string result = Regex.Replace(
-                    //    line,
-                    //    @"\\[Uu]([0-9A-Fa-f]{4})",
-                    //    m => char.ToString((char)ushort.Parse(m.Groups[1].Value, NumberStyles.AllowHexSpecifier)));
+            int index = text.IndexOf(roomStatus);
 
-                    if (line.Contains("room_status"))
-                    {
-                        if (line.Contains("public"))
-                        {
-                            stream.Status = Status.Public;
-                            break;
-                        }
+            if (index < 0)
+            {
+                return Result.Failure;
+            }
 
-                        if (line.Contains("offline")
-                            || line.Contains("away"))
-                        {
-                            stream.Status = Status.Offline;
-                            break;
-                        }
+            if (text.Length < index + 100)
+            {
+                return Result.Failure;
+            }
 
-                        if (line.Contains("private"))
-                        {
-                            stream.Status = Status.Private;
-                            break;
-                        }
-                    }
-                    else if (line.Contains(bannedMarker))
-                    {
-                        stream.Status = Status.Banned;
-                        break;
-                    }
-                    else
-                    {
-                        stream.Status = Status.Unknown;
-                        break;
-                    }
-                }
+            string searchRadius = text.Substring(index, 100);
+
+            if (searchRadius.Contains(publicStatus))
+            {
+                stream.Status = Status.Public;
+            }
+            else if (searchRadius.Contains(offlineStatus)
+                || searchRadius.Contains(awayStatus))
+            {
+                stream.Status = Status.Offline;
+            }
+            else if (searchRadius.Contains(privateStatus))
+            {
+                stream.Status = Status.Private;
+            }
+            else
+            {
+                stream.Status = Status.Unknown;
             }
 
             return Result.Success;
