@@ -176,13 +176,17 @@
                         </Style>
                     </Grid.Style>
 
-                    <Label Grid.Column="0" Style="{StaticResource messageLabelStyle}">
+                    <Label Grid.Column="0"
+                           HorizontalContentAlignment="Left"
+                           Style="{StaticResource messageLabelStyle}">
                         <Label.Content>
                             <TextBlock Text="{Binding Game}" TextTrimming="CharacterEllipsis" />
                         </Label.Content>
                     </Label>
                     
-                    <Label Grid.Column="1" Style="{StaticResource messageLabelStyle}">
+                    <Label Grid.Column="1"
+                           HorizontalContentAlignment="Right"
+                           Style="{StaticResource messageLabelStyle}">
                         <Label.Content>
                             <TextBlock Text="{Binding ViewersCount, StringFormat='\{0\} viewers'}" />
                         </Label.Content>
