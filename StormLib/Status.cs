@@ -8,7 +8,7 @@
         Private,
         Banned,
         Rerun,
-        Offline,
-        Unknown
+        Unknown,
+        Offline
     }
 }
