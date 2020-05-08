@@ -76,13 +76,19 @@ namespace StormLib.Streams
             _name = Link.Segments.Last(s => s != "/");
         }
 
-        public bool Equals(IStream other) => Link.Equals(other.Link);
+        public bool Equals(IStream other) => (other is TwitchStream ts) ? EqualsInternal(ts) : false;
 
         public int CompareTo(IStream other) => Name.CompareTo(other.Name);
 
-        public override bool Equals(object obj) => (obj is TwitchStream ts) ? Equals(ts) : false;
+        public override bool Equals(object obj) => (obj is TwitchStream ts) ? EqualsInternal(ts) : false;
 
         public override int GetHashCode() => Link.GetHashCode();
+
+        public static bool operator ==(TwitchStream lhs, TwitchStream rhs) => lhs.EqualsInternal(rhs);
+
+        public static bool operator !=(TwitchStream lhs, TwitchStream rhs) => !lhs.EqualsInternal(rhs);
+
+        private bool EqualsInternal(TwitchStream other) => Link.Equals(other.Link);
 
         public override string ToString()
         {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Text;
 using StormLib.Common;
 using StormLib.Interfaces;
 
@@ -60,17 +60,34 @@ namespace StormLib.Streams
 
         public UnsupportedStream(Uri uri)
         {
-            Link = uri;
+            Link = uri ?? throw new ArgumentNullException(nameof(uri));
 
-            Name = Link.Segments.Last(s => s != "/");
+            _name = uri.AbsoluteUri;
         }
 
         public int CompareTo(IStream other) => Name.CompareTo(other.Name);
 
-        public bool Equals(IStream other) => Link.Equals(other.Link);
+        public bool Equals(IStream other) => (other is UnsupportedStream us) ? EqualsInternal(us) : false;
 
-        public override bool Equals(object obj) => (obj is UnsupportedStream us) ? Equals(us) : false;
+        public override bool Equals(object obj) => (obj is UnsupportedStream us) ? EqualsInternal(us) : false;
 
         public override int GetHashCode() => Link.GetHashCode();
+
+        public static bool operator ==(UnsupportedStream lhs, UnsupportedStream rhs) => lhs.EqualsInternal(rhs);
+        
+        public static bool operator !=(UnsupportedStream lhs, UnsupportedStream rhs) => !lhs.EqualsInternal(rhs);
+
+        private bool EqualsInternal(UnsupportedStream other) => Link.Equals(other.Link);
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(base.ToString());
+            sb.AppendLine($"name: {Name}");
+            sb.AppendLine($"link: {Link.AbsoluteUri}");
+
+            return sb.ToString();
+        }
     }
 }

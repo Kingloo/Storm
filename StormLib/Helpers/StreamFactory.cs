@@ -77,19 +77,19 @@ namespace StormLib.Helpers
 
                 Parallel.ForEach(nonCommentLines, (line, loopState) =>
                 {
+                    // Don't do a "if (!streams.Contains)" check before adding
+                    // Race condition!
+
                     if (TryCreate(line, out IStream? stream))
                     {
 #nullable disable
-                        if (!streams.Contains(stream))
-                        {
-                            streams.Add(stream);
-                        }
+                        streams.Add(stream);
 #nullable enable
                     }
                 });
             }
 
-            return (IReadOnlyCollection<IStream>)streams.AsEnumerable();
+            return streams.AsEnumerable().Distinct().ToList().AsReadOnly();
         }
     }
 }
