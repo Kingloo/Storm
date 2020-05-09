@@ -58,6 +58,8 @@ namespace StormLib.Streams
 
         public bool HasStreamlinkSupport => false;
 
+        public string ServiceName => "Unsupported";
+
         public UnsupportedStream(Uri uri)
         {
             Link = uri ?? throw new ArgumentNullException(nameof(uri));

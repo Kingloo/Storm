@@ -69,6 +69,8 @@ namespace StormLib.Streams
 
         public bool HasStreamlinkSupport => true;
 
+        public string ServiceName => "Mixer";
+
         public MixerStream(Uri uri)
         {
             Link = uri;

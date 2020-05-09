@@ -223,27 +223,10 @@ namespace StormDesktop.Gui
             foreach (IStream toNotify in forWhichToNotify)
             {
                 string title = $"{toNotify.DisplayName} is LIVE";
-                string description = string.Empty;
-
-                if (toNotify is TwitchStream ts)
-                {
-                    description = ts.Game;
-                }
-                else if (toNotify is MixerStream ms)
-                {
-                    description = ms.Game;
-                }
-
+                string description = $"on {toNotify.ServiceName}";
                 void notify() => OpenStream(toNotify);
 
-                if (String.IsNullOrEmpty(description))
-                {
-                    NotificationService.Send(title, notify);
-                }
-                else
-                {
-                    NotificationService.Send(title, description, notify);
-                }
+                NotificationService.Send(title, description, notify);
             }
         }
 

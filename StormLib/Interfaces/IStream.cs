@@ -11,5 +11,6 @@ namespace StormLib.Interfaces
         int ViewersCount { get; set; }
         Uri Icon { get; }
         bool HasStreamlinkSupport { get; }
+        string ServiceName { get; }
     }
 }

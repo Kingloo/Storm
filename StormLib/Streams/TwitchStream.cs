@@ -49,6 +49,8 @@ namespace StormLib.Streams
 
         public bool HasStreamlinkSupport => true;
 
+        public string ServiceName => "Twitch";
+
         private Uri? _icon = null;
         public Uri Icon
         {
