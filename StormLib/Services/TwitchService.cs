@@ -95,8 +95,11 @@ namespace StormLib.Services
 
             if (status != HttpStatusCode.OK)
             {
-                LogStatic.Message($"updating Twitch streams failed: {status}");
-
+                if (status != HttpStatusCode.Unused)
+                {
+                    LogStatic.Message($"updating Twitch streams failed: {status}");
+                }
+                
                 return Result.WebFailure;
             }
 
