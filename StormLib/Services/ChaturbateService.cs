@@ -48,7 +48,7 @@ namespace StormLib.Services
                 return Result.Success;
             }
 
-            int index = text.IndexOf(roomStatus);
+            int index = text.IndexOf(roomStatus, StringComparison.OrdinalIgnoreCase);
 
             if (index < 0)
             {

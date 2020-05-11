@@ -8,6 +8,7 @@ namespace StormLib.Helpers
 {
     public class Download : IDownload
     {
+        private readonly HttpMessageHandler handler;
         private readonly HttpClient client;
         private readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(5d);
 
@@ -15,14 +16,14 @@ namespace StormLib.Helpers
 
         public Download()
         {
-            var handler = new HttpClientHandler
+            handler = new HttpClientHandler
             {
                 AllowAutoRedirect = true,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 MaxAutomaticRedirections = 3
             };
 
-            client = new HttpClient(handler)
+            client = new HttpClient(handler, false)
             {
                 Timeout = defaultTimeout
             };
@@ -30,7 +31,9 @@ namespace StormLib.Helpers
 
         public Download(HttpMessageHandler handler)
         {
-            client = new HttpClient(handler)
+            this.handler = handler;
+
+            client = new HttpClient(this.handler, false)
             {
                 Timeout = defaultTimeout
             };
@@ -89,6 +92,7 @@ namespace StormLib.Helpers
                 if (disposing)
                 {
                     client.Dispose();
+                    handler.Dispose();
                 }
 
                 disposedValue = true;

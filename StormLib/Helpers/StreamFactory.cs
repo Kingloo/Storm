@@ -13,7 +13,7 @@ namespace StormLib.Helpers
         private const string http = "http://";
         private const string https = "https://";
 
-        private static readonly StringComparison sc = StringComparison.CurrentCultureIgnoreCase;
+        private const StringComparison sc = StringComparison.CurrentCultureIgnoreCase;
 
         public static bool TryCreate(string line, out IStream? stream)
         {

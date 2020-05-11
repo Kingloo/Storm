@@ -166,7 +166,7 @@ namespace StormLib.Services
             return sb.ToString();
         }
 
-        private void ParseJson(IEnumerable<IStream> streams, JArray results)
+        private static void ParseJson(IEnumerable<IStream> streams, JArray results)
         {
 #nullable disable
             foreach (TwitchStream stream in streams)
@@ -229,7 +229,7 @@ namespace StormLib.Services
 #nullable enable
         }
 
-        private bool TryGetUserDataForName(JToken results, string name, out JToken? user)
+        private static bool TryGetUserDataForName(JToken results, string name, out JToken? user)
         {
 #nullable disable
             var tmp = results.Where(r =>
