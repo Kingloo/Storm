@@ -80,7 +80,7 @@ namespace StormLib.Streams
 
         public bool Equals(IStream other) => (other is TwitchStream ts) ? EqualsInternal(ts) : false;
 
-        public int CompareTo(IStream other) => Name.CompareTo(other.Name);
+        public int CompareTo(IStream other) => String.Compare(Name, other.Name, StringComparison.Ordinal);
 
         public override bool Equals(object obj) => (obj is TwitchStream ts) ? EqualsInternal(ts) : false;
 

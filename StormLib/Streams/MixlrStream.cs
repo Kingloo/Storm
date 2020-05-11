@@ -71,7 +71,7 @@ namespace StormLib.Streams
             Name = Link.Segments.Last(s => s != "/");
         }
 
-        public int CompareTo(IStream other) => Name.CompareTo(other.Name);
+        public int CompareTo(IStream other) => String.Compare(Name, other.Name, StringComparison.Ordinal);
 
         public bool Equals(IStream other) => Link.Equals(other.Link);
 
