@@ -132,7 +132,7 @@ namespace StormLib.Services
             {
                 Content = new StringContent(requestBody, Encoding.UTF8, "text/plain")
             };
-
+            
             foreach (KeyValuePair<string, string> kvp in graphQlRequestHeaders)
             {
                 request.Headers.Add(kvp.Key, kvp.Value);
