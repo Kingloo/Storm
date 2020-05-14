@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using StormLib.Helpers;
 using StormLib.Interfaces;
@@ -8,6 +7,7 @@ using StormLib.Streams;
 
 namespace StormTests.StormLib
 {
+    [TestFixture]
     public class StreamFactoryTests
     {
         private const string validUri = "google.com";

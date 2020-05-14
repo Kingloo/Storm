@@ -6,6 +6,7 @@ using StormLib.Streams;
 
 namespace StormTests.StormLib.Streams
 {
+    [TestFixture]
     public class TwitchStreamTests
     {
         private const string validTwitchAccount = "https://twitch.tv/twitch";
