@@ -227,10 +227,26 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate>
-                                    <Label Content="No streams"
-                                           Height="70"
-                                           FontSize="14"
-                                           Foreground="LightGray" />
+                                    <RichTextBox Height="300"
+                                                 Foreground="LightGray">
+                                        <FlowDocument>
+                                            <Paragraph FontSize="32">
+                                                No streams
+                                            </Paragraph>
+                                            <Paragraph>
+                                                press <Bold>F11</Bold> to open the streams file
+                                            </Paragraph>
+                                            <Paragraph>
+                                                add the streams you wish to follow
+                                            </Paragraph>
+                                            <Paragraph>
+                                                save!
+                                            </Paragraph>
+                                            <Paragraph>
+                                                then press <Bold>F12</Bold> to load the streams
+                                            </Paragraph>
+                                        </FlowDocument>
+                                    </RichTextBox>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>

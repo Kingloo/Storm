@@ -70,9 +70,9 @@ namespace StormLib.Streams
             _name = Link.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? Link.AbsoluteUri;
         }
 
-        public bool Equals(IStream other) => (other is StreamBase sb) ? EqualsInternal(sb) : false;
+        public bool Equals(IStream other) => (other is StreamBase sb) && EqualsInternal(sb);
 
-        public override bool Equals(object obj) => (obj is StreamBase sb) ? EqualsInternal(sb) : false;
+        public override bool Equals(object obj) => (obj is StreamBase sb) && EqualsInternal(sb);
 
         public static bool operator ==(StreamBase lhs, StreamBase rhs) => lhs.Equals(rhs);
 

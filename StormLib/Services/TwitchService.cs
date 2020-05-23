@@ -21,6 +21,7 @@ namespace StormLib.Services
         //509670,    // "Science & Technology"
 
         private const int maxStreamsPerUpdate = 35;
+
         private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
         {
             26936,     // "Music & Performing Arts"
