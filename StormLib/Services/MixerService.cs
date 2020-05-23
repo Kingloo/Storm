@@ -40,7 +40,7 @@ namespace StormLib.Services
                 return Result.WebFailure;
             }
 
-            if (!Json.TryParse(text, out JObject? json))
+            if (!JsonHelpers.TryParse(text, out JObject? json))
             {
                 return Result.ParsingJsonFailed;
             }

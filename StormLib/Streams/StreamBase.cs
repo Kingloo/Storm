@@ -40,26 +40,9 @@ namespace StormLib.Streams
             set => SetProperty(ref _viewersCount, value, nameof(ViewersCount));
         }
 
-        private Uri? _icon = null;
-        public Uri Icon
-        {
-            get
-            {
-                if (_icon is null)
-                {
-                    string libraryDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    string iconsDirectory = "Icons";
-                    string filename = "Twitch.ico";
+        protected static string iconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Icons");
 
-                    string fullPath = Path.Combine(libraryDirectory, iconsDirectory, filename);
-
-                    _icon = new Uri(fullPath);
-                }
-
-                return _icon;
-            }
-        }
-
+        public abstract Uri Icon { get; }
         public abstract bool HasStreamlinkSupport { get; }
         public abstract string ServiceName { get; }
 

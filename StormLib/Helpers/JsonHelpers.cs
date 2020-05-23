@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace StormLib.Helpers
 {
-    public static class Json
+    public static class JsonHelpers
     {
         public static bool TryParse(string text, out JObject? json)
         {

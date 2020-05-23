@@ -104,7 +104,7 @@ namespace StormLib.Services
                 return Result.WebFailure;
             }
 
-            if (!Json.TryParse("{\"dummy\":" + text + "}", out JObject? json))
+            if (!JsonHelpers.TryParse("{\"dummy\":" + text + "}", out JObject? json))
             {
                 LogStatic.Message("TwitchService: parsing JSON failed");
 
