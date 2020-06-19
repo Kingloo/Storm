@@ -10,8 +10,8 @@ namespace StormLib.Interfaces
         bool IsActive { get; }
 
         Task<(HttpStatusCode, string)> StringAsync(Uri uri);
-        Task<(HttpStatusCode, string)> StringAsync(HttpRequestMessage request);
+        Task<(HttpStatusCode, string)> StringAsync(Uri uri, Action<HttpRequestMessage>? configureRequest);
         Task<(HttpStatusCode, byte[])> DataAsync(Uri uri);
-        Task<(HttpStatusCode, byte[])> DataAsync(HttpRequestMessage request);
+        Task<(HttpStatusCode, byte[])> DataAsync(Uri uri, Action<HttpRequestMessage>? configureRequest);
     }
 }

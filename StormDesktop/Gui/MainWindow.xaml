@@ -133,6 +133,9 @@
                                 <DataTrigger Binding="{Binding Status}" Value="Public">
                                     <Setter Property="Visibility" Value="Visible" />
                                 </DataTrigger>
+                                <!--<DataTrigger Binding="{Binding Status}" Value="Rerun">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>-->
                             </Style.Triggers>
                         </Style>
                     </Grid.Style>

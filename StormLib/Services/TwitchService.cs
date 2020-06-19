@@ -111,6 +111,8 @@ namespace StormLib.Services
                 return Result.ParsingJsonFailed;
             }
 
+            LogStatic.Message(text);
+
 #nullable disable
             try
             {
@@ -129,17 +131,18 @@ namespace StormLib.Services
         {
             string requestBody = BuildRequestBody(streams);
 
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, graphQlEndpoint)
+            void configureRequest(HttpRequestMessage request)
             {
-                Content = new StringContent(requestBody, Encoding.UTF8, "text/plain")
-            };
-            
-            foreach (KeyValuePair<string, string> kvp in graphQlRequestHeaders)
-            {
-                request.Headers.Add(kvp.Key, kvp.Value);
+                request.Method = HttpMethod.Post;
+                request.Content = new StringContent(requestBody, Encoding.UTF8, "text/plain");
+
+                foreach (KeyValuePair<string, string> kvp in graphQlRequestHeaders)
+                {
+                    request.Headers.Add(kvp.Key, kvp.Value);
+                }
             }
 
-            return download.StringAsync(request);
+            return download.StringAsync(graphQlEndpoint, configureRequest);
         }
 
         private static string BuildRequestBody(IEnumerable<IStream> streams)

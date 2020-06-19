@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using StormLib.Interfaces;
 
@@ -40,14 +41,21 @@ namespace StormLib.Helpers
         }
 
         public Task<(HttpStatusCode, string)> StringAsync(Uri uri)
-            => StringAsync(new HttpRequestMessage(HttpMethod.Get, uri));
+            => StringAsync(uri, null);
 
-        public async Task<(HttpStatusCode, string)> StringAsync(HttpRequestMessage request)
+        public async Task<(HttpStatusCode, string)> StringAsync(Uri uri, Action<HttpRequestMessage>? configureRequest)
         {
             IsActive = true;
 
             HttpStatusCode status = HttpStatusCode.Unused;
             string text = string.Empty;
+
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                RequestUri = uri
+            };
+
+            configureRequest?.Invoke(request);
 
             HttpResponseMessage? response = null;
 
@@ -55,13 +63,13 @@ namespace StormLib.Helpers
             {
                 response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
 
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                }
+                response.EnsureSuccessStatusCode();
+
+                text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
             catch (HttpRequestException) { }
             catch (TaskCanceledException) { }
+            catch (OperationCanceledException) { }
             finally
             {
                 request.Dispose();
@@ -81,7 +89,7 @@ namespace StormLib.Helpers
 
         public Task<(HttpStatusCode, byte[])> DataAsync(Uri uri) => throw new NotImplementedException();
 
-        public Task<(HttpStatusCode, byte[])> DataAsync(HttpRequestMessage request) => throw new NotImplementedException();
+        public Task<(HttpStatusCode, byte[])> DataAsync(Uri uri, Action<HttpRequestMessage>? configureRequest) => throw new NotImplementedException();
 
         private bool disposedValue = false;
 
