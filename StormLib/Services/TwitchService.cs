@@ -111,8 +111,6 @@ namespace StormLib.Services
                 return Result.ParsingJsonFailed;
             }
 
-            LogStatic.Message(text);
-
 #nullable disable
             try
             {
