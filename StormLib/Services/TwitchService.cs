@@ -38,7 +38,6 @@ namespace StormLib.Services
             { "Accept-Encoding", "gzip, deflate, br" },
             { "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
             { "Origin", "https://www.twitch.tv" },
-            { "DNT", "1" },
             //{ "Connection", "keep-alive" },
             { "Upgrade-Insecure-Requests", "1" },
             { "Pragma", "no-cache" },
