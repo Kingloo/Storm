@@ -47,7 +47,7 @@ namespace StormLib.Helpers
                 }
                 else if (host.EndsWith("mixer.com", sc))
                 {
-                    stream = new MixerStream(uri);
+                    stream = new UnsupportedStream(uri);
                 }
                 else if (host.EndsWith("mixlr.com", sc))
                 {

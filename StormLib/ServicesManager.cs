@@ -45,7 +45,6 @@ namespace StormLib
             _services.Clear();
 
             _services.Add(new ChaturbateService(Downloader));
-            _services.Add(new MixerService(Downloader));
             _services.Add(new MixlrService(Downloader));
             _services.Add(new TwitchService(Downloader));
         }
