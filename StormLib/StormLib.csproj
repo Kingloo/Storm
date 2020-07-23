@@ -18,9 +18,6 @@
     <None Update="Icons\Chaturbate.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Icons\Mixer.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Icons\Mixlr.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

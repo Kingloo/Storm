@@ -13,7 +13,6 @@ namespace StormTests.StormLib
         private const string validUri = "google.com";
         private const string invalidUri = "";
         private const string twitchAccount = "twitch.tv/twitch";
-        private const string mixerAccount = "mixer.com/xbox";
         private const string mixlrAccount = "mixlr.com/jeff-gerstmann";
         private const string chaturbateAccount = "chaturbate.com/asianqueen93";
         private const string youtubeAccount = "youtube.com/linustechtips";
