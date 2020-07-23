@@ -68,7 +68,6 @@ namespace StormTests.StormLib
         }
 
         [TestCase(twitchAccount, typeof(TwitchStream))]
-        [TestCase(mixerAccount, typeof(MixerStream))]
         [TestCase(mixlrAccount, typeof(MixlrStream))]
         [TestCase(chaturbateAccount, typeof(ChaturbateStream))]
         [TestCase(youtubeAccount, typeof(UnsupportedStream))]

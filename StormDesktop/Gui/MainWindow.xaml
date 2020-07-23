@@ -159,45 +159,6 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type stormLibStreams:MixerStream}">
-            <StackPanel Style="{StaticResource stackPanelStyle}">
-                <ContentPresenter ContentTemplate="{StaticResource StreamBaseTemplate}"
-                                  Style="{StaticResource contentPresenterStyle}" />
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" MaxWidth="130" />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid.Style>
-                        <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Status}" Value="Offline">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Style>
-
-                    <Label Grid.Column="0"
-                           HorizontalContentAlignment="Left"
-                           Style="{StaticResource messageLabelStyle}">
-                        <Label.Content>
-                            <TextBlock Text="{Binding Game}" TextTrimming="CharacterEllipsis" />
-                        </Label.Content>
-                    </Label>
-
-                    <Label Grid.Column="1"
-                           HorizontalContentAlignment="Right"
-                           Style="{StaticResource messageLabelStyle}">
-                        <Label.Content>
-                            <TextBlock Text="{Binding ViewersCount, StringFormat='{}{0:#,#} viewers'}" />
-                        </Label.Content>
-                    </Label>
-                </Grid>
-            </StackPanel>
-        </DataTemplate>
-
         <DataTemplate DataType="{x:Type stormLibStreams:MixlrStream}">
             <StackPanel Style="{StaticResource stackPanelStyle}">
                 <ContentPresenter ContentTemplate="{StaticResource StreamBaseTemplate}"
