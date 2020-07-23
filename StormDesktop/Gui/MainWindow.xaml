@@ -172,6 +172,13 @@
                                   Style="{StaticResource contentPresenterStyle}" />
             </StackPanel>
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type stormLibStreams:UnsupportedStream}">
+            <StackPanel Style="{StaticResource stackPanelStyle}">
+                <ContentPresenter ContentTemplate="{StaticResource StreamBaseTemplate}"
+                                  Style="{StaticResource contentPresenterStyle}" />
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
 
     <ItemsControl ItemsSource="{Binding Source={StaticResource sortedStreams}}">
