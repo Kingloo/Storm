@@ -12,7 +12,7 @@ namespace StormLib.Streams
             {
                 if (_icon is null)
                 {
-                    string path = Path.Combine(iconDirectory, "Mixlr.ico");
+                    string path = Path.Combine(IconDirectory, "Mixlr.ico");
 
                     _icon = new Uri(path);
                 }

@@ -12,7 +12,7 @@ namespace StormLib.Streams
             {
                 if (_icon is null)
                 {
-                    string path = Path.Combine(iconDirectory, "Unsupported.ico");
+                    string path = Path.Combine(IconDirectory, "Unsupported.ico");
 
                     _icon = new Uri(path);
                 }
@@ -27,6 +27,8 @@ namespace StormLib.Streams
 
         public UnsupportedStream(Uri uri)
             : base(uri)
-        { }
+        {
+            Status = Status.Unsupported;
+        }
     }
 }

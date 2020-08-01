@@ -17,6 +17,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Gui\BasicView.xaml" />
+    <None Remove="Gui\StreamViews\Chaturbate.xaml" />
+    <None Remove="Gui\StreamViews\Mixlr.xaml" />
+    <None Remove="Gui\StreamViews\StreamBase.xaml" />
+    <None Remove="Gui\StreamViews\Twitch.xaml" />
+    <None Remove="Gui\StreamViews\Unsupported.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\StormLib\StormLib.csproj" />
   </ItemGroup>
 

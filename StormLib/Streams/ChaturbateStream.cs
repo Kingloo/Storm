@@ -12,7 +12,7 @@ namespace StormLib.Streams
             {
                 if (_icon is null)
                 {
-                    string path = Path.Combine(iconDirectory, "Chaturbate.ico");
+                    string path = Path.Combine(IconDirectory, "Chaturbate.ico");
 
                     _icon = new Uri(path);
                 }

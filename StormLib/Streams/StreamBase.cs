@@ -40,7 +40,7 @@ namespace StormLib.Streams
             set => SetProperty(ref _viewersCount, value, nameof(ViewersCount));
         }
 
-        protected static string iconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Icons");
+        protected static string IconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Icons");
 
         public abstract Uri Icon { get; }
         public abstract bool HasStreamlinkSupport { get; }

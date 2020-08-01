@@ -16,17 +16,16 @@ namespace StormLib.Services
 {
     public class TwitchService : IService, IDisposable
     {
-        //417752,    // "Talk Shows & Podcasts"
-        //509658,    // "Just Chatting"
-        //509670,    // "Science & Technology"
-
-        private const int maxStreamsPerUpdate = 35;
+        private const int maxStreamsPerUpdate = 35; // a Twitch constant
 
         private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
         {
             26936,     // "Music & Performing Arts"
             509660,    // "Art"
             509481     // "Twitch Sings"
+            //417752,    // "Talk Shows & Podcasts"
+            //509658,    // "Just Chatting"
+            //509670,    // "Science & Technology"
         };
 
         private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
@@ -38,7 +37,6 @@ namespace StormLib.Services
             { "Accept-Encoding", "gzip, deflate, br" },
             { "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
             { "Origin", "https://www.twitch.tv" },
-            //{ "Connection", "keep-alive" },
             { "Upgrade-Insecure-Requests", "1" },
             { "Pragma", "no-cache" },
             { "Cache-Control", "no-cache" }
@@ -217,8 +215,6 @@ namespace StormLib.Services
                 {
                     stream.Game = string.Empty;
                     stream.Status = Status.Rerun;
-
-                    LogStatic.Message($"{stream.Name} is in reruns");
                 }
                 else
                 {
