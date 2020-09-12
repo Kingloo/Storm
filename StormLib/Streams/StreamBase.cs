@@ -50,7 +50,12 @@ namespace StormLib.Streams
         {
             Link = uri ?? throw new ArgumentNullException(nameof(uri));
 
-            _name = Link.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? Link.AbsoluteUri;
+            _name = GetName(Link);
+        }
+
+        protected virtual string GetName(Uri uri)
+        {
+            return uri.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
         }
 
         public bool Equals(IStream other) => (other is StreamBase sb) && EqualsInternal(sb);

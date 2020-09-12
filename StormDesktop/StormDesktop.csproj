@@ -23,6 +23,7 @@
     <None Remove="Gui\StreamViews\StreamBase.xaml" />
     <None Remove="Gui\StreamViews\Twitch.xaml" />
     <None Remove="Gui\StreamViews\Unsupported.xaml" />
+    <None Remove="Gui\StreamViews\YouTube.xaml" />
   </ItemGroup>
 
   <ItemGroup>
