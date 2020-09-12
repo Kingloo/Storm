@@ -69,7 +69,7 @@ namespace StormTests.StormLib
         [TestCase(twitchAccount, typeof(TwitchStream))]
         [TestCase(mixlrAccount, typeof(MixlrStream))]
         [TestCase(chaturbateAccount, typeof(ChaturbateStream))]
-        [TestCase(youtubeAccount, typeof(UnsupportedStream))]
+        [TestCase(youtubeAccount, typeof(YouTubeStream))]
         public void TryCreate_ValidAccountName_StreamShouldBeCorrectType(string account, Type type)
         {
             bool _ = StreamFactory.TryCreate(account, out IStream stream);
