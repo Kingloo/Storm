@@ -209,7 +209,7 @@ namespace StormDesktop.Gui
 
             await servicesManager.UpdateAsync(streams);
 
-            var liveAfterUpdate = Streams.Where(s => s.Status == Status.Public).ToList();
+            var liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
 
             var forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
 

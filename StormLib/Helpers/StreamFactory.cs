@@ -53,6 +53,10 @@ namespace StormLib.Helpers
                 {
                     stream = new MixlrStream(uri);
                 }
+                else if (host.EndsWith("youtube.com", sc))
+                {
+                    stream = new YouTubeStream(uri);
+                }
                 else
                 {
                     stream = new UnsupportedStream(uri);

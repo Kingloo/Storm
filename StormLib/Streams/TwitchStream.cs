@@ -12,7 +12,7 @@ namespace StormLib.Streams
             {
                 if (_icon is null)
                 {
-                    string path = Path.Combine(iconDirectory, "Twitch.ico");
+                    string path = Path.Combine(IconDirectory, "Twitch.ico");
 
                     _icon = new Uri(path);
                 }

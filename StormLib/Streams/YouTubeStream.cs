@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace StormLib.Streams
 {
-    public class ChaturbateStream : StreamBase
+    public class YouTubeStream : StreamBase
     {
         private Uri? _icon = null;
         public override Uri Icon
@@ -12,7 +13,7 @@ namespace StormLib.Streams
             {
                 if (_icon is null)
                 {
-                    string path = Path.Combine(IconDirectory, "Chaturbate.ico");
+                    string path = Path.Combine(IconDirectory, "YouTube.ico");
 
                     _icon = new Uri(path);
                 }
@@ -23,10 +24,15 @@ namespace StormLib.Streams
 
         public override bool HasStreamlinkSupport => true;
 
-        public override string ServiceName => "Chaturbate";
+        public override string ServiceName => "YouTube";
 
-        public ChaturbateStream(Uri uri)
+        public YouTubeStream(Uri uri)
             : base(uri)
         { }
+
+        protected override string GetName(Uri uri)
+        {
+            return uri.Segments.LastOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
+        }
     }
 }

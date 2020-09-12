@@ -40,7 +40,7 @@ namespace StormLib.Streams
             set => SetProperty(ref _viewersCount, value, nameof(ViewersCount));
         }
 
-        protected static string iconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Icons");
+        protected static string IconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Icons");
 
         public abstract Uri Icon { get; }
         public abstract bool HasStreamlinkSupport { get; }
@@ -50,7 +50,12 @@ namespace StormLib.Streams
         {
             Link = uri ?? throw new ArgumentNullException(nameof(uri));
 
-            _name = Link.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? Link.AbsoluteUri;
+            _name = GetName(Link);
+        }
+
+        protected virtual string GetName(Uri uri)
+        {
+            return uri.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
         }
 
         public bool Equals(IStream other) => (other is StreamBase sb) && EqualsInternal(sb);
