@@ -31,7 +31,7 @@ namespace StormLib.Services
 
             stream.DisplayName = SetDisplayName(text, stream.Name);
 
-            if (text.Contains("BADGE_STYLE_TYPE_LIVE_NOW"))
+            if (text.Contains("\"style\":\"LIVE\",\"icon\":{\"iconType\":\"LIVE\"}"))
             {
                 stream.Status = Status.Public;
             }
