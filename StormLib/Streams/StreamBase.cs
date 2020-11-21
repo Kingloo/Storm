@@ -50,10 +50,10 @@ namespace StormLib.Streams
         {
             Link = uri ?? throw new ArgumentNullException(nameof(uri));
 
-            _name = GetName(Link);
+            _name = DetermineName(Link);
         }
 
-        protected virtual string GetName(Uri uri)
+        protected virtual string DetermineName(Uri uri)
         {
             return uri.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
         }

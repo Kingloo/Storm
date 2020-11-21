@@ -89,7 +89,7 @@ namespace StormLib.Services
             }
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);

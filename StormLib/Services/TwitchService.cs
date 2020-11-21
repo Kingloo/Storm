@@ -53,6 +53,11 @@ namespace StormLib.Services
             this.download = download;
         }
 
+        public static Uri GetPlayerUriForStream(TwitchStream twitch)
+        {
+            return new Uri($"https://player.twitch.tv/?branding=false&channel={twitch.Name}&parent=twitch.tv&showInfo=false");
+        }
+
         public Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
             => UpdateAsync(new List<IStream> { stream }, preserveSynchronizationContext);
 

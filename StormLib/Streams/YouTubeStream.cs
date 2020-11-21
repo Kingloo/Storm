@@ -30,7 +30,7 @@ namespace StormLib.Streams
             : base(uri)
         { }
 
-        protected override string GetName(Uri uri)
+        protected override string DetermineName(Uri uri)
         {
             return uri.Segments.LastOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
         }

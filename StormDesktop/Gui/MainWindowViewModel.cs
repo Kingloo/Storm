@@ -13,6 +13,7 @@ using StormDesktop.Interfaces;
 using StormLib;
 using StormLib.Helpers;
 using StormLib.Interfaces;
+using StormLib.Services;
 using StormLib.Streams;
 
 namespace StormDesktop.Gui
@@ -102,6 +103,20 @@ namespace StormDesktop.Gui
                 }
 
                 return _openStreamsFileCommand;
+            }
+        }
+
+        private DelegateCommand<TwitchStream>? _openTwitchPlayerCommand;
+        public DelegateCommand<TwitchStream> OpenTwitchPlayerCommand
+        {
+            get
+            {
+                if (_openTwitchPlayerCommand is null)
+                {
+                    _openTwitchPlayerCommand = new DelegateCommand<TwitchStream>(OpenTwitchPlayer, (_) => true);
+                }
+
+                return _openTwitchPlayerCommand;
             }
         }
 
@@ -271,6 +286,16 @@ namespace StormDesktop.Gui
             if (!SystemLaunch.Path(filePath))
             {
                 logger.Message($"file could not be opened: {filePath}", Severity.Error);
+            }
+        }
+
+        private void OpenTwitchPlayer(TwitchStream stream)
+        {
+            Uri player = TwitchService.GetPlayerUriForStream(stream);
+
+            if (!SystemLaunch.Uri(player))
+            {
+                logger.Message($"{player.AbsoluteUri} could not be opened", Severity.Error);
             }
         }
 

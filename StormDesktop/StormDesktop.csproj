@@ -14,6 +14,7 @@
     <StartupObject>StormDesktop.Program</StartupObject>
     <Copyright>© Kingloo 2020</Copyright>
     <RepositoryUrl>https://github.com/Kingloo/Storm</RepositoryUrl>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

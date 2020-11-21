@@ -1,8 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:stormLibStreams="clr-namespace:StormLib.Streams;assembly=StormLib"
                     xmlns:gui="clr-namespace:StormDesktop.Gui"
-                    xmlns:converter="clr-namespace:StormDesktop.Converters">
+                    xmlns:converter="clr-namespace:StormDesktop.Converters"
+                    xmlns:stormLibStreams="clr-namespace:StormLib.Streams;assembly=StormLib">
 
     <converter:StatusConverter x:Key="statusConverter"
                                None="Gray"
