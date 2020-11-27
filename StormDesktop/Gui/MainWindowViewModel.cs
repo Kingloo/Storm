@@ -113,7 +113,7 @@ namespace StormDesktop.Gui
             {
                 if (_openTwitchPlayerCommand is null)
                 {
-                    _openTwitchPlayerCommand = new DelegateCommand<TwitchStream>(OpenTwitchPlayer, (_) => true);
+                    _openTwitchPlayerCommand = new DelegateCommand<TwitchStream>(OpenTwitchPlayer, stream => stream.Status == Status.Public);
                 }
 
                 return _openTwitchPlayerCommand;
