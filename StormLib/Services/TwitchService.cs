@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,12 +22,14 @@ namespace StormLib.Services
         private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
         {
             26936,     // "Music & Performing Arts"
+            509481,    // "Twitch Sings"
+            509577,    // "Dungeons & Dragons"
             509660,    // "Art"
-            509481     // "Twitch Sings"
-            //417752,    // "Talk Shows & Podcasts"
-            //509658,    // "Just Chatting"
-            //509670,    // "Science & Technology"
+            510218     // "Among Us"
         };
+        //417752,    // "Talk Shows & Podcasts"
+        //509658,    // "Just Chatting"
+        //509670,    // "Science & Technology"
 
         private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
         {
