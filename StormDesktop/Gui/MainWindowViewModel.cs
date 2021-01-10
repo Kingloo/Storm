@@ -145,7 +145,7 @@ namespace StormDesktop.Gui
 
         public async Task LoadStreamsAsync()
         {
-            string[] lines = await FileSystem.ReadAllLinesAsync(filePath);
+            string[] lines = await FileSystem.LoadLinesFromFileAsync(filePath);
 
             if (lines.Length == 0) { return; }
 
