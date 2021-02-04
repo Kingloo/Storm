@@ -54,8 +54,15 @@ namespace StormDesktop.Common
 
                     while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
-                        bool shouldAddLine = !String.IsNullOrWhiteSpace(comment)
-                            && !line.StartsWith(comment, StringComparison.OrdinalIgnoreCase);
+                        bool shouldAddLine = true;
+
+                        if (!String.IsNullOrEmpty(comment))
+                        {
+                            if (line.StartsWith(comment))
+                            {
+                                shouldAddLine = false;
+                            }
+                        }
 
                         if (shouldAddLine)
                         {
