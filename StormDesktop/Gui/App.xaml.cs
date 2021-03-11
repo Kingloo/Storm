@@ -43,6 +43,8 @@ namespace StormDesktop.Gui
                 throw new ArgumentNullException(nameof(filePath), "URLs file path was null or whitespace");
             }
 
+            InitializeComponent();
+
             this.filePath = filePath;
         }
 
@@ -80,7 +82,7 @@ namespace StormDesktop.Gui
         {
             if (e.Exception is Exception ex)
             {
-                LogStatic.Exception(ex);
+                LogStatic.Exception(ex, includeStackTrace: true);
             }
             else
             {
