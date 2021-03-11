@@ -15,6 +15,7 @@
     <Copyright>© Kingloo 2021</Copyright>
     <RepositoryUrl>https://github.com/Kingloo/Storm</RepositoryUrl>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
