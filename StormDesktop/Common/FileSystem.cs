@@ -25,7 +25,9 @@ namespace StormDesktop.Common
         {
             if (!File.Exists(path))
             {
-                using (File.Create(path)) { }
+				EnsureDirectoryExists(new FileInfo(path).DirectoryName);
+
+				using (File.Create(path)) { }
 
                 if (!File.Exists(path))
                 {
@@ -34,10 +36,12 @@ namespace StormDesktop.Common
             }
         }
 
-        public static ValueTask<string[]> LoadLinesFromFileAsync(string path)
+        [System.Diagnostics.DebuggerStepThrough]
+		public static ValueTask<string[]> LoadLinesFromFileAsync(string path)
             => LoadLinesFromFileAsync(path, string.Empty, Encoding.UTF8);
 
-        public static ValueTask<string[]> LoadLinesFromFileAsync(string path, string comment)
+		[System.Diagnostics.DebuggerStepThrough]
+		public static ValueTask<string[]> LoadLinesFromFileAsync(string path, string comment)
             => LoadLinesFromFileAsync(path, comment, Encoding.UTF8);
         
         public static async ValueTask<string[]> LoadLinesFromFileAsync(string path, string comment, Encoding encoding)
@@ -56,9 +60,9 @@ namespace StormDesktop.Common
                     {
                         bool shouldAddLine = true;
 
-                        if (!String.IsNullOrEmpty(comment))
+                        if (!String.IsNullOrWhiteSpace(comment))
                         {
-                            if (line.StartsWith(comment))
+                            if (line.StartsWith(comment, StringComparison.OrdinalIgnoreCase))
                             {
                                 shouldAddLine = false;
                             }
@@ -82,12 +86,13 @@ namespace StormDesktop.Common
             return lines.ToArray();
         }
 
-        public static ValueTask<bool> WriteLinesToFileAsync(string[] lines, string path)
-            => WriteLinesToFileAsync(lines, path, Encoding.UTF8);
+		[System.Diagnostics.DebuggerStepThrough]
+		public static ValueTask<bool> WriteLinesToFileAsync(string[] lines, string path, FileMode mode)
+            => WriteLinesToFileAsync(lines, path, mode, Encoding.UTF8);
 
-        public static async ValueTask<bool> WriteLinesToFileAsync(string[] lines, string path, Encoding encoding)
+        public static async ValueTask<bool> WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding)
         {
-            FileStream fsAsync = new FileStream(path, FileMode.Truncate, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+            FileStream fsAsync = new FileStream(path, mode, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
             
             try
             {

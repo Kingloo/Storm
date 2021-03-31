@@ -8,30 +8,30 @@ namespace StormDesktop.Common
     {
         public static bool Path(string path)
         {
-            return File.Exists(path) ? Launch(path) : false;
-        }
-
-        public static bool Process(ProcessStartInfo pInfo)
-        {
-            return Launch(pInfo);
+            return File.Exists(path) && Launch(path);
         }
 
         public static bool Uri(Uri uri)
         {
-            return uri.IsAbsoluteUri ? Launch(uri.AbsoluteUri) : false;
+            return uri.IsAbsoluteUri && Launch(uri.AbsoluteUri);
         }
 
-        private static bool Launch(string launchString)
+        public static bool Launch(ProcessStartInfo pInfo)
+        {
+            return LaunchInternal(pInfo);
+        }
+
+        public static bool Launch(string launchString)
         {
             ProcessStartInfo pInfo = new ProcessStartInfo(launchString)
             {
                 UseShellExecute = true
             };
 
-            return Launch(pInfo);
+            return LaunchInternal(pInfo);
         }
 
-        private static bool Launch(ProcessStartInfo pInfo)
+        private static bool LaunchInternal(ProcessStartInfo pInfo)
         {
             using Process p = new Process
             {

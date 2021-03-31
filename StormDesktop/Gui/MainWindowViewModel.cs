@@ -136,6 +136,16 @@ namespace StormDesktop.Gui
 
         private bool CanExecuteAsync(object _) => !IsActive;
 
+        public void RaiseCommandExecuteChanged()
+        {
+            UpdateCommand.RaiseCanExecuteChanged();
+            LoadStreamsCommand.RaiseCanExecuteChanged();
+            OpenPageCommand.RaiseCanExecuteChanged();
+            OpenStreamCommand.RaiseCanExecuteChanged();
+            OpenStreamsFileCommand.RaiseCanExecuteChanged();
+            OpenTwitchPlayerCommand.RaiseCanExecuteChanged();
+        }
+
         public MainWindowViewModel(ILog logger, IServicesManager servicesManager, string filePath)
         {
             this.logger = logger;
@@ -205,7 +215,7 @@ namespace StormDesktop.Gui
 
         public void StopUpdateTimer()
         {
-            if (!(updateTimer is null))
+            if (updateTimer is not null)
             {
                 updateTimer.Stop();
                 updateTimer.Tick -= UpdateTimer_Tick;
@@ -220,20 +230,22 @@ namespace StormDesktop.Gui
         {
             IsActive = true;
 
-            var notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
+            IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
 
             await servicesManager.UpdateAsync(streams);
 
-            var liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
+            IEnumerable<IStream> liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
 
-            var forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
+            IList<IStream> forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
 
             SendNotifications(forWhichToNotify);
 
             IsActive = false;
+
+            RaiseCommandExecuteChanged();
         }
 
-        private void SendNotifications(List<IStream> forWhichToNotify)
+        private void SendNotifications(IEnumerable<IStream> forWhichToNotify)
         {
             foreach (IStream toNotify in forWhichToNotify)
             {
@@ -268,7 +280,7 @@ namespace StormDesktop.Gui
                     UseShellExecute = true
                 };
 
-                if (!SystemLaunch.Process(pInfo))
+                if (!SystemLaunch.Launch(pInfo))
                 {
                     string message = $"launching streamlink for {stream.Name} failed!";
 
