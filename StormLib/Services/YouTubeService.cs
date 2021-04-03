@@ -22,7 +22,8 @@ namespace StormLib.Services
 
         public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
         {
-            (HttpStatusCode status, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
+            //(HttpStatusCode status, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
+            (HttpStatusCode status, string text) = await download.StringAsync(new Uri($"{stream.Link.AbsoluteUri}?ucbcb=1")).ConfigureAwait(preserveSynchronizationContext);
 
             if (status != HttpStatusCode.OK)
             {
