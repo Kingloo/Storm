@@ -1,6 +1,7 @@
 ﻿<Window x:Class="StormDesktop.Gui.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         Name="mainWindow"
         SourceInitialized="mainWindow_SourceInitialized"
@@ -51,6 +52,9 @@
                     <Setter.Value>
                         <ControlTemplate>
                             <ScrollViewer CanContentScroll="True">
+                                <ScrollViewer.Resources>
+                                    <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">5</sys:Double>
+                                </ScrollViewer.Resources>
                                 <ItemsPresenter />
                             </ScrollViewer>
                         </ControlTemplate>
