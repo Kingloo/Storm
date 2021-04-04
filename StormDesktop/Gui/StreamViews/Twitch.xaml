@@ -11,7 +11,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" MaxWidth="130" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="30" />
                 </Grid.ColumnDefinitions>
 
