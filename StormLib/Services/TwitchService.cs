@@ -15,287 +15,287 @@ using StormLib.Streams;
 
 namespace StormLib.Services
 {
-    public class TwitchService : IService, IDisposable
-    {
-        private const int maxStreamsPerUpdate = 35; // a Twitch constant
+	public class TwitchService : IService, IDisposable
+	{
+		private const int maxStreamsPerUpdate = 35; // a Twitch constant
 
-        private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
-        {
-            26936,     // "Music & Performing Arts"
+		private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
+		{
+			26936,     // "Music & Performing Arts"
             509481,    // "Twitch Sings"
             509577,    // "Dungeons & Dragons"
             509660,    // "Art"
             510218     // "Among Us"
         };
-        //417752,    // "Talk Shows & Podcasts"
-        //509658,    // "Just Chatting"
-        //509670,    // "Science & Technology"
+		//417752,    // "Talk Shows & Podcasts"
+		//509658,    // "Just Chatting"
+		//509670,    // "Science & Technology"
 
-        private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
-        {
-            { "Host", "gql.twitch.tv" },
-            { "User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/75.0" },
-            { "Accept", "*/*" },
-            { "Accept-Language", "en-GB" },
-            { "Accept-Encoding", "gzip, deflate, br" },
-            { "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
+		private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
+		{
+			{ "Host", "gql.twitch.tv" },
+			{ "User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/75.0" },
+			{ "Accept", "*/*" },
+			{ "Accept-Language", "en-GB" },
+			{ "Accept-Encoding", "gzip, deflate, br" },
+			{ "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
             { "Origin", "https://www.twitch.tv" },
-            { "Upgrade-Insecure-Requests", "1" },
-            { "Pragma", "no-cache" },
-            { "Cache-Control", "no-cache" }
-        };
+			{ "Upgrade-Insecure-Requests", "1" },
+			{ "Pragma", "no-cache" },
+			{ "Cache-Control", "no-cache" }
+		};
 
-        private static readonly Uri graphQlEndpoint = new Uri("https://gql.twitch.tv/gql");
+		private static readonly Uri graphQlEndpoint = new Uri("https://gql.twitch.tv/gql");
 
-        private readonly IDownload download;
+		private readonly IDownload download;
 
-        public Type HandlesStreamType { get; } = typeof(TwitchStream);
-        
-        public TwitchService(IDownload download)
-        {
-            this.download = download;
-        }
+		public Type HandlesStreamType { get; } = typeof(TwitchStream);
 
-        public static Uri GetPlayerUriForStream(TwitchStream twitch)
-        {
-            return new Uri($"https://player.twitch.tv/?branding=false&channel={twitch.Name}&parent=twitch.tv&showInfo=false");
-        }
+		public TwitchService(IDownload download)
+		{
+			this.download = download;
+		}
 
-        public Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
-            => UpdateAsync(new List<IStream> { stream }, preserveSynchronizationContext);
+		public static Uri GetPlayerUriForStream(TwitchStream twitch)
+		{
+			return new Uri($"https://player.twitch.tv/?branding=false&channel={twitch.Name}&parent=twitch.tv&showInfo=false");
+		}
 
-        public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
-        {
-            if (!streams.Any()) { return Result.NothingToDo; }
+		public Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
+			=> UpdateAsync(new List<IStream> { stream }, preserveSynchronizationContext);
 
-            List<IStream> streamsList = new List<IStream>(streams);
-            Collection<Result> results = new Collection<Result>();
+		public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
+		{
+			if (!streams.Any()) { return Result.NothingToDo; }
 
-            while (true)
-            {
-                List<IStream> updateWave = streamsList.Take(maxStreamsPerUpdate).ToList();
+			List<IStream> streamsList = new List<IStream>(streams);
+			Collection<Result> results = new Collection<Result>();
 
-                if (updateWave.Any())
-                {
-                    Result result = await UpdateAsyncInternal(updateWave, preserveSynchronizationContext).ConfigureAwait(preserveSynchronizationContext);
+			while (true)
+			{
+				List<IStream> updateWave = streamsList.Take(maxStreamsPerUpdate).ToList();
 
-                    results.Add(result);
+				if (updateWave.Any())
+				{
+					Result result = await UpdateAsyncInternal(updateWave, preserveSynchronizationContext).ConfigureAwait(preserveSynchronizationContext);
 
-                    foreach (IStream toRemove in updateWave)
-                    {
-                        streamsList.Remove(toRemove);
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
+					results.Add(result);
 
-            return results.OrderBy(r => r).FirstOrDefault();
-        }
+					foreach (IStream toRemove in updateWave)
+					{
+						streamsList.Remove(toRemove);
+					}
+				}
+				else
+				{
+					break;
+				}
+			}
 
-        private async Task<Result> UpdateAsyncInternal(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
-        {
-            (HttpStatusCode status, string text) = await RequestGraphQlDataAsync(streams).ConfigureAwait(preserveSynchronizationContext);
+			return results.OrderBy(r => r).FirstOrDefault();
+		}
 
-            if (status != HttpStatusCode.OK)
-            {
-                if (status != HttpStatusCode.Unused)
-                {
-                    LogStatic.Message($"updating Twitch streams failed: {status}");
-                }
-                
-                return Result.WebFailure;
-            }
+		private async Task<Result> UpdateAsyncInternal(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
+		{
+			(HttpStatusCode status, string text) = await RequestGraphQlDataAsync(streams).ConfigureAwait(preserveSynchronizationContext);
 
-            if (!JsonHelpers.TryParse("{\"dummy\":" + text + "}", out JObject? json))
-            {
-                LogStatic.Message("TwitchService: parsing JSON failed");
+			if (status != HttpStatusCode.OK)
+			{
+				if (status != HttpStatusCode.Unused)
+				{
+					LogStatic.Message($"updating Twitch streams failed: {status}");
+				}
 
-                return Result.ParsingJsonFailed;
-            }
+				return Result.WebFailure;
+			}
+
+			if (!JsonHelpers.TryParse("{\"dummy\":" + text + "}", out JObject? json))
+			{
+				LogStatic.Message("TwitchService: parsing JSON failed");
+
+				return Result.ParsingJsonFailed;
+			}
 
 #nullable disable
-            try
-            {
-                ParseJson(streams, (JArray)json["dummy"]);
+			try
+			{
+				ParseJson(streams, (JArray)json["dummy"]);
 
-                return Result.Success;
-            }
-            catch (NullReferenceException)
-            {
-                return Result.Failure;
-            }
+				return Result.Success;
+			}
+			catch (NullReferenceException)
+			{
+				return Result.Failure;
+			}
 #nullable enable
-        }
+		}
 
-        private Task<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams)
-        {
-            string requestBody = BuildRequestBody(streams);
+		private Task<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams)
+		{
+			string requestBody = BuildRequestBody(streams);
 
-            void configureRequest(HttpRequestMessage request)
-            {
-                request.Method = HttpMethod.Post;
-                request.Content = new StringContent(requestBody, Encoding.UTF8, "text/plain");
+			void configureRequest(HttpRequestMessage request)
+			{
+				request.Method = HttpMethod.Post;
+				request.Content = new StringContent(requestBody, Encoding.UTF8, "text/plain");
 
-                foreach (KeyValuePair<string, string> kvp in graphQlRequestHeaders)
-                {
-                    request.Headers.Add(kvp.Key, kvp.Value);
-                }
-            }
+				foreach (KeyValuePair<string, string> kvp in graphQlRequestHeaders)
+				{
+					request.Headers.Add(kvp.Key, kvp.Value);
+				}
+			}
 
-            return download.StringAsync(graphQlEndpoint, configureRequest);
-        }
+			return download.StringAsync(graphQlEndpoint, configureRequest);
+		}
 
-        private static string BuildRequestBody(IEnumerable<IStream> streams)
-        {
-            StringBuilder sb = new StringBuilder();
+		private static string BuildRequestBody(IEnumerable<IStream> streams)
+		{
+			StringBuilder sb = new StringBuilder();
 
-            sb.Append("[");
+			sb.Append("[");
 
-            foreach (IStream stream in streams)
-            {
-                string beginning = "{\"extensions\":{\"persistedQuery\":{\"sha256Hash\":\"ce18f2832d12cabcfee42f0c72001dfa1a5ed4a84931ead7b526245994810284\",\"version\":1}},\"operationName\":\"ChannelRoot_Channel\",\"variables\":{\"currentChannelLogin\":\"";
-                string ending = "\",\"includeChanlets\":false}},";
+			foreach (IStream stream in streams)
+			{
+				string beginning = "{\"extensions\":{\"persistedQuery\":{\"sha256Hash\":\"ce18f2832d12cabcfee42f0c72001dfa1a5ed4a84931ead7b526245994810284\",\"version\":1}},\"operationName\":\"ChannelRoot_Channel\",\"variables\":{\"currentChannelLogin\":\"";
+				string ending = "\",\"includeChanlets\":false}},";
 
-                sb.Append(beginning);
-                sb.Append(stream.Name);
-                sb.Append(ending);
-            }
+				sb.Append(beginning);
+				sb.Append(stream.Name);
+				sb.Append(ending);
+			}
 
-            // to remove the unwanted comma after the last entry
-            // C# 8 ranges might work here
-            sb.Remove(sb.Length - 1, 1);
+			// to remove the unwanted comma after the last entry
+			// C# 8 ranges might work here
+			sb.Remove(sb.Length - 1, 1);
 
-            sb.Append("]");
+			sb.Append("]");
 
-            return sb.ToString();
-        }
+			return sb.ToString();
+		}
 
-        private static void ParseJson(IEnumerable<IStream> streams, JArray results)
-        {
+		private static void ParseJson(IEnumerable<IStream> streams, JArray results)
+		{
 #nullable disable
-            foreach (TwitchStream stream in streams)
-            {
-                if (!TryGetUserDataForName(results, stream.Name, out JToken user))
-                {
-                    stream.Status = Status.Banned;
+			foreach (TwitchStream stream in streams)
+			{
+				if (!TryGetUserDataForName(results, stream.Name, out JToken user))
+				{
+					stream.Status = Status.Banned;
 
-                    continue;
-                }
+					continue;
+				}
 
-                SetDisplayName(stream, user);
+				SetDisplayName(stream, user);
 
-                bool isLive = (user["stream"].HasValues) && ((string)user["stream"]["type"] == "live");
-                bool isRerun = (user["stream"].HasValues) && ((string)user["stream"]["type"] == "rerun");
+				bool isLive = (user["stream"].HasValues) && ((string)user["stream"]["type"] == "live");
+				bool isRerun = (user["stream"].HasValues) && ((string)user["stream"]["type"] == "rerun");
 
-                if (isLive)
-                {
-                    stream.ViewersCount = (int)user["stream"]["viewersCount"];
+				if (isLive)
+				{
+					stream.ViewersCount = (int)user["stream"]["viewersCount"];
 
-                    bool isPlayingGame = user["stream"]["game"].HasValues;
+					bool isPlayingGame = user["stream"]["game"].HasValues;
 
-                    if (isPlayingGame)
-                    {
-                        int gameId = (int)user["stream"]["game"]["id"];
+					if (isPlayingGame)
+					{
+						int gameId = (int)user["stream"]["game"]["id"];
 
-                        bool isUnwantedId = unwantedIds.Contains(gameId);
+						bool isUnwantedId = unwantedIds.Contains(gameId);
 
-                        if (isUnwantedId)
-                        {
-                            stream.Game = string.Empty;
-                            stream.Status = Status.Offline;
-                        }
-                        else
-                        {
-                            stream.Game = (string)user["stream"]["game"]["displayName"];
-                            stream.Status = Status.Public;
-                        }
-                    }
-                    else
-                    {
-                        stream.Game = string.Empty;
-                        stream.Status = Status.Public;
-                    }
-                }
-                else if (isRerun)
-                {
-                    stream.Game = string.Empty;
-                    stream.Status = Status.Rerun;
-                }
-                else
-                {
-                    stream.ViewersCount = -1;
-                    stream.Game = string.Empty;
-                    stream.Status = Status.Offline;
-                }
-            }
+						if (isUnwantedId)
+						{
+							stream.Game = string.Empty;
+							stream.Status = Status.Offline;
+						}
+						else
+						{
+							stream.Game = (string)user["stream"]["game"]["displayName"];
+							stream.Status = Status.Public;
+						}
+					}
+					else
+					{
+						stream.Game = string.Empty;
+						stream.Status = Status.Public;
+					}
+				}
+				else if (isRerun)
+				{
+					stream.Game = string.Empty;
+					stream.Status = Status.Rerun;
+				}
+				else
+				{
+					stream.ViewersCount = -1;
+					stream.Game = string.Empty;
+					stream.Status = Status.Offline;
+				}
+			}
 #nullable enable
-        }
+		}
 
-        private static bool TryGetUserDataForName(JToken results, string name, out JToken? user)
-        {
+		private static bool TryGetUserDataForName(JToken results, string name, out JToken? user)
+		{
 #nullable disable
-            var tmp = results.Where(r =>
-            {
-                if (r.SelectToken("data.user.login", false) is JToken loginToken)
-                {
-                    return name == (string)loginToken;
-                }
-                else
-                {
-                    return false;
-                }
-            }).SingleOrDefault();
+			var tmp = results.Where(r =>
+			{
+				if (r.SelectToken("data.user.login", false) is JToken loginToken)
+				{
+					return name == (string)loginToken;
+				}
+				else
+				{
+					return false;
+				}
+			}).SingleOrDefault();
 
-            if (tmp != null)
-            {
-                user = tmp["data"]["user"];
+			if (tmp != null)
+			{
+				user = tmp["data"]["user"];
 
-                return true;
-            }
-            else
-            {
-                user = null;
+				return true;
+			}
+			else
+			{
+				user = null;
 
-                return false;
-            }
+				return false;
+			}
 #nullable enable
-        }
+		}
 
-        private static void SetDisplayName(TwitchStream stream, JToken user)
-        {
+		private static void SetDisplayName(TwitchStream stream, JToken user)
+		{
 #nullable disable
-            string displayName = (string)user["displayName"];
+			string displayName = (string)user["displayName"];
 
-            if (!String.IsNullOrWhiteSpace(displayName)
-                && stream.DisplayName != displayName)
-            {
-                stream.DisplayName = displayName;
-            }
+			if (!String.IsNullOrWhiteSpace(displayName)
+				&& stream.DisplayName != displayName)
+			{
+				stream.DisplayName = displayName;
+			}
 #nullable enable
-        }
+		}
 
-        private bool disposedValue = false;
+		private bool disposedValue = false;
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    download.Dispose();
-                }
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					download.Dispose();
+				}
 
-                disposedValue = true;
-            }
-        }
+				disposedValue = true;
+			}
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-    }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+	}
 }

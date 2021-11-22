@@ -7,24 +7,24 @@ using StormLib.Interfaces;
 
 namespace StormDesktop.Interfaces
 {
-    public interface IMainWindowViewModel
-    {
-        IReadOnlyCollection<IStream> Streams { get; }
+	public interface IMainWindowViewModel
+	{
+		IReadOnlyCollection<IStream> Streams { get; }
 
-        void StartUpdateTimer(TimeSpan updateFrequency);
-        void StopUpdateTimer();
+		void StartUpdateTimer(TimeSpan updateFrequency);
+		void StopUpdateTimer();
 
-        Task UpdateAsync();
-        Task UpdateAsync(IEnumerable<IStream> streams);
+		Task UpdateAsync();
+		Task UpdateAsync(IEnumerable<IStream> streams);
 
-        Task LoadStreamsAsync();
+		Task LoadStreamsAsync();
 
-        DelegateCommandAsync UpdateCommand { get; }
-        DelegateCommandAsync LoadStreamsCommand { get; }
-        DelegateCommand<IStream> OpenPageCommand { get; }
-        DelegateCommand<IStream> OpenStreamCommand { get; }
-        DelegateCommand<Window> ExitCommand { get; }
+		DelegateCommandAsync UpdateCommand { get; }
+		DelegateCommandAsync LoadStreamsCommand { get; }
+		DelegateCommand<IStream> OpenPageCommand { get; }
+		DelegateCommand<IStream> OpenStreamCommand { get; }
+		DelegateCommand<Window> ExitCommand { get; }
 
-        void CleanUp();
-    }
+		void CleanUp();
+	}
 }

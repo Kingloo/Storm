@@ -2,8 +2,8 @@
 
 namespace StormDesktop.Interfaces
 {
-    public interface ISettings
-    {
-        Task LoadSettingsAsync();
-    }
+	public interface ISettings
+	{
+		Task LoadSettingsAsync();
+	}
 }

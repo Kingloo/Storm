@@ -16,80 +16,80 @@ using StormLib.Interfaces;
 
 namespace StormDesktop.Gui
 {
-    public partial class App : Application
-    {
-        private static readonly string defaultLogFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        private static readonly string defaultLogFileName = "logfile.txt";
-        private static readonly string defaultLogFilePath = Path.Combine(defaultLogFileDirectory, defaultLogFileName);
+	public partial class App : Application
+	{
+		private static readonly string defaultLogFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+		private static readonly string defaultLogFileName = "logfile.txt";
+		private static readonly string defaultLogFilePath = Path.Combine(defaultLogFileDirectory, defaultLogFileName);
 
-        private static readonly string defaultStreamsFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+		private static readonly string defaultStreamsFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #if DEBUG
-        private static readonly string defaultStreamsFileName = "StormUrls-test.txt";
+		private static readonly string defaultStreamsFileName = "StormUrls-test.txt";
 #else
         private static readonly string defaultStreamsFileName = "StormUrls.txt";
 #endif
-        private static readonly string defaultStreamsFilePath = Path.Combine(defaultStreamsFileDirectory, defaultStreamsFileName);
+		private static readonly string defaultStreamsFilePath = Path.Combine(defaultStreamsFileDirectory, defaultStreamsFileName);
 
-        private readonly string filePath = string.Empty;
+		private readonly string filePath = string.Empty;
 
-        public App()
-            : this(defaultStreamsFilePath)
-        { }
+		public App()
+			: this(defaultStreamsFilePath)
+		{ }
 
-        public App(string filePath)
-        {
-            if (String.IsNullOrWhiteSpace(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath), "URLs file path was null or whitespace");
-            }
+		public App(string filePath)
+		{
+			if (String.IsNullOrWhiteSpace(filePath))
+			{
+				throw new ArgumentNullException(nameof(filePath), "URLs file path was null or whitespace");
+			}
 
-            InitializeComponent();
+			InitializeComponent();
 
-            this.filePath = filePath;
-        }
+			this.filePath = filePath;
+		}
 
-        private void Application_Startup(object sender, StartupEventArgs e)
-        {
-            ILog logger = new Log(defaultLogFilePath, Severity.Warning);
+		private void Application_Startup(object sender, StartupEventArgs e)
+		{
+			ILog logger = new Log(defaultLogFilePath, Severity.Warning);
 
-            SocketsHttpHandler handler = new SocketsHttpHandler
-            {
-                AllowAutoRedirect = true,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-                MaxAutomaticRedirections = 3,
-                MaxConnectionsPerServer = 10,
-                SslOptions = new SslClientAuthenticationOptions
-                {
-                    AllowRenegotiation = false,
-                    ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
-                    EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
-                    EncryptionPolicy = EncryptionPolicy.RequireEncryption
-                }
-            };
+			SocketsHttpHandler handler = new SocketsHttpHandler
+			{
+				AllowAutoRedirect = true,
+				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+				MaxAutomaticRedirections = 3,
+				MaxConnectionsPerServer = 10,
+				SslOptions = new SslClientAuthenticationOptions
+				{
+					AllowRenegotiation = false,
+					ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
+					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+					EncryptionPolicy = EncryptionPolicy.RequireEncryption
+				}
+			};
 
-            IDownload downloader = new Download(handler);
+			IDownload downloader = new Download(handler);
 
-            IServicesManager servicesManager = new ServicesManager(downloader);
-            servicesManager.AddDefaultServices();
+			IServicesManager servicesManager = new ServicesManager(downloader);
+			servicesManager.AddDefaultServices();
 
-            IMainWindowViewModel viewModel = new MainWindowViewModel(logger, servicesManager, filePath);
+			IMainWindowViewModel viewModel = new MainWindowViewModel(logger, servicesManager, filePath);
 
-            MainWindow = new MainWindow(viewModel);
-            MainWindow.Show();
-        }
+			MainWindow = new MainWindow(viewModel);
+			MainWindow.Show();
+		}
 
-        private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            if (e.Exception is Exception ex)
-            {
-                LogStatic.Exception(ex, includeStackTrace: true);
-            }
-            else
-            {
-                string message = string.Format(CultureInfo.CurrentCulture, "an empty {0} was thrown", nameof(DispatcherUnhandledException));
+		private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+		{
+			if (e.Exception is Exception ex)
+			{
+				LogStatic.Exception(ex, includeStackTrace: true);
+			}
+			else
+			{
+				string message = string.Format(CultureInfo.CurrentCulture, "an empty {0} was thrown", nameof(DispatcherUnhandledException));
 
-                LogStatic.Message(message);
-            }
-        }
-    }
+				LogStatic.Message(message);
+			}
+		}
+	}
 }

@@ -15,111 +15,111 @@ using StormLib.Streams;
 
 namespace StormLib.Services
 {
-    public class ChaturbateService : IService, IDisposable
-    {
-        private const string bannedMarker = "has been banned";
-        private const string roomStatus = "room_status";
-        private const string publicStatus = "public";
-        private const string offlineStatus = "offline";
-        private const string awayStatus = "away";
-        private const string privateStatus = "private";
+	public class ChaturbateService : IService, IDisposable
+	{
+		private const string bannedMarker = "has been banned";
+		private const string roomStatus = "room_status";
+		private const string publicStatus = "public";
+		private const string offlineStatus = "offline";
+		private const string awayStatus = "away";
+		private const string privateStatus = "private";
 
-        private readonly IDownload download;
+		private readonly IDownload download;
 
-        public Type HandlesStreamType { get; } = typeof(ChaturbateStream);
-        
-        public ChaturbateService(IDownload download)
-        {
-            this.download = download;
-        }
+		public Type HandlesStreamType { get; } = typeof(ChaturbateStream);
 
-        public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
-        {
-            (HttpStatusCode status, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
+		public ChaturbateService(IDownload download)
+		{
+			this.download = download;
+		}
 
-            if (status != HttpStatusCode.OK)
-            {
-                return Result.WebFailure;
-            }
+		public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
+		{
+			(HttpStatusCode status, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
 
-            if (text.Contains(bannedMarker))
-            {
-                stream.Status = Status.Banned;
-                return Result.Success;
-            }
+			if (status != HttpStatusCode.OK)
+			{
+				return Result.WebFailure;
+			}
 
-            int index = text.IndexOf(roomStatus, StringComparison.OrdinalIgnoreCase);
+			if (text.Contains(bannedMarker))
+			{
+				stream.Status = Status.Banned;
+				return Result.Success;
+			}
 
-            if (index < 0)
-            {
-                return Result.Failure;
-            }
+			int index = text.IndexOf(roomStatus, StringComparison.OrdinalIgnoreCase);
 
-            if (text.Length < index + 100)
-            {
-                return Result.Failure;
-            }
+			if (index < 0)
+			{
+				return Result.Failure;
+			}
 
-            string searchRadius = text.Substring(index, 100);
+			if (text.Length < index + 100)
+			{
+				return Result.Failure;
+			}
 
-            if (searchRadius.Contains(publicStatus))
-            {
-                stream.Status = Status.Public;
-            }
-            else if (searchRadius.Contains(offlineStatus)
-                || searchRadius.Contains(awayStatus))
-            {
-                stream.Status = Status.Offline;
-            }
-            else if (searchRadius.Contains(privateStatus))
-            {
-                stream.Status = Status.Private;
-            }
-            else
-            {
-                stream.Status = Status.Unknown;
-            }
+			string searchRadius = text.Substring(index, 100);
 
-            return Result.Success;
-        }
+			if (searchRadius.Contains(publicStatus))
+			{
+				stream.Status = Status.Public;
+			}
+			else if (searchRadius.Contains(offlineStatus)
+				|| searchRadius.Contains(awayStatus))
+			{
+				stream.Status = Status.Offline;
+			}
+			else if (searchRadius.Contains(privateStatus))
+			{
+				stream.Status = Status.Private;
+			}
+			else
+			{
+				stream.Status = Status.Unknown;
+			}
 
-        public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
-        {
-            if (!streams.Any()) { return Result.NothingToDo; }
+			return Result.Success;
+		}
 
-            List<Task<Result>> tasks = new List<Task<Result>>();
+		public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
+		{
+			if (!streams.Any()) { return Result.NothingToDo; }
 
-            foreach (IStream stream in streams)
-            {
-                Task<Result> task = Task.Run(() => UpdateAsync(stream, preserveSynchronizationContext));
+			List<Task<Result>> tasks = new List<Task<Result>>();
 
-                tasks.Add(task);
-            }
+			foreach (IStream stream in streams)
+			{
+				Task<Result> task = Task.Run(() => UpdateAsync(stream, preserveSynchronizationContext));
 
-            Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
+				tasks.Add(task);
+			}
 
-            return results.OrderByDescending(r => r).First();
-        }
+			Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
 
-        private bool disposedValue = false;
+			return results.OrderByDescending(r => r).First();
+		}
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    download.Dispose();
-                }
+		private bool disposedValue = false;
 
-                disposedValue = true;
-            }
-        }
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					download.Dispose();
+				}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-    }
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+	}
 }

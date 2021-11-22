@@ -3,22 +3,22 @@ using Newtonsoft.Json.Linq;
 
 namespace StormLib.Helpers
 {
-    public static class JsonHelpers
-    {
-        public static bool TryParse(string text, out JObject? json)
-        {
-            try
-            {
-                json = JObject.Parse(text);
+	public static class JsonHelpers
+	{
+		public static bool TryParse(string text, out JObject? json)
+		{
+			try
+			{
+				json = JObject.Parse(text);
 
-                return true;
-            }
-            catch (JsonReaderException)
-            {
-                json = null;
+				return true;
+			}
+			catch (JsonReaderException)
+			{
+				json = null;
 
-                return false;
-            }
-        }
-    }
+				return false;
+			}
+		}
+	}
 }

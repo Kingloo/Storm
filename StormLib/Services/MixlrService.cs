@@ -10,102 +10,102 @@ using StormLib.Streams;
 
 namespace StormLib.Services
 {
-    public class MixlrService : IService, IDisposable
-    {
-        private readonly IDownload download;
+	public class MixlrService : IService, IDisposable
+	{
+		private readonly IDownload download;
 
-        public Type HandlesStreamType { get; } = typeof(MixlrStream);
-        
-        public MixlrService(IDownload download)
-        {
-            this.download = download;
-        }
+		public Type HandlesStreamType { get; } = typeof(MixlrStream);
 
-        public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
-        {
-            UriBuilder apiCall = new UriBuilder
-            {
-                Host = "api.mixlr.com",
-                Path = $"/users/{stream.Name}",
-                Port = 443,
-                Scheme = "https://"
-            };
+		public MixlrService(IDownload download)
+		{
+			this.download = download;
+		}
 
-            (HttpStatusCode status, string text) = await download.StringAsync(apiCall.Uri).ConfigureAwait(preserveSynchronizationContext);
+		public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
+		{
+			UriBuilder apiCall = new UriBuilder
+			{
+				Host = "api.mixlr.com",
+				Path = $"/users/{stream.Name}",
+				Port = 443,
+				Scheme = "https://"
+			};
 
-            if (status != HttpStatusCode.OK)
-            {
-                return Result.WebFailure;
-            }
+			(HttpStatusCode status, string text) = await download.StringAsync(apiCall.Uri).ConfigureAwait(preserveSynchronizationContext);
 
-            if (!JsonHelpers.TryParse(text, out JObject? json))
-            {
-                return Result.ParsingJsonFailed;
-            }
+			if (status != HttpStatusCode.OK)
+			{
+				return Result.WebFailure;
+			}
+
+			if (!JsonHelpers.TryParse(text, out JObject? json))
+			{
+				return Result.ParsingJsonFailed;
+			}
 
 #nullable disable
-            if (!json.HasValues)
-            {
-                return Result.Failure;
-            }
+			if (!json.HasValues)
+			{
+				return Result.Failure;
+			}
 
-            if (json.TryGetValue("username", out JToken usernameToken)
-                && json.TryGetValue("is_live", out JToken isLiveToken))
-            {
-                string username = (string)usernameToken;
+			if (json.TryGetValue("username", out JToken usernameToken)
+				&& json.TryGetValue("is_live", out JToken isLiveToken))
+			{
+				string username = (string)usernameToken;
 
-                if (!String.IsNullOrWhiteSpace(username)
-                    && (stream.DisplayName != username))
-                {
-                    stream.DisplayName = username;
-                }
+				if (!String.IsNullOrWhiteSpace(username)
+					&& (stream.DisplayName != username))
+				{
+					stream.DisplayName = username;
+				}
 #nullable enable
 
-                stream.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
+				stream.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
 
-                return Result.Success;
-            }
+				return Result.Success;
+			}
 
-            return Result.Failure;
-        }
+			return Result.Failure;
+		}
 
-        public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
-        {
-            if (!streams.Any()) { return Result.NothingToDo; }
+		public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
+		{
+			if (!streams.Any()) { return Result.NothingToDo; }
 
-            List<Task<Result>> tasks = new List<Task<Result>>();
+			List<Task<Result>> tasks = new List<Task<Result>>();
 
-            foreach (IStream stream in streams)
-            {
-                Task<Result> task = Task<Result>.Run(() => UpdateAsync(stream, preserveSynchronizationContext));
+			foreach (IStream stream in streams)
+			{
+				Task<Result> task = Task<Result>.Run(() => UpdateAsync(stream, preserveSynchronizationContext));
 
-                tasks.Add(task);
-            }
+				tasks.Add(task);
+			}
 
-            Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
+			Result[] results = await Task.WhenAll(tasks).ConfigureAwait(preserveSynchronizationContext);
 
-            return results.OrderByDescending(r => r).First();
-        }
+			return results.OrderByDescending(r => r).First();
+		}
 
-        private bool disposedValue = false;
+		private bool disposedValue = false;
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    download.Dispose();
-                }
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					download.Dispose();
+				}
 
-                disposedValue = true;
-            }
-        }
+				disposedValue = true;
+			}
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-    }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+	}
 }

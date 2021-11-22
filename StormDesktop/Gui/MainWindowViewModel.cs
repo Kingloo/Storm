@@ -18,327 +18,327 @@ using StormLib.Streams;
 
 namespace StormDesktop.Gui
 {
-    public class MainWindowViewModel : BindableBase, IMainWindowViewModel
-    {
-        private readonly ILog logger;
-        private readonly IServicesManager servicesManager;
-        private readonly string filePath = string.Empty;
-        
-        private DispatcherTimer? updateTimer = null;
+	public class MainWindowViewModel : BindableBase, IMainWindowViewModel
+	{
+		private readonly ILog logger;
+		private readonly IServicesManager servicesManager;
+		private readonly string filePath = string.Empty;
 
-        private readonly ObservableCollection<IStream> _streams = new ObservableCollection<IStream>();
-        public IReadOnlyCollection<IStream> Streams => _streams;
+		private DispatcherTimer? updateTimer = null;
 
-        private bool _isActive = false;
-        public bool IsActive
-        {
-            get => _isActive;
-            set => SetProperty(ref _isActive, value, nameof(IsActive));
-        }
+		private readonly ObservableCollection<IStream> _streams = new ObservableCollection<IStream>();
+		public IReadOnlyCollection<IStream> Streams => _streams;
 
-        private DelegateCommandAsync? _updateCommand;
-        public DelegateCommandAsync UpdateCommand
-        {
-            get
-            {
-                if (_updateCommand is null)
-                {
-                    _updateCommand = new DelegateCommandAsync(UpdateAsync, CanExecuteAsync);
-                }
+		private bool _isActive = false;
+		public bool IsActive
+		{
+			get => _isActive;
+			set => SetProperty(ref _isActive, value, nameof(IsActive));
+		}
 
-                return _updateCommand;
-            }
-        }
+		private DelegateCommandAsync? _updateCommand;
+		public DelegateCommandAsync UpdateCommand
+		{
+			get
+			{
+				if (_updateCommand is null)
+				{
+					_updateCommand = new DelegateCommandAsync(UpdateAsync, CanExecuteAsync);
+				}
 
-        private DelegateCommandAsync? _loadStreamsCommand;
-        public DelegateCommandAsync LoadStreamsCommand
-        {
-            get
-            {
-                if (_loadStreamsCommand is null)
-                {
-                    _loadStreamsCommand = new DelegateCommandAsync(LoadStreamsAsync, CanExecuteAsync);
-                }
+				return _updateCommand;
+			}
+		}
 
-                return _loadStreamsCommand;
-            }
-        }
+		private DelegateCommandAsync? _loadStreamsCommand;
+		public DelegateCommandAsync LoadStreamsCommand
+		{
+			get
+			{
+				if (_loadStreamsCommand is null)
+				{
+					_loadStreamsCommand = new DelegateCommandAsync(LoadStreamsAsync, CanExecuteAsync);
+				}
 
-        private DelegateCommand<IStream>? _openPageCommand;
-        public DelegateCommand<IStream> OpenPageCommand
-        {
-            get
-            {
-                if (_openPageCommand is null)
-                {
-                    _openPageCommand = new DelegateCommand<IStream>(OpenPage, (_) => true);
-                }
+				return _loadStreamsCommand;
+			}
+		}
 
-                return _openPageCommand;
-            }
-        }
+		private DelegateCommand<IStream>? _openPageCommand;
+		public DelegateCommand<IStream> OpenPageCommand
+		{
+			get
+			{
+				if (_openPageCommand is null)
+				{
+					_openPageCommand = new DelegateCommand<IStream>(OpenPage, (_) => true);
+				}
 
-        private DelegateCommand<IStream>? _openStreamCommand;
-        public DelegateCommand<IStream> OpenStreamCommand
-        {
-            get
-            {
-                if (_openStreamCommand is null)
-                {
-                    _openStreamCommand = new DelegateCommand<IStream>(OpenStream, (_) => true);
-                }
+				return _openPageCommand;
+			}
+		}
 
-                return _openStreamCommand;
-            }
-        }
+		private DelegateCommand<IStream>? _openStreamCommand;
+		public DelegateCommand<IStream> OpenStreamCommand
+		{
+			get
+			{
+				if (_openStreamCommand is null)
+				{
+					_openStreamCommand = new DelegateCommand<IStream>(OpenStream, (_) => true);
+				}
 
-        private DelegateCommand? _openStreamsFileCommand;
-        public DelegateCommand OpenStreamsFileCommand
-        {
-            get
-            {
-                if (_openStreamsFileCommand is null)
-                {
-                    _openStreamsFileCommand = new DelegateCommand(OpenStreamsFile, (_) => true);
-                }
+				return _openStreamCommand;
+			}
+		}
 
-                return _openStreamsFileCommand;
-            }
-        }
+		private DelegateCommand? _openStreamsFileCommand;
+		public DelegateCommand OpenStreamsFileCommand
+		{
+			get
+			{
+				if (_openStreamsFileCommand is null)
+				{
+					_openStreamsFileCommand = new DelegateCommand(OpenStreamsFile, (_) => true);
+				}
 
-        private DelegateCommand<TwitchStream>? _openTwitchPlayerCommand;
-        public DelegateCommand<TwitchStream> OpenTwitchPlayerCommand
-        {
-            get
-            {
-                if (_openTwitchPlayerCommand is null)
-                {
-                    _openTwitchPlayerCommand = new DelegateCommand<TwitchStream>(OpenTwitchPlayer, stream => stream.Status == Status.Public);
-                }
+				return _openStreamsFileCommand;
+			}
+		}
 
-                return _openTwitchPlayerCommand;
-            }
-        }
+		private DelegateCommand<TwitchStream>? _openTwitchPlayerCommand;
+		public DelegateCommand<TwitchStream> OpenTwitchPlayerCommand
+		{
+			get
+			{
+				if (_openTwitchPlayerCommand is null)
+				{
+					_openTwitchPlayerCommand = new DelegateCommand<TwitchStream>(OpenTwitchPlayer, stream => stream.Status == Status.Public);
+				}
 
-        private DelegateCommand<Window>? _exitCommand;
-        public DelegateCommand<Window> ExitCommand
-        {
-            get
-            {
-                if (_exitCommand is null)
-                {
-                    _exitCommand = new DelegateCommand<Window>(window => window.Close(), (_) => true);
-                }
+				return _openTwitchPlayerCommand;
+			}
+		}
 
-                return _exitCommand;
-            }
-        }
+		private DelegateCommand<Window>? _exitCommand;
+		public DelegateCommand<Window> ExitCommand
+		{
+			get
+			{
+				if (_exitCommand is null)
+				{
+					_exitCommand = new DelegateCommand<Window>(window => window.Close(), (_) => true);
+				}
 
-        private bool CanExecuteAsync(object _) => !IsActive;
+				return _exitCommand;
+			}
+		}
 
-        public void RaiseCommandExecuteChanged()
-        {
-            UpdateCommand.RaiseCanExecuteChanged();
-            LoadStreamsCommand.RaiseCanExecuteChanged();
-            OpenPageCommand.RaiseCanExecuteChanged();
-            OpenStreamCommand.RaiseCanExecuteChanged();
-            OpenStreamsFileCommand.RaiseCanExecuteChanged();
-            OpenTwitchPlayerCommand.RaiseCanExecuteChanged();
-        }
+		private bool CanExecuteAsync(object _) => !IsActive;
 
-        public MainWindowViewModel(ILog logger, IServicesManager servicesManager, string filePath)
-        {
-            this.logger = logger;
-            this.servicesManager = servicesManager;
-            this.filePath = filePath;
-        }
+		public void RaiseCommandExecuteChanged()
+		{
+			UpdateCommand.RaiseCanExecuteChanged();
+			LoadStreamsCommand.RaiseCanExecuteChanged();
+			OpenPageCommand.RaiseCanExecuteChanged();
+			OpenStreamCommand.RaiseCanExecuteChanged();
+			OpenStreamsFileCommand.RaiseCanExecuteChanged();
+			OpenTwitchPlayerCommand.RaiseCanExecuteChanged();
+		}
 
-        public async Task LoadStreamsAsync()
-        {
-            string[] lines = await FileSystem.LoadLinesFromFileAsync(filePath);
+		public MainWindowViewModel(ILog logger, IServicesManager servicesManager, string filePath)
+		{
+			this.logger = logger;
+			this.servicesManager = servicesManager;
+			this.filePath = filePath;
+		}
 
-            if (lines.Length == 0) { return; }
+		public async Task LoadStreamsAsync()
+		{
+			string[] lines = await FileSystem.LoadLinesFromFileAsync(filePath);
 
-            IReadOnlyCollection<IStream> loadedStreams = StreamFactory.CreateMany(lines, "#");
+			if (lines.Length == 0) { return; }
 
-            var addedStreams = AddNew(loadedStreams);
-            RemoveOld(loadedStreams);
+			IReadOnlyCollection<IStream> loadedStreams = StreamFactory.CreateMany(lines, "#");
 
-            await UpdateAsync(addedStreams);
-        }
+			var addedStreams = AddNew(loadedStreams);
+			RemoveOld(loadedStreams);
 
-        private IReadOnlyCollection<IStream> AddNew(IReadOnlyCollection<IStream> loadedStreams)
-        {
-            Collection<IStream> addedStreams = new Collection<IStream>();
+			await UpdateAsync(addedStreams);
+		}
 
-            foreach (IStream stream in loadedStreams)
-            {
-                if (!Streams.Contains(stream))
-                {
-                    _streams.Add(stream);
-                    
-                    addedStreams.Add(stream);
-                }
-            }
+		private IReadOnlyCollection<IStream> AddNew(IReadOnlyCollection<IStream> loadedStreams)
+		{
+			Collection<IStream> addedStreams = new Collection<IStream>();
 
-            return addedStreams;
-        }
+			foreach (IStream stream in loadedStreams)
+			{
+				if (!Streams.Contains(stream))
+				{
+					_streams.Add(stream);
 
-        private void RemoveOld(IReadOnlyCollection<IStream> loadedStreams)
-        {
-            var toRemove = Streams
-                .Where(s => !loadedStreams.Contains(s))
-                .ToList();
+					addedStreams.Add(stream);
+				}
+			}
 
-            foreach (IStream stream in toRemove)
-            {
-                _streams.Remove(stream);
-            }
-        }
+			return addedStreams;
+		}
 
-        public void StartUpdateTimer(TimeSpan updateFrequency)
-        {
-            if (updateTimer is null)
-            {
-                updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
-                {
-                    Interval = updateFrequency
-                };
+		private void RemoveOld(IReadOnlyCollection<IStream> loadedStreams)
+		{
+			var toRemove = Streams
+				.Where(s => !loadedStreams.Contains(s))
+				.ToList();
 
-                updateTimer.Tick += UpdateTimer_Tick;
+			foreach (IStream stream in toRemove)
+			{
+				_streams.Remove(stream);
+			}
+		}
 
-                updateTimer.Start();
-            }
-        }
+		public void StartUpdateTimer(TimeSpan updateFrequency)
+		{
+			if (updateTimer is null)
+			{
+				updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
+				{
+					Interval = updateFrequency
+				};
 
-        private void UpdateTimer_Tick(object? sender, EventArgs e) => UpdateCommand.Execute(null);
+				updateTimer.Tick += UpdateTimer_Tick;
 
-        public void StopUpdateTimer()
-        {
-            if (updateTimer is not null)
-            {
-                updateTimer.Stop();
-                updateTimer.Tick -= UpdateTimer_Tick;
+				updateTimer.Start();
+			}
+		}
 
-                updateTimer = null;
-            }
-        }
+		private void UpdateTimer_Tick(object? sender, EventArgs e) => UpdateCommand.Execute(null);
 
-        public Task UpdateAsync() => UpdateAsync(Streams);
+		public void StopUpdateTimer()
+		{
+			if (updateTimer is not null)
+			{
+				updateTimer.Stop();
+				updateTimer.Tick -= UpdateTimer_Tick;
 
-        public async Task UpdateAsync(IEnumerable<IStream> streams)
-        {
-            IsActive = true;
+				updateTimer = null;
+			}
+		}
 
-            IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
+		public Task UpdateAsync() => UpdateAsync(Streams);
 
-            await servicesManager.UpdateAsync(streams);
+		public async Task UpdateAsync(IEnumerable<IStream> streams)
+		{
+			IsActive = true;
 
-            IEnumerable<IStream> liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
+			IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
 
-            IList<IStream> forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
+			await servicesManager.UpdateAsync(streams);
 
-            SendNotifications(forWhichToNotify);
+			IEnumerable<IStream> liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
 
-            IsActive = false;
+			IList<IStream> forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
 
-            RaiseCommandExecuteChanged();
-        }
+			SendNotifications(forWhichToNotify);
 
-        private void SendNotifications(IEnumerable<IStream> forWhichToNotify)
-        {
-            foreach (IStream toNotify in forWhichToNotify)
-            {
-                string title = $"{toNotify.DisplayName} is LIVE";
-                string description = $"on {toNotify.ServiceName}";
-                void notify() => OpenStream(toNotify);
+			IsActive = false;
 
-                NotificationService.Send(title, description, notify);
-            }
-        }
+			RaiseCommandExecuteChanged();
+		}
 
-        private void OpenPage(IStream stream)
-        {
-            if (!SystemLaunch.Uri(stream.Link))
-            {
-                logger.Message($"{stream.Link.AbsoluteUri} could not be opened", Severity.Error);
-            }
-        }
+		private void SendNotifications(IEnumerable<IStream> forWhichToNotify)
+		{
+			foreach (IStream toNotify in forWhichToNotify)
+			{
+				string title = $"{toNotify.DisplayName} is LIVE";
+				string description = $"on {toNotify.ServiceName}";
+				void notify() => OpenStream(toNotify);
 
-        private void OpenStream(IStream stream)
-        {
-            if (stream.HasStreamlinkSupport)
-            {
-                string command = string.Format(CultureInfo.CurrentCulture, "/C streamlink {0} best", stream.Link);
+				NotificationService.Send(title, description, notify);
+			}
+		}
 
-                ProcessStartInfo pInfo = new ProcessStartInfo()
-                {
-                    Arguments = command,
-                    ErrorDialog = true, // maybe remove
-                    FileName = "powershell.exe",
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = true
-                };
+		private void OpenPage(IStream stream)
+		{
+			if (!SystemLaunch.Uri(stream.Link))
+			{
+				logger.Message($"{stream.Link.AbsoluteUri} could not be opened", Severity.Error);
+			}
+		}
 
-                if (!SystemLaunch.Launch(pInfo))
-                {
-                    string message = $"launching streamlink for {stream.Name} failed!";
+		private void OpenStream(IStream stream)
+		{
+			if (stream.HasStreamlinkSupport)
+			{
+				string command = string.Format(CultureInfo.CurrentCulture, "/C streamlink {0} best", stream.Link);
 
-                    logger.Message(message, Severity.Error);
-                }
-            }
-            else
-            {
-                OpenPage(stream);
-            }
-        }
+				ProcessStartInfo pInfo = new ProcessStartInfo()
+				{
+					Arguments = command,
+					ErrorDialog = true, // maybe remove
+					FileName = "powershell.exe",
+					WindowStyle = ProcessWindowStyle.Hidden,
+					UseShellExecute = true
+				};
 
-        private void OpenStreamsFile()
-        {
-            if (!SystemLaunch.Path(filePath))
-            {
-                logger.Message($"file could not be opened: {filePath}", Severity.Error);
-            }
-        }
+				if (!SystemLaunch.Launch(pInfo))
+				{
+					string message = $"launching streamlink for {stream.Name} failed!";
 
-        private void OpenTwitchPlayer(TwitchStream stream)
-        {
-            Uri player = TwitchService.GetPlayerUriForStream(stream);
+					logger.Message(message, Severity.Error);
+				}
+			}
+			else
+			{
+				OpenPage(stream);
+			}
+		}
 
-            if (!SystemLaunch.Uri(player))
-            {
-                logger.Message($"{player.AbsoluteUri} could not be opened", Severity.Error);
-            }
-        }
+		private void OpenStreamsFile()
+		{
+			if (!SystemLaunch.Path(filePath))
+			{
+				logger.Message($"file could not be opened: {filePath}", Severity.Error);
+			}
+		}
 
-        public void CleanUp()
-        {
-            servicesManager.Dispose();
-        }
+		private void OpenTwitchPlayer(TwitchStream stream)
+		{
+			Uri player = TwitchService.GetPlayerUriForStream(stream);
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
+			if (!SystemLaunch.Uri(player))
+			{
+				logger.Message($"{player.AbsoluteUri} could not be opened", Severity.Error);
+			}
+		}
 
-            sb.AppendLine(base.ToString());
-            sb.AppendLine($"number of streams: {Streams.Count}");
-            sb.AppendLine($"is active: {IsActive}");
+		public void CleanUp()
+		{
+			servicesManager.Dispose();
+		}
 
-            sb.AppendLine("services:");
+		public override string ToString()
+		{
+			StringBuilder sb = new StringBuilder();
 
-            if (servicesManager.Services.Count > 0)
-            {
-                foreach (IService service in servicesManager.Services)
-                {
-                    sb.Append(service.ToString());
-                }
-            }
-            else
-            {
-                sb.AppendLine("no services registered");
-            }
-            
-            return sb.ToString();
-        }        
-    }
+			sb.AppendLine(base.ToString());
+			sb.AppendLine($"number of streams: {Streams.Count}");
+			sb.AppendLine($"is active: {IsActive}");
+
+			sb.AppendLine("services:");
+
+			if (servicesManager.Services.Count > 0)
+			{
+				foreach (IService service in servicesManager.Services)
+				{
+					sb.Append(service.ToString());
+				}
+			}
+			else
+			{
+				sb.AppendLine("no services registered");
+			}
+
+			return sb.ToString();
+		}
+	}
 }
