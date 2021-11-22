@@ -8,8 +8,8 @@ namespace StormDesktop.Common
     {
         public event EventHandler? CanExecuteChanged;
 
-        public abstract void Execute(object parameter);
-        public abstract bool CanExecute(object parameter);
+        public abstract void Execute(object? parameter);
+        public abstract bool CanExecute(object? parameter);
 
         [System.Diagnostics.DebuggerStepThrough]
         public void RaiseCanExecuteChanged()
@@ -33,7 +33,7 @@ namespace StormDesktop.Common
             => _execute();
 
         [System.Diagnostics.DebuggerStepThrough]
-        public override bool CanExecute(object parameter)
+        public override bool CanExecute(object? parameter)
             => _canExecute(parameter);
     }
 
@@ -50,11 +50,11 @@ namespace StormDesktop.Common
         }
 
         [System.Diagnostics.DebuggerStepThrough]
-        public override void Execute(object parameter)
+        public override void Execute(object? parameter)
             => _execute((T)parameter);
 
         [System.Diagnostics.DebuggerStepThrough]
-        public override bool CanExecute(object parameter)
+        public override bool CanExecute(object? parameter)
             => _canExecute((T)parameter);
     }
 
@@ -88,7 +88,7 @@ namespace StormDesktop.Common
         }
 
         [System.Diagnostics.DebuggerStepThrough]
-        public override bool CanExecute(object parameter)
+        public override bool CanExecute(object? parameter)
             => _isExecuting ? false : _canExecute(parameter);
     }
 
@@ -106,7 +106,7 @@ namespace StormDesktop.Common
         }
 
         [System.Diagnostics.DebuggerStepThrough]
-        public override async void Execute(object parameter)
+        public override async void Execute(object? parameter)
             => await ExecuteAsync((T)parameter);
 
         [System.Diagnostics.DebuggerStepThrough]
@@ -122,7 +122,7 @@ namespace StormDesktop.Common
         }
 
         [System.Diagnostics.DebuggerStepThrough]
-        public override bool CanExecute(object parameter)
+        public override bool CanExecute(object? parameter)
             => _isExecuting ? false : _canExecute((T)parameter);
     }
 }
