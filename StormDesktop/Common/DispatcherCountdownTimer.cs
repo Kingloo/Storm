@@ -7,26 +7,33 @@ namespace StormDesktop.Common
 {
     public class DispatcherCountdownTimer
     {
-        #region Fields
         private readonly DateTime created = DateTime.Now;
         private readonly Action tick;
-        private DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
-        #endregion
+        private DispatcherTimer? timer = new DispatcherTimer(DispatcherPriority.Background);
 
-        #region Properties
         public bool IsRunning
-            => timer != null && timer.IsEnabled;
+        {
+            get
+            {
+                return timer != null && timer.IsEnabled;
+            }
+        }
 
         public TimeSpan TimeLeft
-            => IsRunning ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
-        #endregion
-        
+        {
+            get
+            {
+                return (timer is null)
+                    ? TimeSpan.Zero
+                    : (created + timer.Interval) - DateTime.Now;
+            }
+        }
+
         public DispatcherCountdownTimer(TimeSpan span, Action tick)
         {
-            // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
-            if (span.Ticks < (10_000 * 1000))
+            if (span.Ticks < (TimeSpan.TicksPerMillisecond * 1000))
             {
-                throw new ArgumentOutOfRangeException("span.Ticks cannot be less than 1 second", nameof(span));
+                throw new ArgumentOutOfRangeException(nameof(span), "span.Ticks cannot be less than 1 second");
             }
 
             this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
@@ -34,22 +41,23 @@ namespace StormDesktop.Common
             timer.Interval = span;
             timer.Tick += Timer_Tick;
         }
-        
+
         private void Timer_Tick(object? sender, EventArgs e)
         {
             tick();
-            
+
             Stop();
         }
 
-        public void Start() => timer.Start();
+        public void Start() => timer?.Start();
 
         public void Stop()
         {
-            if (IsRunning)
+            if (!(timer is null))
             {
                 timer.Stop();
                 timer.Tick -= Timer_Tick;
+                timer = null;
             }
         }
 

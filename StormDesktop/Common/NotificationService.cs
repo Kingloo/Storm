@@ -205,6 +205,7 @@ namespace StormDesktop.Common
                 return grid;
             }
 
+            [System.Diagnostics.DebuggerStepThrough]
             private static Style BuildGridStyle()
             {
                 Style style = new Style(typeof(Grid));
@@ -222,6 +223,7 @@ namespace StormDesktop.Common
                 return style;
             }
 
+            [System.Diagnostics.DebuggerStepThrough]
             private static Label BuildLabel(Style labelStyle, string text, FontStyle fontStyle)
             {
                 return new Label
@@ -236,6 +238,7 @@ namespace StormDesktop.Common
                 };
             }
 
+            [System.Diagnostics.DebuggerStepThrough]
             private static Style BuildTitleLabelStyle()
             {
                 Style style = new Style(typeof(Label));
@@ -254,6 +257,7 @@ namespace StormDesktop.Common
                 return style;
             }
 
+            [System.Diagnostics.DebuggerStepThrough]
             private static Style BuildDescriptionLabelStyle()
             {
                 Style style = new Style(typeof(Label));
