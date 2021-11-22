@@ -21,9 +21,9 @@ namespace StormDesktop.Converters
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value is Status status)
+			return value switch
 			{
-				return status switch
+				Status s => s switch
 				{
 					Status.None => None,
 					Status.Unsupported => Unsupported,
@@ -33,13 +33,10 @@ namespace StormDesktop.Converters
 					Status.Rerun => Rerun,
 					Status.Offline => Offline,
 					Status.Unknown => Unknown,
-					_ => throw new ArgumentException("you submitted a Status enum value that does not exist", nameof(value))
-				};
-			}
-			else
-			{
-				return None;
-			}
+					_ => throw new ArgumentException("you submitted an invalid Status value", nameof(value))
+				},
+				_ => None
+			};
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
