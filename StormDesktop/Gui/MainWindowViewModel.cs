@@ -134,7 +134,7 @@ namespace StormDesktop.Gui
 			}
 		}
 
-		private bool CanExecuteAsync(object _) => !IsActive;
+		private bool CanExecuteAsync(object? _) => !IsActive;
 
 		public void RaiseCommandExecuteChanged()
 		{
