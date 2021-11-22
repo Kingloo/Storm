@@ -28,7 +28,7 @@ namespace StormDesktop.Common
 		{
 			if (!File.Exists(path))
 			{
-				EnsureDirectoryExists(new FileInfo(path).DirectoryName);
+				EnsureDirectoryExists(new FileInfo(path)?.DirectoryName ?? string.Empty);
 
 				using (File.Create(path)) { }
 
