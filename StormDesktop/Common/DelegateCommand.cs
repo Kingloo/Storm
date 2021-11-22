@@ -19,10 +19,10 @@ namespace StormDesktop.Common
     public class DelegateCommand : Command
     {
         private readonly Action _execute;
-        private readonly Predicate<object> _canExecute;
+        private readonly Predicate<object?> _canExecute;
 
         [System.Diagnostics.DebuggerStepThrough]
-        public DelegateCommand(Action execute, Predicate<object> canExecute)
+        public DelegateCommand(Action execute, Predicate<object?> canExecute)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
@@ -61,11 +61,11 @@ namespace StormDesktop.Common
     public class DelegateCommandAsync : Command
     {
         private readonly Func<Task> _executeAsync;
-        private readonly Predicate<object> _canExecute;
+        private readonly Predicate<object?> _canExecute;
         private bool _isExecuting = false;
 
         [System.Diagnostics.DebuggerStepThrough]
-        public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object> canExecute)
+        public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object?> canExecute)
         {
             _executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
             _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
