@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>netcoreapp3.1</TargetFramework>
-		<AssemblyName>Storm</AssemblyName>
-		<LangVersion>9.0</LangVersion>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<LangVersion>10.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<PlatformTarget>x64</PlatformTarget>
+		<AssemblyName>Storm</AssemblyName>
 		<UseWPF>true</UseWPF>
 		<UseWindowsForms>true</UseWindowsForms>
 		<EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
