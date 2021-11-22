@@ -51,11 +51,11 @@ namespace StormDesktop.Common
 
         [System.Diagnostics.DebuggerStepThrough]
         public override void Execute(object? parameter)
-            => _execute((T)parameter);
+            => _execute((T)parameter!);
 
         [System.Diagnostics.DebuggerStepThrough]
         public override bool CanExecute(object? parameter)
-            => _canExecute((T)parameter);
+            => _canExecute((T)parameter!);
     }
 
     public class DelegateCommandAsync : Command
@@ -107,7 +107,7 @@ namespace StormDesktop.Common
 
         [System.Diagnostics.DebuggerStepThrough]
         public override async void Execute(object? parameter)
-            => await ExecuteAsync((T)parameter);
+            => await ExecuteAsync((T)parameter!);
 
         [System.Diagnostics.DebuggerStepThrough]
         private async Task ExecuteAsync(T parameter)
@@ -123,6 +123,6 @@ namespace StormDesktop.Common
 
         [System.Diagnostics.DebuggerStepThrough]
         public override bool CanExecute(object? parameter)
-            => _isExecuting ? false : _canExecute((T)parameter);
+            => _isExecuting ? false : _canExecute((T)parameter!);
     }
 }
