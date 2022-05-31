@@ -1,0 +1,378 @@
+[
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "ce18f2832d12cabcfee42f0c72001dfa1a5ed4a84931ead7b526245994810284",
+                "version": 1
+            }
+        },
+        "operationName": "ChannelRoot_Channel",
+        "variables": {
+            "currentChannelLogin": "bintokki",
+            "includeChanlets": true
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "836472cb842531bb09f1c42ef5ce40533ac215385a3b80dffcf513c8de67133a",
+                "version": 1
+            }
+        },
+        "operationName": "ChannelPage_ChannelHeader",
+        "variables": {
+            "login": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "82c33551255d57103e94660c600df272216294048fa923970a2fcb9e74ea8ac8",
+                "version": 1
+            }
+        },
+        "operationName": "BitsConfigContext",
+        "variables": {
+            "login": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "9a7fb59a9a43ae4b63c7b3cc2087965577da3e7c38fa39af7e9e25d58e1c10b1",
+                "version": 1
+            }
+        },
+        "operationName": "Chat_ChannelData",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "466f127e635f246ad330ec5c27da2c6969790e10cc1f1936d95c500d978ae4bc",
+                "version": 1
+            }
+        },
+        "operationName": "ChatRoomState",
+        "variables": {
+            "login": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "e59003b4069785ff723adc6c00c7080edbb373f575600ae43824dced3dfe0bda",
+                "version": 1
+            }
+        },
+        "operationName": "ChannelPointsContext",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "f585e0d07bee16fa1355238b1762c095cc10470edc263d38c4e3a1b8a7e53f65",
+                "version": 1
+            }
+        },
+        "operationName": "CommunityPointsRewardRedemptionContext",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "1900de8facb83d18c02677c0625e0299c4277b551868d1c9afb998542d57c121",
+                "version": 1
+            }
+        },
+        "operationName": "PollsEnabled",
+        "variables": {
+            "login": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "c951818670b7beab0f9332303f5a3824316e8d78423e6c6336f4235207b09e54",
+                "version": 1
+            }
+        },
+        "operationName": "ChatRestrictions",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "bfc959904f55b5003ae4674d4bea83ebdcd8867ad76e12f38957d433902d2fcc",
+                "version": 1
+            }
+        },
+        "operationName": "MessageBuffer_Channel",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "3b5b233b59cc71f5ab273c74a30c46485fa52901d98d7850d024ad0669270184",
+                "version": 1
+            }
+        },
+        "operationName": "ChannelPage__ChannelViewersCount",
+        "variables": {
+            "login": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "dba40c8780d87bf368b0c7179fc02ed349e3ce95be3ccf1d77267d23be5c3c75",
+                "version": 1
+            }
+        },
+        "operationName": "PlayerTrackingContextQuery",
+        "variables": {
+            "channel": "bintokki",
+            "collectionID": "",
+            "hasClip": false,
+            "hasCollection": false,
+            "hasVideo": false,
+            "isLive": true,
+            "slug": "",
+            "videoID": null
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "aaa9870965b55ecb88e01a4d73b5427e8ff9397eea16b9adbd08cad86d3b9d25",
+                "version": 1
+            }
+        },
+        "operationName": "ExtensionsUIContext_ChannelID",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "cd794415959dcdc575179b808647aaef0abdfe5e3aaf70d5f3ffbca43209dc3c",
+                "version": 1
+            }
+        },
+        "operationName": "ExtensionsForChannelCurrentUser",
+        "variables": {
+            "channelID": ""
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "3006e77e51b128d838fa4e835723ca4dc9a05c5efd4466c1085215c6e437e65c",
+                "version": 1
+            }
+        },
+        "operationName": "VideoPreviewOverlay",
+        "variables": {
+            "login": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "839a6240588bc147561ce3491f469a0cb058286b49d748bf0c49240838a8eb21",
+                "version": 1
+            }
+        },
+        "operationName": "VideoAdBanner",
+        "variables": {
+            "collectionID": "",
+            "isCollection": false,
+            "isLive": true,
+            "isVOD": false,
+            "login": "bintokki",
+            "vodID": ""
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "2a7c2676c902e1243ebdc34172f1b3a76ff4aad0a67dfd168cf5fa86b03d66dc",
+                "version": 1
+            }
+        },
+        "operationName": "ExtensionsOverlay_ChannelGame",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "938d155c890df88b5da53592e327d36ae9b851d2ee38bdb13342a1402fc24ad2",
+                "version": 1
+            }
+        },
+        "operationName": "VideoPlayerStatusOverlayChannel",
+        "variables": {
+            "channel": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "e87d636af421438e0381b1c39c528d0eec8805be7ba7abbc0750dc5400d54814",
+                "version": 1
+            }
+        },
+        "operationName": "MatureGateOverlayChannel",
+        "variables": {
+            "channel": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "508e18496264f59dfc8957e5afb83ad85418fe62fedd66e3a029139064fbed5c",
+                "version": 1
+            }
+        },
+        "operationName": "VideoPlayer_AgeGateOverlayChannel",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "2243fa4daedcf4607ddcb95bb6cda7bb4c7421f6fde66fbd824702b4922c0e76",
+                "version": 1
+            }
+        },
+        "operationName": "CountessData",
+        "variables": {
+            "channelLogin": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "75d5889a109e2a327cec63e04aca971940fb8255cd630b8fa2c7cd3bcf3ae7c4",
+                "version": 1
+            }
+        },
+        "operationName": "VideoPlayer_VideoSourceManager",
+        "variables": {
+            "channel": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "327d7b1596b37898de6a0eaabfdd8ee37b6cc586daab0d12b8fad64f03856a4a",
+                "version": 1
+            }
+        },
+        "operationName": "StreamTagsTrackingChannel",
+        "variables": {
+            "channel": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "e1edae8122517d013405f237ffcc124515dc6ded82480a88daef69c83b53ac01",
+                "version": 1
+            }
+        },
+        "operationName": "ComscoreStreamingQuery",
+        "variables": {
+            "channel": "bintokki",
+            "clipSlug": null,
+            "isClip": false,
+            "isLive": true,
+            "isVodOrCollection": false,
+            "vodID": null
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "9cf8a0947dd0ec469d31e8d3b2bd3d9ae5590a6e4b441b6c92f61f28382811de",
+                "version": 1
+            }
+        },
+        "operationName": "StreamRefetchManager",
+        "variables": {
+            "channel": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "4afa569067d6d37579e2d08f39fdf28db340572a6a7924c8523ec2cb5707ac23",
+                "version": 1
+            }
+        },
+        "operationName": "VideoAdRequestHandling",
+        "variables": {
+            "collectionID": "",
+            "isCollection": false,
+            "isLive": true,
+            "isVOD": false,
+            "login": "bintokki",
+            "vodID": ""
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "6007c9affc138041a2f71ea322a665799579fc167bef38c1e0b26b2d4c90fd02",
+                "version": 1
+            }
+        },
+        "operationName": "TNFMidroll",
+        "variables": {
+            "login": "bintokki"
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "2dbf505ee929438369e68e72319d1106bb3c142e295332fac157c90638968586",
+                "version": 1
+            }
+        },
+        "operationName": "NielsenContentMetadata",
+        "variables": {
+            "collectionID": "",
+            "isCollectionContent": false,
+            "isLiveContent": true,
+            "isVODContent": false,
+            "login": "bintokki",
+            "vodID": ""
+        }
+    },
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "248fee6868e983c4e7b69074e888960f77735bd21a1d4a1d882b55f45d30a420",
+                "version": 1
+            }
+        },
+        "operationName": "VideoPlayerStreamMetadata",
+        "variables": {
+            "channel": "bintokki"
+        }
+    }
+]

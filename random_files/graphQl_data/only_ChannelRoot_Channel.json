@@ -1,0 +1,15 @@
+[
+    {
+        "extensions": {
+            "persistedQuery": {
+                "sha256Hash": "ce18f2832d12cabcfee42f0c72001dfa1a5ed4a84931ead7b526245994810284",
+                "version": 1
+            }
+        },
+        "operationName": "ChannelRoot_Channel",
+        "variables": {
+            "currentChannelLogin": "neytiri",
+            "includeChanlets": false
+        }
+    }
+]
