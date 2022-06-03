@@ -40,7 +40,12 @@ namespace StormTests.StormLib.Streams
 		public void Equals_StreamFactoryTryCreateAndNewUp_ReturnEqualsObjects()
 		{
 			TwitchStream a = new TwitchStream(new Uri(validTwitchAccount));
-			bool _ = StreamFactory.TryCreate(validTwitchAccount, out IStream stream);
+			bool _ = StreamFactory.TryCreate(validTwitchAccount, out IStream? stream);
+
+			if (stream is null)
+			{
+				throw new ArgumentNullException(nameof(stream));
+			}
 
 			TwitchStream b = (TwitchStream)stream;
 
