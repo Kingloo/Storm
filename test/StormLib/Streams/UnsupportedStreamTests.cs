@@ -12,7 +12,9 @@ namespace StormTests.StormLib.Streams
 		[Test]
 		public void Ctor_NullUri_ShouldThrowNullArgEx()
 		{
+#pragma warning disable CS8625
 			Assert.Throws<ArgumentNullException>(() => new UnsupportedStream(null));
+#pragma warning restore CS8625
 		}
 
 		[Test]
@@ -31,11 +33,16 @@ namespace StormTests.StormLib.Streams
 			string account = "https://google.com";
 
 			UnsupportedStream newUp = new UnsupportedStream(new Uri(account, UriKind.Absolute));
-			bool b = StreamFactory.TryCreate(account, out IStream stream);
+			bool b = StreamFactory.TryCreate(account, out IStream? stream);
 
 			if (!b)
 			{
 				throw new Exception("TryCreate returned false, when it really shouldn't have");
+			}
+
+			if (stream is null)
+			{
+				throw new ArgumentNullException(nameof(stream));
 			}
 
 			UnsupportedStream tryCreate = (UnsupportedStream)stream;
