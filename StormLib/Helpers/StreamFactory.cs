@@ -68,7 +68,7 @@ namespace StormLib.Helpers
 				return false;
 			}
 
-			return true;
+			return stream is not null;
 		}
 
 		public static IReadOnlyCollection<IStream> CreateMany(string[] lines, string commentCharacter)
@@ -84,11 +84,10 @@ namespace StormLib.Helpers
 					// Don't do a "if (!streams.Contains)" check before adding
 					// Race condition!
 
-					if (TryCreate(line, out IStream? stream))
+					if (TryCreate(line, out IStream? stream)
+						&& stream is not null)
 					{
-#nullable disable
 						streams.Add(stream);
-#nullable enable
 					}
 				});
 			}
