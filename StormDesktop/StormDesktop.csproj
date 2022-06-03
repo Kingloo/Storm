@@ -13,7 +13,7 @@
 		<EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
 		<ApplicationIcon>Assets\Storm.ico</ApplicationIcon>
 		<StartupObject>StormDesktop.Program</StartupObject>
-		<Copyright>© Kingloo 2021</Copyright>
+		<Copyright>© Kingloo 2022</Copyright>
 		<RepositoryUrl>https://github.com/Kingloo/Storm</RepositoryUrl>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<AnalysisLevel>latest</AnalysisLevel>
