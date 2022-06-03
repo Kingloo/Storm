@@ -3,10 +3,6 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net6.0-windows</TargetFramework>
-		<LangVersion>10.0</LangVersion>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<PlatformTarget>x64</PlatformTarget>
 		<AssemblyName>Storm</AssemblyName>
 		<UseWPF>true</UseWPF>
 		<UseWindowsForms>true</UseWindowsForms>
@@ -15,8 +11,6 @@
 		<StartupObject>StormDesktop.Program</StartupObject>
 		<Copyright>© Kingloo 2022</Copyright>
 		<RepositoryUrl>https://github.com/Kingloo/Storm</RepositoryUrl>
-		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest</AnalysisLevel>
 	</PropertyGroup>
 
 	<ItemGroup>
