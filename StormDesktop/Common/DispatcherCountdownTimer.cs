@@ -5,74 +5,78 @@ using System.Windows.Threading;
 
 namespace StormDesktop.Common
 {
-    public class DispatcherCountdownTimer
-    {
-        private readonly DateTime created = DateTime.Now;
-        private readonly Action tick;
-        private DispatcherTimer? timer = new DispatcherTimer(DispatcherPriority.Background);
+	public class DispatcherCountdownTimer
+	{
+		private readonly TimeSpan span;
+		private readonly Action tick;
 
-        public bool IsRunning
-        {
-            get
-            {
-                return timer != null && timer.IsEnabled;
-            }
-        }
+		private readonly DateTime created = DateTime.Now;
+		private DispatcherTimer? timer = null;
 
-        public TimeSpan TimeLeft
-        {
-            get
-            {
-                return (timer is null)
-                    ? TimeSpan.Zero
-                    : (created + timer.Interval) - DateTime.Now;
-            }
-        }
+		public bool IsRunning => timer?.IsEnabled ?? false;
 
-        public DispatcherCountdownTimer(TimeSpan span, Action tick)
-        {
-            if (span.Ticks < (TimeSpan.TicksPerMillisecond * 1000))
-            {
-                throw new ArgumentOutOfRangeException(nameof(span), "span.Ticks cannot be less than 1 second");
-            }
+		public TimeSpan TimeLeft => IsRunning
+			? ((created + (timer?.Interval ?? TimeSpan.Zero)) - DateTime.Now)
+			: TimeSpan.Zero;
 
-            this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
+		public DispatcherCountdownTimer(TimeSpan span, Action tick)
+		{
+			if (span.Ticks < (10_000 * 1000))
+			{
+				// there are 10_000 ticks in 1 millisecond
+				// therefore there are 10_000 * 1000 ticks in 1 second
+				// 10_000 * 1000 = 10_000_000
 
-            timer.Interval = span;
-            timer.Tick += Timer_Tick;
-        }
+				throw new ArgumentOutOfRangeException(nameof(span), "span.Ticks cannot be less than 1 second");
+			}
 
-        private void Timer_Tick(object? sender, EventArgs e)
-        {
-            tick();
+			if (tick is null)
+			{
+				throw new ArgumentNullException(nameof(tick));
+			}
 
-            Stop();
-        }
+			this.tick = tick;
+			this.span = span;
+		}
 
-        public void Start() => timer?.Start();
+		public void Start()
+		{
+			timer = new DispatcherTimer(DispatcherPriority.Background);
+			timer.Interval = span;
+			timer.Tick += Timer_Tick;
 
-        public void Stop()
-        {
-            if (!(timer is null))
-            {
-                timer.Stop();
-                timer.Tick -= Timer_Tick;
-                timer = null;
-            }
-        }
+			timer.Start();
+		}
 
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
+		private void Timer_Tick(object? sender, EventArgs e)
+		{
+			tick();
 
-            var cc = CultureInfo.CurrentCulture;
+			Stop();
+		}
 
-            sb.AppendLine(GetType().FullName);
-            sb.AppendLine(string.Format(cc, "Created at: {0}", created.ToString(cc)));
-            sb.AppendLine(IsRunning ? "Is Running: true" : "Is Running: false");
-            sb.AppendLine(string.Format(cc, "Time left: {0}", TimeLeft.ToString()));
+		public void Stop()
+		{
+			if (timer is not null)
+			{
+				timer.Stop();
+				timer.Tick -= Timer_Tick;
+				timer = null;
+			}
+		}
 
-            return sb.ToString();
-        }
-    }
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+
+			var cc = CultureInfo.CurrentCulture;
+
+			sb.AppendLine(GetType().FullName);
+			sb.AppendLine(string.Format(cc, "Created at: {0}", created.ToString(cc)));
+			sb.AppendLine(IsRunning ? "Is Running: true" : "Is Running: false");
+			sb.AppendLine(string.Format(cc, "Time left: {0}", TimeLeft.ToString()));
+
+			return sb.ToString();
+		}
+	}
 }
