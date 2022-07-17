@@ -30,9 +30,9 @@ namespace StormDesktop.Gui
 			SetMaxHeight();
 		}
 
-		private async void mainWindow_Loaded(object sender, RoutedEventArgs e)
+		private void mainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			await viewModel.LoadStreamsAsync();
+            viewModel.LoadStreamsCommand.Execute(null);
 
 			viewModel.StartUpdateTimer(TimeSpan.FromSeconds(90d));
 		}
