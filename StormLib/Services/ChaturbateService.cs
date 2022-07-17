@@ -35,7 +35,12 @@ namespace StormLib.Services
 
 		public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
 		{
-			(HttpStatusCode status, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
+			if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            (HttpStatusCode status, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
 
 			if (status != HttpStatusCode.OK)
 			{
@@ -62,16 +67,16 @@ namespace StormLib.Services
 
 			string searchRadius = text.Substring(index, 100);
 
-			if (searchRadius.Contains(publicStatus))
+			if (searchRadius.Contains(publicStatus, StringComparison.OrdinalIgnoreCase))
 			{
 				stream.Status = Status.Public;
 			}
-			else if (searchRadius.Contains(offlineStatus)
-				|| searchRadius.Contains(awayStatus))
+			else if (searchRadius.Contains(offlineStatus, StringComparison.OrdinalIgnoreCase)
+				|| searchRadius.Contains(awayStatus, StringComparison.OrdinalIgnoreCase))
 			{
 				stream.Status = Status.Offline;
 			}
-			else if (searchRadius.Contains(privateStatus))
+			else if (searchRadius.Contains(privateStatus, StringComparison.OrdinalIgnoreCase))
 			{
 				stream.Status = Status.Private;
 			}

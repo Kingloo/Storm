@@ -18,7 +18,12 @@ namespace StormLib.Helpers
 
 		public static bool TryCreate(string line, [NotNullWhen(true)] out IStream? stream)
 		{
-			if (!line.StartsWith(https, sc) && !line.StartsWith(http, sc))
+			if (String.IsNullOrWhiteSpace(line))
+            {
+                throw new ArgumentNullException(nameof(line));
+            }
+
+            if (!line.StartsWith(https, sc) && !line.StartsWith(http, sc))
 			{
 				line = $"{https}{line}";
 			}
@@ -74,23 +79,30 @@ namespace StormLib.Helpers
 
 		public static IReadOnlyCollection<IStream> CreateMany(string[] lines, string commentCharacter)
 		{
-			ConcurrentBag<IStream> streams = new ConcurrentBag<IStream>();
+			if (lines is null)
+            {
+                throw new ArgumentNullException(nameof(lines));
+            }
 
-			if (lines.Length > 0)
-			{
-				IEnumerable<string> nonCommentLines = lines.Where(l => !l.StartsWith(commentCharacter, StringComparison.OrdinalIgnoreCase));
+            if (lines.Length == 0)
+            {
+                return Array.Empty<IStream>();
+            }
 
-				Parallel.ForEach(nonCommentLines, (line, loopState) =>
-				{
-					// Don't do a "if (!streams.Contains)" check before adding
-					// Race condition!
+            ConcurrentBag<IStream> streams = new ConcurrentBag<IStream>();
 
-					if (TryCreate(line, out IStream? stream))
-					{
-						streams.Add(stream);
-					}
-				});
-			}
+            IEnumerable<string> nonCommentLines = lines.Where(l => !l.StartsWith(commentCharacter, StringComparison.OrdinalIgnoreCase));
+
+            Parallel.ForEach(nonCommentLines, (line, loopState) =>
+            {
+                // Don't do a "if (!streams.Contains)" check before adding
+                // Race condition!
+
+                if (TryCreate(line, out IStream? stream))
+                {
+                    streams.Add(stream);
+                }
+            });
 
 			return streams.AsEnumerable().Distinct().ToList().AsReadOnly();
 		}

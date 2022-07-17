@@ -53,12 +53,22 @@ namespace StormLib.Services
 
 		public TwitchService(IDownload download)
 		{
-			this.download = download;
+			if (download is null)
+            {
+                throw new ArgumentNullException(nameof(download));
+            }
+
+            this.download = download;
 		}
 
 		public static Uri GetPlayerUriForStream(TwitchStream twitch)
 		{
-			return new Uri($"https://player.twitch.tv/?branding=false&channel={twitch.Name}&parent=twitch.tv&showInfo=false");
+			if (twitch is null)
+            {
+                throw new ArgumentNullException(nameof(twitch));
+            }
+
+            return new Uri($"https://player.twitch.tv/?branding=false&channel={twitch.Name}&parent=twitch.tv&showInfo=false");
 		}
 
 		public Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
