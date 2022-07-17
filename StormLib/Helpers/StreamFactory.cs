@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using StormLib.Interfaces;
@@ -15,7 +16,7 @@ namespace StormLib.Helpers
 
 		private const StringComparison sc = StringComparison.CurrentCultureIgnoreCase;
 
-		public static bool TryCreate(string line, out IStream? stream)
+		public static bool TryCreate(string line, [NotNullWhen(true)] out IStream? stream)
 		{
 			if (!line.StartsWith(https, sc) && !line.StartsWith(http, sc))
 			{
@@ -27,7 +28,7 @@ namespace StormLib.Helpers
 				line = line.Insert(4, "s");
 			}
 
-			if (!Uri.TryCreate(line, UriKind.Absolute, out Uri uri))
+			if (!Uri.TryCreate(line, UriKind.Absolute, out Uri? uri))
 			{
 				stream = null;
 				return false;
@@ -84,8 +85,7 @@ namespace StormLib.Helpers
 					// Don't do a "if (!streams.Contains)" check before adding
 					// Race condition!
 
-					if (TryCreate(line, out IStream? stream)
-						&& stream is not null)
+					if (TryCreate(line, out IStream? stream))
 					{
 						streams.Add(stream);
 					}
