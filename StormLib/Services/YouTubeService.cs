@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -22,6 +22,11 @@ namespace StormLib.Services
 
 		public async Task<Result> UpdateAsync(IStream stream, bool preserveSynchronizationContext)
 		{
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
 			(HttpStatusCode status, string text) = await download.StringAsync(new Uri($"{stream.Link.AbsoluteUri}?ucbcb=1")).ConfigureAwait(preserveSynchronizationContext);
 
 			if (status != HttpStatusCode.OK)
@@ -30,22 +35,23 @@ namespace StormLib.Services
 			}
 
 			stream.DisplayName = SetDisplayName(text, stream.Name);
-
-			if (text.Contains("\"style\":\"LIVE\",\"icon\":{\"iconType\":\"LIVE\"}"))
-			{
-				stream.Status = Status.Public;
-			}
-			else
-			{
-				stream.Status = Status.Offline;
-			}
+            stream.Status = SetStatus(text);
+            stream.ViewersCount = SetViewers(text);
 
 			return Result.Success;
 		}
 
 		public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
 		{
-			if (!streams.Any()) { return Result.NothingToDo; }
+			if (streams is null)
+			{
+				throw new ArgumentNullException(nameof(streams));
+			}
+
+			if (!streams.Any())
+			{
+				return Result.NothingToDo;
+			}
 
 			List<Task<Result>> tasks = new List<Task<Result>>();
 
@@ -68,11 +74,42 @@ namespace StormLib.Services
 			// ">
 			// Eris In Progress
 
-			string beginning = "\"twitter:title\" content=\"";
-			string ending = "\">";
+			const string beginning = "\"twitter:title\" content=\"";
+			const string ending = "\">";
 
 			return text.FindBetween(beginning, ending).FirstOrDefault() ?? fallback;
 		}
+
+        private static Status SetStatus(string text)
+        {
+			const string liveMarker = "\"style\":\"LIVE\",\"icon\":{\"iconType\":\"LIVE\"}";
+
+            if (text.Contains(liveMarker, StringComparison.OrdinalIgnoreCase))
+			{
+				return Status.Public;
+			}
+			else
+			{
+				return Status.Offline;
+			}
+        }
+
+        private static Nullable<int> SetViewers(string text)
+        {
+            const string beginning = "viewCountText\":{\"runs\":[{\"text\":\"";
+            const string ending = "\"}";
+
+            string? viewersText = text.FindBetween(beginning, ending).FirstOrDefault();
+
+            if (Int32.TryParse(viewersText, out int result))
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
 		private bool disposedValue = false;
 
@@ -92,6 +129,7 @@ namespace StormLib.Services
 		public void Dispose()
 		{
 			Dispose(true);
+            
 			GC.SuppressFinalize(this);
 		}
 	}

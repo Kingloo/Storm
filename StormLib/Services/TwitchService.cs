@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -103,7 +103,7 @@ namespace StormLib.Services
 			{
 				if (status != HttpStatusCode.Unused)
 				{
-					LogStatic.Message($"updating Twitch streams failed: {status}");
+					await LogStatic.MessageAsync($"updating Twitch streams failed: {status}").ConfigureAwait(preserveSynchronizationContext);
 				}
 
 				return Result.WebFailure;
@@ -111,7 +111,7 @@ namespace StormLib.Services
 
 			if (!JsonHelpers.TryParse("{\"dummy\":" + text + "}", out JObject? json))
 			{
-				LogStatic.Message("TwitchService: parsing JSON failed");
+				await LogStatic.MessageAsync("TwitchService: parsing JSON failed").ConfigureAwait(preserveSynchronizationContext);
 
 				return Result.ParsingJsonFailed;
 			}
@@ -152,7 +152,7 @@ namespace StormLib.Services
 		{
 			StringBuilder sb = new StringBuilder();
 
-			sb.Append("[");
+			sb.Append('[');
 
 			foreach (IStream stream in streams)
 			{
@@ -168,7 +168,7 @@ namespace StormLib.Services
 			// C# 8 ranges might work here
 			sb.Remove(sb.Length - 1, 1);
 
-			sb.Append("]");
+			sb.Append(']');
 
 			return sb.ToString();
 		}
@@ -226,7 +226,7 @@ namespace StormLib.Services
 				}
 				else
 				{
-					stream.ViewersCount = -1;
+					stream.ViewersCount = null;
 					stream.Game = string.Empty;
 					stream.Status = Status.Offline;
 				}

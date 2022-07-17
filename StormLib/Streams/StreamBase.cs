@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,14 +33,14 @@ namespace StormLib.Streams
 			set => SetProperty(ref _displayName, value, nameof(DisplayName));
 		}
 
-		private int _viewersCount = -1;
-		public int ViewersCount
+		private Nullable<int> _viewersCount = null;
+		public Nullable<int> ViewersCount
 		{
 			get => _viewersCount;
 			set => SetProperty(ref _viewersCount, value, nameof(ViewersCount));
 		}
 
-		protected static string IconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Icons");
+		protected static string IconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Icons");
 
 		public abstract Uri Icon { get; }
 		public abstract bool HasStreamlinkSupport { get; }
@@ -48,19 +48,29 @@ namespace StormLib.Streams
 
 		protected StreamBase(Uri uri)
 		{
-			Link = uri ?? throw new ArgumentNullException(nameof(uri));
+			if (uri is null)
+			{
+				throw new ArgumentNullException(nameof(uri));
+			}
+
+			Link = uri;
 
 			_name = DetermineName(Link);
 		}
 
 		protected virtual string DetermineName(Uri uri)
 		{
+			if (uri is null)
+			{
+				throw new ArgumentNullException(nameof(uri));
+			}
+
 			return uri.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
 		}
 
-		public bool Equals(IStream other) => (other is StreamBase sb) && EqualsInternal(sb);
+		public bool Equals(IStream? other) => (other is StreamBase sb) && EqualsInternal(sb);
 
-		public override bool Equals(object obj) => (obj is StreamBase sb) && EqualsInternal(sb);
+		public override bool Equals(object? obj) => (obj is StreamBase sb) && EqualsInternal(sb);
 
 		public static bool operator ==(StreamBase lhs, StreamBase rhs) => lhs.Equals(rhs);
 
@@ -68,7 +78,7 @@ namespace StormLib.Streams
 
 		private bool EqualsInternal(StreamBase other) => Link.Equals(other.Link);
 
-		public virtual int CompareTo(IStream other) => String.Compare(Name, other.Name, StringComparison.Ordinal);
+		public virtual int CompareTo(IStream? other) => String.Compare(Name, other?.Name ?? string.Empty, StringComparison.Ordinal);
 
 		public static bool operator >(StreamBase lhs, StreamBase rhs) => lhs.CompareTo(rhs) > 0;
 

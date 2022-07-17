@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace StormLib.Interfaces
 {
@@ -8,7 +8,7 @@ namespace StormLib.Interfaces
 		Status Status { get; set; }
 		string Name { get; }
 		string DisplayName { get; set; }
-		int ViewersCount { get; set; }
+		Nullable<int> ViewersCount { get; set; }
 		Uri Icon { get; }
 		bool HasStreamlinkSupport { get; }
 		string ServiceName { get; }
