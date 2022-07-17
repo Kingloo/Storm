@@ -1,7 +1,7 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using StormLib.Common;
 using StormLib.Interfaces;
@@ -40,7 +40,13 @@ namespace StormLib.Streams
 			set => SetProperty(ref _viewersCount, value, nameof(ViewersCount));
 		}
 
-		protected static string IconDirectory => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Icons");
+        protected static string IconDirectory
+        {
+            get
+            {
+                return Path.Combine(RuntimeCircumstance.GetRealLocation(), "Icons");
+            }
+        }
 
 		public abstract Uri Icon { get; }
 		public abstract bool HasStreamlinkSupport { get; }
@@ -95,14 +101,14 @@ namespace StormLib.Streams
 			StringBuilder sb = new StringBuilder();
 
 			sb.AppendLine(base.ToString());
-			sb.AppendLine($"link: {Link.AbsoluteUri}");
-			sb.AppendLine($"status: {Status}");
-			sb.AppendLine($"name: {Name}");
-			sb.AppendLine($"display name: {DisplayName}");
-			sb.AppendLine($"viewers: {ViewersCount}");
-			sb.AppendLine($"icon path: {Icon.AbsoluteUri}");
-			sb.AppendLine($"has streamlink support: {HasStreamlinkSupport}");
-			sb.AppendLine($"service name: {ServiceName}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"link: {Link.AbsoluteUri}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"status: {Status}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"name: {Name}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"display name: {DisplayName}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"viewers: {ViewersCount}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"icon path: {Icon.AbsoluteUri}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"has streamlink support: {HasStreamlinkSupport}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"service name: {ServiceName}");
 
 			return sb.ToString();
 		}
