@@ -23,7 +23,8 @@
 					</Style>
 				</Grid.Style>
 
-				<Label Grid.Column="0">
+				<Label Grid.Column="0"
+					   HorizontalContentAlignment="Right">
 					<Label.Style>
 						<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
 							<Setter Property="Visibility" Value="Visible" />

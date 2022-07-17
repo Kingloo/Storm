@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using StormLib.Extensions;
 using StormLib.Interfaces;
@@ -101,7 +103,14 @@ namespace StormLib.Services
 
             string? viewersText = text.FindBetween(beginning, ending).FirstOrDefault();
 
-            if (Int32.TryParse(viewersText, out int result))
+			if (viewersText is null)
+			{
+				return null;
+			}
+
+			string viewersTextDigitsOnly = GetOnlyDigits(viewersText);
+
+            if (Int32.TryParse(viewersTextDigitsOnly, out int result))
             {
                 return result;
             }
@@ -110,6 +119,13 @@ namespace StormLib.Services
                 return null;
             }
         }
+
+		private static string GetOnlyDigits(string text)
+		{
+			return new StringBuilder()
+				.Append(text.Trim().Where(c => Char.IsDigit(c)))
+				.ToString();
+		}
 
 		private bool disposedValue = false;
 
