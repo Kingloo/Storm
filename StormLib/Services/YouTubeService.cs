@@ -123,7 +123,7 @@ namespace StormLib.Services
 		private static string GetOnlyDigits(string text)
 		{
 			return new StringBuilder()
-				.Append(text.Trim().Where(c => Char.IsDigit(c)))
+				.Append(text.Trim().Where(c => Char.IsDigit(c)).ToArray())
 				.ToString();
 		}
 
