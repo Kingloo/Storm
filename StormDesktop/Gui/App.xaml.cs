@@ -19,14 +19,14 @@ namespace StormDesktop.Gui
 	public partial class App : Application
 	{
 		private static readonly string defaultLogFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-		private static readonly string defaultLogFileName = "logfile.txt";
+		private const string defaultLogFileName = "logfile.txt";
 		private static readonly string defaultLogFilePath = Path.Combine(defaultLogFileDirectory, defaultLogFileName);
 
 		private static readonly string defaultStreamsFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #if DEBUG
-		private static readonly string defaultStreamsFileName = "StormUrls-test.txt";
+		private const string defaultStreamsFileName = "StormUrls-test.txt";
 #else
-        private static readonly string defaultStreamsFileName = "StormUrls.txt";
+        private const string defaultStreamsFileName = "StormUrls.txt";
 #endif
 		private static readonly string defaultStreamsFilePath = Path.Combine(defaultStreamsFileDirectory, defaultStreamsFileName);
 
@@ -62,7 +62,9 @@ namespace StormDesktop.Gui
 				{
 					AllowRenegotiation = false,
 					ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
+#pragma warning disable CA5398
 					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+#pragma warning restore CA5398
 					EncryptionPolicy = EncryptionPolicy.RequireEncryption
 				}
 			};

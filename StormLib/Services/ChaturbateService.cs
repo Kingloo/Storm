@@ -85,7 +85,15 @@ namespace StormLib.Services
 
 		public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
 		{
-			if (!streams.Any()) { return Result.NothingToDo; }
+			if (streams is null)
+            {
+                throw new ArgumentNullException(nameof(streams));
+            }
+            
+            if (!streams.Any())
+            {
+                return Result.NothingToDo;
+            }
 
 			List<Task<Result>> tasks = new List<Task<Result>>();
 

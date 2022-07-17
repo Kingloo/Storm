@@ -11,8 +11,13 @@ namespace StormDesktop.Common
 	{
 		private const char defaultCommentChar = '#';
 
-		public static void EnsureDirectoryExists(string folder)
+		public static void EnsureDirectoryExists(string? folder)
 		{
+			if (String.IsNullOrWhiteSpace(folder))
+			{
+				throw new ArgumentNullException(nameof(folder), "folder was null or empty");
+			}
+
 			if (!Directory.Exists(folder))
 			{
 				Directory.CreateDirectory(folder);
@@ -28,7 +33,7 @@ namespace StormDesktop.Common
 		{
 			if (!File.Exists(path))
 			{
-				EnsureDirectoryExists(new FileInfo(path)?.DirectoryName ?? string.Empty);
+				EnsureDirectoryExists(new FileInfo(path).DirectoryName ?? string.Empty);
 
 				using (File.Create(path)) { }
 
@@ -89,10 +94,7 @@ namespace StormDesktop.Common
 			}
 			finally
 			{
-				if (fsAsync is not null)
-				{
-					await fsAsync.DisposeAsync().ConfigureAwait(false);
-				}
+				await fsAsync.DisposeAsync().ConfigureAwait(false);
 			}
 
 			return lines.ToArray();
@@ -104,6 +106,11 @@ namespace StormDesktop.Common
 
 		public static async ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding, CancellationToken token)
 		{
+			if (lines is null)
+			{
+				throw new ArgumentNullException(nameof(lines));
+			}
+
 			FileStream fsAsync = new FileStream(path, mode, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
 			try
@@ -112,12 +119,7 @@ namespace StormDesktop.Common
 				{
 					foreach (string line in lines)
 					{
-						if (token.IsCancellationRequested)
-						{
-							break;
-						}
-
-						await sw.WriteLineAsync(line).ConfigureAwait(false);
+						await sw.WriteLineAsync(line.AsMemory(), token).ConfigureAwait(false);
 					}
 
 					await sw.FlushAsync().ConfigureAwait(false);
@@ -125,10 +127,7 @@ namespace StormDesktop.Common
 			}
 			finally
 			{
-				if (fsAsync is not null)
-				{
-					await fsAsync.DisposeAsync().ConfigureAwait(false);
-				}
+				await fsAsync.DisposeAsync().ConfigureAwait(false);
 			}
 		}
 	}

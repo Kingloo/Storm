@@ -46,11 +46,11 @@ namespace StormDesktop.Common
 			Severity = severity;
 		}
 
-		public void Message(string msg, Severity severity)
+		public void Message(string message, Severity severity)
 		{
 			if (severity >= Severity)
 			{
-				string text = FormatMessage(msg);
+				string text = FormatMessage(message);
 
 				WriteToFile(text, Path);
 			}

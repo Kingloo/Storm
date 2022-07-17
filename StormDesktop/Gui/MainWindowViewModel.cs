@@ -155,16 +155,19 @@ namespace StormDesktop.Gui
 
 		public async Task LoadStreamsAsync()
 		{
-			string[] lines = await FileSystem.LoadLinesFromFileAsync(filePath);
+			string[] lines = await FileSystem.LoadLinesFromFileAsync(filePath).ConfigureAwait(true);
 
-			if (lines.Length == 0) { return; }
+			if (lines.Length == 0)
+            {
+                return;
+            }
 
 			IReadOnlyCollection<IStream> loadedStreams = StreamFactory.CreateMany(lines, "#");
 
 			var addedStreams = AddNew(loadedStreams);
 			RemoveOld(loadedStreams);
 
-			await UpdateAsync(addedStreams);
+			await UpdateAsync(addedStreams).ConfigureAwait(true);
 		}
 
 		private IReadOnlyCollection<IStream> AddNew(IReadOnlyCollection<IStream> loadedStreams)
@@ -232,7 +235,7 @@ namespace StormDesktop.Gui
 
 			IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
 
-			await servicesManager.UpdateAsync(streams);
+			await servicesManager.UpdateAsync(streams).ConfigureAwait(true);
 
 			IEnumerable<IStream> liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
 
@@ -321,8 +324,8 @@ namespace StormDesktop.Gui
 			StringBuilder sb = new StringBuilder();
 
 			sb.AppendLine(base.ToString());
-			sb.AppendLine($"number of streams: {Streams.Count}");
-			sb.AppendLine($"is active: {IsActive}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"number of streams: {Streams.Count}");
+			sb.AppendLine(CultureInfo.CurrentCulture, $"is active: {IsActive}");
 
 			sb.AppendLine("services:");
 
