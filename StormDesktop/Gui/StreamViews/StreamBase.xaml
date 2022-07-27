@@ -14,7 +14,7 @@
                                Unsupported="Yellow"
                                Unknown="MediumAquamarine" />
 
-    <Style TargetType="{x:Type StackPanel}" BasedOn="{StaticResource {x:Type FrameworkElement}}" x:Key="stackPanelStyle">
+    <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}" x:Key="gridStyle">
         <!-- paired with ItemsPanelTemplate VirtualizingStackPanel Margin -->
         <Setter Property="Margin" Value="0,7,0,0" />
         <Setter Property="Background" Value="{Binding Status, Converter={StaticResource statusConverter}}" />
@@ -33,14 +33,9 @@
     <DataTemplate DataType="{x:Type stormLibStreams:StreamBase}" x:Key="StreamBaseTemplate">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-
-            <Grid.RowDefinitions>
-                <RowDefinition MinHeight="50" Height="*" />
-                <RowDefinition MinHeight="0" Height="Auto" />
-            </Grid.RowDefinitions>
 
             <Grid.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick"
@@ -51,13 +46,20 @@
                               CommandParameter="{Binding}" />
             </Grid.InputBindings>
 
-            <Label Grid.Column="0" Grid.Row="0">
+			<Image Grid.Column="0"
+				   Margin="5,0,0,0">
+				<Image.Source>
+					<BitmapImage UriSource="{Binding Path=Icon, Mode=OneTime, TargetNullValue='Icons\DefaultIcon.ico'}" />
+				</Image.Source>
+			</Image>
+
+			<Label Grid.Column="1">
                 <Label.Style>
                     <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                         <Setter Property="FontSize" Value="17" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Status}" Value="Public">
-                                <Setter Property="FontSize" Value="23" />
+                                <Setter Property="FontSize" Value="24" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -65,46 +67,6 @@
                 <Label.Content>
                     <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
                 </Label.Content>
-            </Label>
-
-            <Image Grid.Column="1" Grid.Row="0"
-                   Height="28"
-                   Width="28">
-                <Image.Source>
-                    <BitmapImage UriSource="{Binding Path=Icon}" />
-                </Image.Source>
-            </Image>
-
-            <Label Grid.ColumnSpan="2" Grid.Row="1">
-                <Label.Style>
-                    <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
-                        <Setter Property="Height" Value="0" />
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Setter Property="FontSize" Value="14" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Status}" Value="Unsupported">
-                                <Setter Property="Content" Value="Unsupported streaming service" />
-                                <Setter Property="Visibility" Value="Visible" />
-                                <Setter Property="Height" Value="50" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Status}" Value="Private">
-                                <Setter Property="Content" Value="Private" />
-                                <Setter Property="Visibility" Value="Visible" />
-                                <Setter Property="Height" Value="50" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Status}" Value="Rerun">
-                                <Setter Property="Content" Value="In reruns" />
-                                <Setter Property="Visibility" Value="Visible" />
-                                <Setter Property="Height" Value="50" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Status}" Value="Banned">
-                                <Setter Property="Content" Value="BANNED" />
-                                <Setter Property="Visibility" Value="Visible" />
-                                <Setter Property="Height" Value="50" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Label.Style>
             </Label>
         </Grid>
     </DataTemplate>

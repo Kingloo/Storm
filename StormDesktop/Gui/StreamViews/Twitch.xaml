@@ -1,65 +1,80 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:gui="clr-namespace:StormDesktop.Gui"
                     xmlns:stormLibStreams="clr-namespace:StormLib.Streams;assembly=StormLib">
 
     <DataTemplate DataType="{x:Type stormLibStreams:TwitchStream}">
-        <StackPanel Style="{StaticResource stackPanelStyle}">
+        <Grid Style="{StaticResource gridStyle}">
+
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="100" />
+			</Grid.ColumnDefinitions>
+
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+			
             <!--Grid.Row="0" Grid.ColumnSpan="2" this used to be on ContentPresenter, but I don't think it is needed -->
-            <ContentPresenter ContentTemplate="{StaticResource StreamBaseTemplate}"
+            <ContentPresenter Grid.Column="0"
+							  Grid.Row="0"
+							  ContentTemplate="{StaticResource StreamBaseTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="30" />
-                </Grid.ColumnDefinitions>
 
-                <Grid.Style>
-                    <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Status}" Value="Public">
-                                <Setter Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
+			<Label Grid.Column="1" Grid.Row="1"
+				   HorizontalContentAlignment="Right">
+				<Label.Style>
+					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
+						<Setter Property="Visibility" Value="Visible" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding Path=ViewersCount}" Value="{x:Null}">
+								<Setter Property="Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Label.Style>
+				<Label.Content>
+					<TextBlock Text="{Binding Path=ViewersCount, StringFormat='{}{0:#,#} viewers'}" />
+				</Label.Content>
+			</Label>
 
-                <Label Grid.Column="0"
-                       HorizontalContentAlignment="Left"
-                       Style="{StaticResource messageLabelStyle}">
-                    <Label.Content>
-                        <TextBlock Text="{Binding Game}" TextTrimming="CharacterEllipsis" />
-                    </Label.Content>
-                </Label>
+			<Label Grid.ColumnSpan="2" Grid.Row="1">
+				<Label.Style>
+					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
+						<Setter Property="HorizontalContentAlignment" Value="Right" />
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding Path=Status}" Value="Banned">
+								<Setter Property="Visibility" Value="Visible" />
+								<Setter Property="Content" Value="BANNED" />
+								<Setter Property="FontSize" Value="16" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding Path=Status}" Value="Rerun">
+								<Setter Property="Visibility" Value="Visible" />
+								<Setter Property="Content" Value="In reruns" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Label.Style>
+			</Label>
 
-                <Label Grid.Column="1"
-                       HorizontalContentAlignment="Right">
-					<Label.Style>
-						<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
-							<Setter Property="Visibility" Value="Visible" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding Path=ViewersCount}" Value="{x:Null}">
-									<Setter Property="Visibility" Value="Hidden" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</Label.Style>
-                    <Label.Content>
-                        <TextBlock Text="{Binding Path=ViewersCount, StringFormat='{}{0:#,#} viewers'}" />
-                    </Label.Content>
-                </Label>
-
-                <Button Grid.Column="2"
-                        Width="17"
-                        Height="17"
-                        FontSize="10"
-                        Content="P"
-                        Command="{Binding Path=DataContext.OpenTwitchPlayerCommand, RelativeSource={RelativeSource AncestorType={x:Type gui:MainWindow}}}"
-                        CommandParameter="{Binding}" />
-            </Grid>
-        </StackPanel>
+			<Label Grid.Row="1" Grid.ColumnSpan="2">
+				<Label.Style>
+					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
+						<Setter Property="HorizontalContentAlignment" Value="Left" />
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding Path=Status}" Value="Public">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Label.Style>
+				<Label.Content>
+					<TextBlock Text="{Binding Game}" TextTrimming="CharacterEllipsis" />
+				</Label.Content>
+			</Label>
+        </Grid>
     </DataTemplate>
 
 </ResourceDictionary>

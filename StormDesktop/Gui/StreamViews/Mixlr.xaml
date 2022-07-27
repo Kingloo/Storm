@@ -1,12 +1,12 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:stormLibStreams="clr-namespace:StormLib.Streams;assembly=StormLib">
 
     <DataTemplate DataType="{x:Type stormLibStreams:MixlrStream}">
-        <StackPanel Style="{StaticResource stackPanelStyle}">
+        <Grid Style="{StaticResource gridStyle}">
             <ContentPresenter ContentTemplate="{StaticResource StreamBaseTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
-        </StackPanel>
+        </Grid>
     </DataTemplate>
 
 </ResourceDictionary>

@@ -61,7 +61,9 @@ namespace StormLib.Streams
 
 			Link = uri;
 
+#pragma warning disable CA2214
 			_name = DetermineName(Link);
+#pragma warning restore CA2214
 		}
 
 		protected virtual string DetermineName(Uri uri)
@@ -71,28 +73,140 @@ namespace StormLib.Streams
 				throw new ArgumentNullException(nameof(uri));
 			}
 
-			return uri.Segments.FirstOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
+			return uri
+				.Segments
+				.FirstOrDefault(s => s != "/")
+				?.TrimEnd(Char.Parse("/"))
+			?? uri.AbsoluteUri;
 		}
 
 		public bool Equals(IStream? other) => (other is StreamBase sb) && EqualsInternal(sb);
 
 		public override bool Equals(object? obj) => (obj is StreamBase sb) && EqualsInternal(sb);
 
-		public static bool operator ==(StreamBase lhs, StreamBase rhs) => lhs.Equals(rhs);
+		public static bool operator ==(StreamBase lhs, StreamBase rhs)
+		{
+			if (lhs is null && rhs is null)
+			{
+				return true;
+			}
 
-		public static bool operator !=(StreamBase lhs, StreamBase rhs) => !lhs.Equals(rhs);
+			if (lhs is null)
+			{
+				return false;
+			}
+
+			if (rhs is null)
+			{
+				return false;
+			}
+
+			return lhs.Equals(rhs);
+		}
+
+		public static bool operator !=(StreamBase lhs, StreamBase rhs)
+		{
+			if (lhs is null && rhs is null)
+			{
+				return false;
+			}
+
+			if (lhs is null)
+			{
+				return true;
+			}
+
+			if (rhs is null)
+			{
+				return true;
+			}
+
+			return !lhs.Equals(rhs);
+		}
 
 		private bool EqualsInternal(StreamBase other) => Link.Equals(other.Link);
 
 		public virtual int CompareTo(IStream? other) => String.Compare(Name, other?.Name ?? string.Empty, StringComparison.Ordinal);
 
-		public static bool operator >(StreamBase lhs, StreamBase rhs) => lhs.CompareTo(rhs) > 0;
+		public static bool operator >(StreamBase lhs, StreamBase rhs)
+		{
+			if (lhs is null && rhs is null)
+			{
+				return false;
+			}
 
-		public static bool operator >=(StreamBase lhs, StreamBase rhs) => lhs.CompareTo(rhs) > 0;
+			if (lhs is null)
+			{
+				return false;
+			}
 
-		public static bool operator <(StreamBase lhs, StreamBase rhs) => lhs.CompareTo(rhs) < 0;
+			if (rhs is null)
+			{
+				return true;
+			}
 
-		public static bool operator <=(StreamBase lhs, StreamBase rhs) => lhs.CompareTo(rhs) <= 0;
+			return lhs.CompareTo(rhs) > 0;
+		}
+
+		public static bool operator >=(StreamBase lhs, StreamBase rhs)
+		{
+			if (lhs is null && rhs is null)
+			{
+				return true;
+			}
+
+			if (lhs is null)
+			{
+				return false;
+			}
+
+			if (rhs is null)
+			{
+				return true;
+			}
+
+			return lhs.CompareTo(rhs) >= 0;
+		}
+
+		public static bool operator <(StreamBase lhs, StreamBase rhs)
+		{
+			if (lhs is null && rhs is null)
+			{
+				return false;
+			}
+
+			if (lhs is null)
+			{
+				return true;
+			}
+
+			if (rhs is null)
+			{
+				return false;
+			}
+
+			return lhs.CompareTo(rhs) < 0;
+		}
+
+		public static bool operator <=(StreamBase lhs, StreamBase rhs)
+		{
+			if (lhs is null && rhs is null)
+			{
+				return true;
+			}
+
+			if (lhs is null)
+			{
+				return true;
+			}
+
+			if (rhs is null)
+			{
+				return false;
+			}
+
+			return lhs.CompareTo(rhs) <= 0;
+		}
 
 		public override int GetHashCode() => Link.GetHashCode();
 

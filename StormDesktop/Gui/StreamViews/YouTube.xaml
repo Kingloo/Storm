@@ -2,45 +2,36 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:stormLibStreams="clr-namespace:StormLib.Streams;assembly=StormLib">
 
-    <DataTemplate DataType="{x:Type stormLibStreams:YouTubeStream}">
-        <StackPanel Style="{StaticResource stackPanelStyle}">
-            <ContentPresenter ContentTemplate="{StaticResource StreamBaseTemplate}"
+	<DataTemplate DataType="{x:Type stormLibStreams:YouTubeStream}">
+		<Grid Style="{StaticResource gridStyle}">
+
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="100" />
+			</Grid.ColumnDefinitions>
+
+			<ContentPresenter Grid.Column="0"
+							  ContentTemplate="{StaticResource StreamBaseTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
 
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-
-				<Grid.Style>
-					<Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}">
-						<Setter Property="Visibility" Value="Collapsed" />
+			<Label Grid.Column="1"
+				   VerticalAlignment="Bottom"
+				   HorizontalContentAlignment="Right">
+				<Label.Style>
+					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
+						<Setter Property="Visibility" Value="Visible" />
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding Path=Status}" Value="Public">
-								<Setter Property="Visibility" Value="Visible" />
+							<DataTrigger Binding="{Binding Path=ViewersCount}" Value="{x:Null}">
+								<Setter Property="Visibility" Value="Hidden" />
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>
-				</Grid.Style>
-
-				<Label Grid.Column="0"
-					   HorizontalContentAlignment="Right">
-					<Label.Style>
-						<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
-							<Setter Property="Visibility" Value="Visible" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding Path=ViewersCount}" Value="{x:Null}">
-									<Setter Property="Visibility" Value="Hidden" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</Label.Style>
-					<Label.Content>
-						<TextBlock Text="{Binding Path=ViewersCount, StringFormat='{}{0:#,#} viewers'}" />
-					</Label.Content>
-				</Label>
-			</Grid>
-        </StackPanel>
-    </DataTemplate>
-    
+				</Label.Style>
+				<Label.Content>
+					<TextBlock Text="{Binding Path=ViewersCount, StringFormat='{}{0:#,#} viewers'}" />
+				</Label.Content>
+			</Label>
+		</Grid>
+	</DataTemplate>
+	
 </ResourceDictionary>
