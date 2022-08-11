@@ -20,7 +20,8 @@ namespace StormLib.Helpers
 		{
 			if (String.IsNullOrWhiteSpace(line))
             {
-                throw new ArgumentNullException(nameof(line));
+                stream = null;
+                return false;
             }
 
             if (!line.StartsWith(https, sc) && !line.StartsWith(http, sc))
