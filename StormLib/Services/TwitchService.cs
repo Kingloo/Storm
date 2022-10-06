@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -22,6 +21,7 @@ namespace StormLib.Services
 		private static readonly Collection<Int64> unwantedIds = new Collection<Int64>
 		{
 			26936,     // "Music & Performing Arts"
+			493174,    // "Jackbox Party Packs"
             509481,    // "Twitch Sings"
             509577,    // "Dungeons & Dragons"
             509660,    // "Art"
