@@ -214,6 +214,7 @@ namespace StormLib.Services
 
 						if (isUnwantedId)
 						{
+							stream.ViewersCount = null;
 							stream.Game = string.Empty;
 							stream.Status = Status.Offline;
 						}
