@@ -151,7 +151,6 @@ namespace StormLib.Services
 
 			void configureRequest(HttpRequestMessage request)
 			{
-				request.RequestUri = graphQlEndpoint;
 				request.Method = HttpMethod.Post;
 				request.Version = HttpVersion.Version20;
 				request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");

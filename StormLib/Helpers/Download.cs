@@ -49,7 +49,10 @@ namespace StormLib.Helpers
 			HttpStatusCode status = HttpStatusCode.Unused;
 			string text = string.Empty;
 
-			HttpRequestMessage request = new HttpRequestMessage();
+			HttpRequestMessage request = new HttpRequestMessage
+			{
+				RequestUri = uri
+			};
 
 			configureRequest?.Invoke(request);
 
