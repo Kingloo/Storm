@@ -19,7 +19,7 @@ namespace StormLib.Helpers
 			handler = new HttpClientHandler
 			{
 				AllowAutoRedirect = true,
-				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
 				MaxAutomaticRedirections = 3
 			};
 
@@ -49,10 +49,7 @@ namespace StormLib.Helpers
 			HttpStatusCode status = HttpStatusCode.Unused;
 			string text = string.Empty;
 
-			HttpRequestMessage request = new HttpRequestMessage
-			{
-				RequestUri = uri
-			};
+			HttpRequestMessage request = new HttpRequestMessage();
 
 			configureRequest?.Invoke(request);
 
@@ -73,7 +70,7 @@ namespace StormLib.Helpers
 			{
 				request.Dispose();
 
-				if (!(response is null))
+				if (response is not null)
 				{
 					status = response.StatusCode;
 
