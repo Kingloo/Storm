@@ -31,18 +31,23 @@ namespace StormLib.Services
 		//509658,    // "Just Chatting"
 		//509670,    // "Science & Technology"
 
+		// private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
+		// {
+		// 	{ "Host", "gql.twitch.tv" },
+		// 	{ "User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/75.0" },
+		// 	{ "Accept", "*/*" },
+		// 	{ "Accept-Language", "en-GB" },
+		// 	{ "Accept-Encoding", "gzip, deflate, br" },
+		// 	{ "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
+        //     { "Origin", "https://www.twitch.tv" },
+		// 	{ "Upgrade-Insecure-Requests", "1" },
+		// 	{ "Pragma", "no-cache" },
+		// 	{ "Cache-Control", "no-cache" }
+		// };
+
 		private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
 		{
-			{ "Host", "gql.twitch.tv" },
-			{ "User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/75.0" },
-			{ "Accept", "*/*" },
-			{ "Accept-Language", "en-GB" },
-			{ "Accept-Encoding", "gzip, deflate, br" },
-			{ "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
-            { "Origin", "https://www.twitch.tv" },
-			{ "Upgrade-Insecure-Requests", "1" },
-			{ "Pragma", "no-cache" },
-			{ "Cache-Control", "no-cache" }
+			{ "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }
 		};
 
 		private static readonly Uri graphQlEndpoint = new Uri("https://gql.twitch.tv/gql");
@@ -146,8 +151,10 @@ namespace StormLib.Services
 
 			void configureRequest(HttpRequestMessage request)
 			{
+				request.RequestUri = graphQlEndpoint;
 				request.Method = HttpMethod.Post;
-				request.Content = new StringContent(requestBody, Encoding.UTF8, "text/plain");
+				request.Version = HttpVersion.Version20;
+				request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
 				foreach (KeyValuePair<string, string> kvp in graphQlRequestHeaders)
 				{
@@ -162,25 +169,23 @@ namespace StormLib.Services
 		{
 			StringBuilder sb = new StringBuilder();
 
-			sb.Append('[');
+			IList<string> queries = new List<string>();
 
 			foreach (IStream stream in streams)
 			{
-				string beginning = "{\"extensions\":{\"persistedQuery\":{\"sha256Hash\":\"ce18f2832d12cabcfee42f0c72001dfa1a5ed4a84931ead7b526245994810284\",\"version\":1}},\"operationName\":\"ChannelRoot_Channel\",\"variables\":{\"currentChannelLogin\":\"";
-				string ending = "\",\"includeChanlets\":false}},";
+				const string beginning = "{ \"query\": \"query Query($login: String) { user (login: $login) { login displayName description primaryColorHex roles { isAffiliate isPartner } profileImageURL(width: 70) offlineImageURL freeformTags { id name } stream { createdAt viewersCount isEncrypted previewImageURL(width: 1280, height: 720) type isMature language game { id name displayName } } } }\", \"variables\":{\"login\":\"";
+				const string ending = "\"} }";
 
 				sb.Append(beginning);
 				sb.Append(stream.Name);
 				sb.Append(ending);
+
+				queries.Add(sb.ToString());
+
+				sb.Clear();
 			}
 
-			// to remove the unwanted comma after the last entry
-			// C# 8 ranges might work here
-			sb.Remove(sb.Length - 1, 1);
-
-			sb.Append(']');
-
-			return sb.ToString();
+			return $"[{String.Join(", ", queries)}]";
 		}
 
 		private static void ParseJson(IEnumerable<IStream> streams, JArray results)
