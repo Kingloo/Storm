@@ -1,0 +1,46 @@
+[
+	{
+		"query": "query Query($login: String)
+			{
+				user (login: $login)
+				{
+					login
+					displayName
+					description
+					primaryColorHex
+					roles
+						{
+							isAffiliate
+							isPartner
+						}
+					profileImageURL(width: 70)
+					offlineImageURL
+					freeformTags
+						{
+							id
+							name
+						}
+					stream
+						{
+							createdAt
+							viewersCount
+							isEncrypted
+							previewImageURL(width: 1280, height: 720)
+							type
+							isMature
+							language
+							game
+								{
+									id
+									name
+									displayName
+								}
+						}
+				}
+			}",
+		"variables":
+			{
+				"login": "bintokki"
+			}
+	}
+]
