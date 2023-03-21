@@ -64,6 +64,10 @@ namespace StormLib.Helpers
 				{
 					stream = new YouTubeStream(uri);
 				}
+				else if (host.EndsWith("rumble.com", sc))
+				{
+					stream = new RumbleStream(uri);
+				}
 				else
 				{
 					stream = new UnsupportedStream(uri);

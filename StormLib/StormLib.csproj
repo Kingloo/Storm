@@ -25,6 +25,9 @@
 		<None Update="Icons\YouTube.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Icons\Rumble.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Icons\DefaultIcon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
