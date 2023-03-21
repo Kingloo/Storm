@@ -32,6 +32,11 @@ namespace StormLib.Streams
 
 		protected override string DetermineName(Uri uri)
 		{
+			if (uri is null)
+			{
+				throw new ArgumentNullException(nameof(uri));
+			}
+
 			return uri.Segments.LastOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
 		}
 	}

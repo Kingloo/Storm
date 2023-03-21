@@ -81,14 +81,23 @@ namespace StormLib.Services
 
 		public async Task<Result> UpdateAsync(IEnumerable<IStream> streams, bool preserveSynchronizationContext)
 		{
-			if (!streams.Any()) { return Result.NothingToDo; }
+			if (streams is null)
+			{
+				throw new ArgumentNullException(nameof(streams));
+			}
 
-			List<IStream> streamsList = new List<IStream>(streams);
+			IList<IStream> enumeratedStreams = streams.ToList<IStream>();
+
+			if (!enumeratedStreams.Any())
+			{
+				return Result.NothingToDo;
+			}
+
 			Collection<Result> results = new Collection<Result>();
 
 			while (true)
 			{
-				List<IStream> updateWave = streamsList.Take(maxStreamsPerUpdate).ToList();
+				List<IStream> updateWave = enumeratedStreams.Take(maxStreamsPerUpdate).ToList();
 
 				if (updateWave.Any())
 				{
@@ -98,7 +107,7 @@ namespace StormLib.Services
 
 					foreach (IStream toRemove in updateWave)
 					{
-						streamsList.Remove(toRemove);
+						enumeratedStreams.Remove(toRemove);
 					}
 				}
 				else

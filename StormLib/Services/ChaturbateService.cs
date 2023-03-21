@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using StormLib.Common;
 using StormLib.Interfaces;
 using StormLib.Streams;
 
@@ -47,7 +40,7 @@ namespace StormLib.Services
 				return Result.WebFailure;
 			}
 
-			if (text.Contains(bannedMarker))
+			if (text.Contains(bannedMarker, StringComparison.OrdinalIgnoreCase))
 			{
 				stream.Status = Status.Banned;
 				return Result.Success;
@@ -94,15 +87,17 @@ namespace StormLib.Services
             {
                 throw new ArgumentNullException(nameof(streams));
             }
+
+			IList<IStream> enumeratedStreams = streams.ToList<IStream>();
             
-            if (!streams.Any())
+            if (!enumeratedStreams.Any())
             {
                 return Result.NothingToDo;
             }
 
 			List<Task<Result>> tasks = new List<Task<Result>>();
 
-			foreach (IStream stream in streams)
+			foreach (IStream stream in enumeratedStreams)
 			{
 				Task<Result> task = Task.Run(() => UpdateAsync(stream, preserveSynchronizationContext));
 

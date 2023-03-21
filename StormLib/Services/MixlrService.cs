@@ -81,14 +81,16 @@ namespace StormLib.Services
                 throw new ArgumentNullException(nameof(streams));
             }
 
-            if (!streams.Any())
+			IList<IStream> enumeratedStreams = streams.ToList<IStream>();
+
+            if (!enumeratedStreams.Any())
             {
                 return Result.NothingToDo;
             }
 
 			List<Task<Result>> tasks = new List<Task<Result>>();
 
-			foreach (IStream stream in streams)
+			foreach (IStream stream in enumeratedStreams)
 			{
 				Task<Result> task = Task<Result>.Run(() => UpdateAsync(stream, preserveSynchronizationContext));
 
