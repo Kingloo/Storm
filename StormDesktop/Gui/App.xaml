@@ -14,6 +14,7 @@
                 <ResourceDictionary Source="StreamViews\Chaturbate.xaml" />
                 <ResourceDictionary Source="StreamViews\YouTube.xaml" />
 				<ResourceDictionary Source="StreamViews\Rumble.xaml" />
+				<ResourceDictionary Source="StreamViews\Kick.xaml" />
                 <ResourceDictionary Source="StreamViews\Unsupported.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
