@@ -49,11 +49,18 @@ namespace StormLib.Services
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
+			IList<IStream> enumeratedStreams = streams.ToList();
+
+			if (!enumeratedStreams.Any())
+			{
+				return Result.NothingToDo;
+			}
+
 			List<Task<Result>> updateTasks = new List<Task<Result>>();
 
-			foreach (IStream each in streams)
+			foreach (IStream each in enumeratedStreams)
 			{
-				Task<Result> updateTask = Task<Result>.Run(() => UpdateAsync(each, preserveSynchronizationContext));
+				Task<Result> updateTask = Task.Run(() => UpdateAsync(each, preserveSynchronizationContext));
 
 				updateTasks.Add(updateTask);
 			}
@@ -71,7 +78,7 @@ namespace StormLib.Services
 			{
 				if (disposing)
 				{
-					// TODO: dispose managed state (managed objects)
+					download.Dispose();
 				}
 
 				disposedValue = true;
