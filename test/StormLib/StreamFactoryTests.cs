@@ -17,6 +17,8 @@ namespace StormTests.StormLib
 		private const string mixlrAccount = "mixlr.com/jeff-gerstmann";
 		private const string chaturbateAccount = "chaturbate.com/asianqueen93";
 		private const string youtubeAccount = "youtube.com/linustechtips";
+		private const string kickAccount = "kick.com/destiny";
+		private const string rumbleAccount = "rumble.com/destiny";
 		private const string commentChar = "#";
 
 		[Test]
@@ -74,6 +76,8 @@ namespace StormTests.StormLib
 		[TestCase(mixlrAccount, typeof(MixlrStream))]
 		[TestCase(chaturbateAccount, typeof(ChaturbateStream))]
 		[TestCase(youtubeAccount, typeof(YouTubeStream))]
+		[TestCase(kickAccount, typeof(KickStream))]
+		[TestCase(rumbleAccount, typeof(RumbleStream))]
 		public void TryCreate_ValidAccountName_StreamShouldBeCorrectType(string account, Type type)
 		{
 			bool _ = StreamFactory.TryCreate(account, out IStream? stream);
@@ -89,7 +93,7 @@ namespace StormTests.StormLib
 
 			if (stream is null)
 			{
-				throw new ArgumentNullException(nameof(stream));
+				throw new AssertionException($"object was null created from '{accountUri}'");
 			}
 
 			bool beginsWithHttps = stream.Link.AbsoluteUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
