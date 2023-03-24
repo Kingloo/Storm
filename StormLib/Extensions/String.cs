@@ -7,63 +7,49 @@ using System.Text.RegularExpressions;
 
 namespace StormLib.Extensions
 {
-	internal static class StringExtensions
+	public static class StringExtensions
 	{
-		internal static bool ContainsExt(this string target, string toFind, StringComparison comparison)
-		{
-			if (target is null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
+		private const string https = "https://";
+		private const string http = "http://";
+		private const string carriageReturnNewLine = "\r\n";
+		private const string carriageReturn = "\r";
+		private const string newLine = "\n";
+		private const string space = " ";
 
-			return (target.IndexOf(toFind, comparison) > -1);
+		public static bool ContainsExt(this string target, string toFind, StringComparison comparison)
+		{
+			if (String.IsNullOrWhiteSpace(target))
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
+
+			if (String.IsNullOrEmpty(toFind)) // don't change this to IsNullOrWhiteSpace, newlines count as whitespace
+			{
+				throw new ArgumentNullException(nameof(toFind));
+			}
+
+			return target.IndexOf(toFind, comparison) > -1;
 		}
 
-		internal static string RemoveNewLines(this string value)
+		public static string RemoveNewLines(this string value)
 		{
-			if (value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+			ArgumentNullException.ThrowIfNull(value, nameof(value));
 
-			var sco = StringComparison.Ordinal;
+			var scoic = StringComparison.OrdinalIgnoreCase;
 
-			string toReturn = value;
-
-			if (toReturn.Contains("\r\n", sco))
-			{
-				toReturn = toReturn.Replace("\r\n", " ", sco);
-			}
-
-			if (toReturn.Contains('\r', sco))
-			{
-				toReturn = toReturn.Replace("\r", " ", sco);
-			}
-
-			if (toReturn.Contains('\n', sco))
-			{
-				toReturn = toReturn.Replace("\n", " ", sco);
-			}
-
-			if (toReturn.Contains(Environment.NewLine, sco))
-			{
-				toReturn = toReturn.Replace(Environment.NewLine, " ", sco);
-			}
-
-			return toReturn;
+			return value
+				.Replace(carriageReturnNewLine, space, scoic)
+				.Replace(carriageReturn, space, scoic)
+				.Replace(newLine, space, scoic)
+				.Replace(Environment.NewLine, space, scoic);
 		}
 
-		internal static string RemoveUnicodeCategories(this string self, IEnumerable<UnicodeCategory> categories)
+		public static string RemoveUnicodeCategories(this string self, IList<UnicodeCategory> categories)
 		{
-			if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self));
-            }
-			
-            if (categories is null)
-            {
-                throw new ArgumentNullException(nameof(categories));
-            }
+			if (String.IsNullOrWhiteSpace(self))
+			{
+				throw new ArgumentNullException(nameof(self));
+			}
 
 			var sb = new StringBuilder();
 
@@ -78,22 +64,17 @@ namespace StormLib.Extensions
 			return sb.ToString();
 		}
 
-		internal static IReadOnlyCollection<string> FindBetween(this string text, string beginning, string ending)
+		public static IReadOnlyCollection<string> FindBetween(this string text, string beginning, string ending)
 		{
-			if (text is null)
-            {
-                throw new ArgumentNullException(nameof(text));
-            }
-
 			if (String.IsNullOrEmpty(beginning))
-            {
-                throw new ArgumentException("beginning was NullOrEmpty", nameof(beginning));
-            }
-			
-            if (String.IsNullOrEmpty(ending))
-            {
-                throw new ArgumentException("ending was NullOrEmpty", nameof(ending));
-            }
+			{
+				throw new ArgumentException("beginning was NullOrEmpty", nameof(beginning));
+			}
+
+			if (String.IsNullOrEmpty(ending))
+			{
+				throw new ArgumentException("ending was NullOrEmpty", nameof(ending));
+			}
 
 			List<string> results = new List<string>();
 
@@ -104,23 +85,23 @@ namespace StormLib.Extensions
 				".+?",
 				Regex.Escape(ending));
 
-			foreach (Match m in Regex.Matches(text, pattern))
+			foreach (Match? m in Regex.Matches(text, pattern))
 			{
-				results.Add(m.Groups[1].Value);
+				if (m is not null)
+				{
+					results.Add(m.Groups[1].Value);
+				}
 			}
 
 			return results;
 		}
 
-		internal static string EnsureStartsWithHttps(this string input)
+		public static string EnsureStartsWithHttps(this string input)
 		{
-			if (input is null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-			const string https = "https://";
-			const string http = "http://";
+			if (String.IsNullOrWhiteSpace(input))
+			{
+				throw new ArgumentNullException(nameof(input));
+			}
 
 			if (input.StartsWith(https, StringComparison.OrdinalIgnoreCase))
 			{
@@ -132,7 +113,7 @@ namespace StormLib.Extensions
 				return input.Insert(4, "s");
 			}
 
-			return string.Format(CultureInfo.CurrentCulture, "{0}{1}", https, input);
+			return string.Format(CultureInfo.InvariantCulture, "{0}{1}", https, input);
 		}
 	}
 }
