@@ -1,0 +1,86 @@
+{
+	"id": 1772249,
+	"user_id": 1823122,
+	"slug": "destiny",
+	"playback_url": "?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzM4NCJ9.eyJhd3M6Y2hhbm5lbC1hcm4iOm51bGwsImF3czphY2Nlc3MtY29udHJvbC1hbGxvdy1vcmlnaW4iOiJodHRwczovL2tpY2suY29tIiwiYXdzOnN0cmljdC1vcmlnaW4tZW5mb3JjZW1lbnQiOmZhbHNlLCJleHAiOjE2Nzk2NzMzNjN9.QBxzyzuBGGVw3oBCGtnzSDBhJBDSDxQ8UZfBjdVV18CaaVAqygZmlw293Nz75aiPFsbWS49Lt25tk6PLLe58jes72j_9gBMJ-iJNd2vvtbwDZElx8NXoQlKuBAaNiBry",
+	"name_updated_at": null,
+	"vod_enabled": true,
+	"subscription_enabled": false,
+	"cf_rate_limiter": "1.5",
+	"followersCount": 3501,
+	"subscriber_badges": [],
+	"banner_image": {
+		"responsive": "",
+		"url": "https://files.kick.com/images/channel/1772249/banner_image/f619cb5c-c9c7-4a35-88d1-5deb3b8340a4"
+	},
+	"recent_categories": [],
+	"livestream": null,
+	"role": null,
+	"muted": false,
+	"follower_badges": [],
+	"offline_banner_image": null,
+	"can_host": true,
+	"user": {
+		"id": 1823122,
+		"username": "Destiny",
+		"agreed_to_terms": true,
+		"bio": "",
+		"country": "",
+		"state": "",
+		"city": "",
+		"instagram": "destiny",
+		"twitter": "TheOmniLiberal",
+		"youtube": "destiny",
+		"discord": "destiny",
+		"tiktok": "destinydebates",
+		"facebook": "",
+		"birthdate": null,
+		"profile_pic": "https://files.kick.com/images/user/1823122/profile_image/conversion/72da0b52-5f20-4ca8-9d36-2b66e72dd094-fullsize.webp"
+	},
+	"chatroom": {
+		"id": 1764849,
+		"chatable_type": "App\\Models\\Channel",
+		"channel_id": 1772249,
+		"created_at": "2023-03-18T04:18:56.000000Z",
+		"updated_at": "2023-03-18T04:18:56.000000Z",
+		"chat_mode_old": "public",
+		"chat_mode": "public",
+		"slow_mode": false,
+		"chatable_id": 1772249
+	},
+	"ascending_links": [],
+	"plan": null,
+	"previous_livestreams": [],
+	"verified": {
+		"id": 947,
+		"channel_id": 1772249,
+		"created_at": "2023-03-18T07:00:46.000000Z",
+		"updated_at": "2023-03-18T07:00:46.000000Z"
+	},
+	"media": [
+		{
+			"id": 14950165,
+			"model_type": "App\\Models\\Channel",
+			"model_id": 1772249,
+			"collection_name": "banner_image",
+			"name": "f619cb5c-c9c7-4a35-88d1-5deb3b8340a4",
+			"file_name": "f619cb5c-c9c7-4a35-88d1-5deb3b8340a4",
+			"mime_type": "image/jpeg",
+			"disk": "s3",
+			"size": 1445274,
+			"manipulations": [],
+			"custom_properties": {
+				"generated_conversions": {
+					"fullsize": true,
+					"medium": true
+				}
+			},
+			"responsive_images": [],
+			"order_column": 5999968,
+			"created_at": "2023-03-18T04:36:09.000000Z",
+			"updated_at": "2023-03-18T04:36:27.000000Z",
+			"uuid": "08f54e1a-b7b2-4db5-bb75-6c4cc3554dce",
+			"conversions_disk": "s3"
+		}
+	]
+}

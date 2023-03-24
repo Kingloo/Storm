@@ -1,0 +1,195 @@
+
+
+{
+	"id": 1772249,
+	"user_id": 1823122,
+	"slug": "destiny",
+	"playback_url": "https://fa723fc1b171.us-west-2.playback.live-video.net/api/video/v1/us-west-2.196233775518.channel.0PMYoN0I2p4i.m3u8?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzM4NCJ9.eyJhd3M6Y2hhbm5lbC1hcm4iOiJhcm46YXdzOml2czp1cy13ZXN0LTI6MTk2MjMzNzc1NTE4OmNoYW5uZWwvMFBNWW9OMEkycDRpIiwiYXdzOmFjY2Vzcy1jb250cm9sLWFsbG93LW9yaWdpbiI6Imh0dHBzOi8va2ljay5jb20iLCJhd3M6c3RyaWN0LW9yaWdpbi1lbmZvcmNlbWVudCI6ZmFsc2UsImV4cCI6MTY3OTY5OTgzN30.OW8aBUh_l_6aSIchu8PLmgZFBCQiI2ly6P_qM_Inft8K36ifP769c4js6NEDTHu_Y8Zo83Xehf3i4fzJxSqOEzwVAlsdbtrKO2fyKQ9fXSce_weQqVxe6lN2Znx3xSp2",
+	"name_updated_at": null,
+	"vod_enabled": true,
+	"subscription_enabled": false,
+	"cf_rate_limiter": "1.5",
+	"followersCount": 6473,
+	"subscriber_badges": [],
+	"banner_image": {
+		"responsive": "",
+		"url": "https://files.kick.com/images/channel/1772249/banner_image/0ad16d02-648a-4724-8450-26f73948c65f"
+	},
+	"recent_categories": [
+		{
+			"id": 1396,
+			"category_id": 1,
+			"name": "They Are Billions",
+			"slug": "they-are-billions",
+			"tags": [
+				"Indie",
+				"Real Time Strategy (RTS)",
+				"Role-playing (RPG)",
+				"Strategy"
+			],
+			"description": null,
+			"deleted_at": null,
+			"banner": {
+				"responsive": "https://files.kick.com/images/subcategories/1396/banner/responsives/cb204d30-704b-4062-8bab-2d73aa4066cd___banner_285_380.webp 285w, https://files.kick.com/images/subcategories/1396/banner/responsives/cb204d30-704b-4062-8bab-2d73aa4066cd___banner_238_317.webp 238w, https://files.kick.com/images/subcategories/1396/banner/responsives/cb204d30-704b-4062-8bab-2d73aa4066cd___banner_199_265.webp 199w, data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHg9IjAiCiB5PSIwIiB2aWV3Qm94PSIwIDAgMjg1IDM4MCI+Cgk8aW1hZ2Ugd2lkdGg9IjI4NSIgaGVpZ2h0PSIzODAiIHhsaW5rOmhyZWY9ImRhdGE6aW1hZ2UvanBlZztiYXNlNjQsLzlqLzRBQVFTa1pKUmdBQkFRRUFZQUJnQUFELy9nQTdRMUpGUVZSUFVqb2daMlF0YW5CbFp5QjJNUzR3SUNoMWMybHVaeUJKU2tjZ1NsQkZSeUIyT0RBcExDQnhkV0ZzYVhSNUlEMGdPVEFLLzlzQVF3QURBZ0lEQWdJREF3TURCQU1EQkFVSUJRVUVCQVVLQndjR0NBd0tEQXdMQ2dzTERRNFNFQTBPRVE0TEN4QVdFQkVURkJVVkZRd1BGeGdXRkJnU0ZCVVUvOXNBUXdFREJBUUZCQVVKQlFVSkZBMExEUlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVS84QUFFUWdBS3dBZ0F3RWlBQUlSQVFNUkFmL0VBQjhBQUFFRkFRRUJBUUVCQUFBQUFBQUFBQUFCQWdNRUJRWUhDQWtLQy8vRUFMVVFBQUlCQXdNQ0JBTUZCUVFFQUFBQmZRRUNBd0FFRVFVU0lURkJCaE5SWVFjaWNSUXlnWkdoQ0NOQ3NjRVZVdEh3SkROaWNvSUpDaFlYR0JrYUpTWW5LQ2txTkRVMk56ZzVPa05FUlVaSFNFbEtVMVJWVmxkWVdWcGpaR1ZtWjJocGFuTjBkWFozZUhsNmc0U0Zob2VJaVlxU2s1U1ZscGVZbVpxaW82U2xwcWVvcWFxeXM3UzF0cmU0dWJyQ3c4VEZ4c2ZJeWNyUzA5VFYxdGZZMmRyaDR1UGs1ZWJuNk9ucThmTHo5UFgyOS9qNSt2L0VBQjhCQUFNQkFRRUJBUUVCQVFFQUFBQUFBQUFCQWdNRUJRWUhDQWtLQy8vRUFMVVJBQUlCQWdRRUF3UUhCUVFFQUFFQ2R3QUJBZ01SQkFVaE1RWVNRVkVIWVhFVElqS0JDQlJDa2FHeHdRa2pNMUx3RldKeTBRb1dKRFRoSmZFWEdCa2FKaWNvS1NvMU5qYzRPVHBEUkVWR1IwaEpTbE5VVlZaWFdGbGFZMlJsWm1kb2FXcHpkSFYyZDNoNWVvS0RoSVdHaDRpSmlwS1RsSldXbDVpWm1xS2pwS1dtcDZpcHFyS3p0TFcydDdpNXVzTER4TVhHeDhqSnl0TFQxTlhXMTlqWjJ1TGo1T1htNStqcDZ2THo5UFgyOS9qNSt2L2FBQXdEQVFBQ0VRTVJBRDhBK1BtK0d3OFFYUmExVVJSRHNhWnFud3BYUjdMemZNeS9wVkRSdkhWNVl6S3l5Y0R0bXRmVS9HOXhxNmM0QXJ1eEZURSsxWHNZcmxQbWNQSERxay9ieWZNY3RhK0VHdjJkR096SHJWVFh2QU1lbjJYbnBNR2J1TTFyRFVaRmRpSmNaOURXWHFWM0pPcFR6c2o2MXRGMVpmR1J6VTQvdzJjaC9iQlNVa2ZkcXpEcjB4QkVhc2ZwVlBRckJyeHdXaUxwbmtnVjdSOE90QThQbytMK05TcDY1cno2dU05aTJyTm4wZFBLNDFxUHRlZGVuVThkbTFXNVRsZ3k1OWFnT3N2ZzVKelh0ZnhFMFB3L0lmOEFRSTFDcU9Ob3J4ZlY5UE1FakZZaXNlZXVLVkhGKzFkck5EcTVYR2pTOXJ6cjA2aTZMNG1rMGVGa1JRd1ByVjZIeDVjeHV4QXhtdVRvcm9kS0RkMmptVlNTMFRPcWw4ZVhVbkdNajNxcnFYaWFYVWJZUnNvSDBGWUE2MHVlYVNwUVQwUW5VaytwLzlrPSI+Cgk8L2ltYWdlPgo8L3N2Zz4= 32w",
+				"url": "https://files.kick.com/images/subcategories/1396/banner/cb204d30-704b-4062-8bab-2d73aa4066cd"
+			},
+			"category": {
+				"id": 1,
+				"name": "Games",
+				"slug": "games",
+				"icon": "🕹️"
+			}
+		}
+	],
+	"livestream": {
+		"id": 677601,
+		"slug": "7db38-aella-rant-today-disturbing-case-of-the-scream-killers-video",
+		"channel_id": 1772249,
+		"created_at": "2023-03-24 19:28:36",
+		"session_title": "Aella rant today | \"Disturbing Case of the Scream Killers\" video",
+		"is_live": true,
+		"risk_level_id": null,
+		"source": null,
+		"twitch_channel": null,
+		"duration": 0,
+		"language": "English",
+		"is_mature": true,
+		"viewer_count": 12757,
+		"thumbnail": {
+			"responsive": "https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_1920_1080.webp 1920w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_1606_903.webp 1606w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_1343_755.webp 1343w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_1124_632.webp 1124w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_940_529.webp 940w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_787_443.webp 787w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_658_370.webp 658w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_550_309.webp 550w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_460_259.webp 460w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_385_217.webp 385w, https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/responsives/thumb167___video_thumbnail_322_181.webp 322w, data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHg9IjAiCiB5PSIwIiB2aWV3Qm94PSIwIDAgMTkyMCAxMDgwIj4KCTxpbWFnZSB3aWR0aD0iMTkyMCIgaGVpZ2h0PSIxMDgwIiB4bGluazpocmVmPSJkYXRhOmltYWdlL2pwZWc7YmFzZTY0LC85ai80QUFRU2taSlJnQUJBUUVBWUFCZ0FBRC8vZ0E3UTFKRlFWUlBVam9nWjJRdGFuQmxaeUIyTVM0d0lDaDFjMmx1WnlCSlNrY2dTbEJGUnlCMk9EQXBMQ0J4ZFdGc2FYUjVJRDBnT1RBSy85c0FRd0FEQWdJREFnSURBd01EQkFNREJBVUlCUVVFQkFVS0J3Y0dDQXdLREF3TENnc0xEUTRTRUEwT0VRNExDeEFXRUJFVEZCVVZGUXdQRnhnV0ZCZ1NGQlVVLzlzQVF3RURCQVFGQkFVSkJRVUpGQTBMRFJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVUvOEFBRVFnQUVnQWdBd0VpQUFJUkFRTVJBZi9FQUI4QUFBRUZBUUVCQVFFQkFBQUFBQUFBQUFBQkFnTUVCUVlIQ0FrS0MvL0VBTFVRQUFJQkF3TUNCQU1GQlFRRUFBQUJmUUVDQXdBRUVRVVNJVEZCQmhOUllRY2ljUlF5Z1pHaENDTkNzY0VWVXRId0pETmljb0lKQ2hZWEdCa2FKU1luS0NrcU5EVTJOemc1T2tORVJVWkhTRWxLVTFSVlZsZFlXVnBqWkdWbVoyaHBhbk4wZFhaM2VIbDZnNFNGaG9lSWlZcVNrNVNWbHBlWW1acWlvNlNscHFlb3FhcXlzN1MxdHJlNHVickN3OFRGeHNmSXljclMwOVRWMXRmWTJkcmg0dVBrNWVibjZPbnE4Zkx6OVBYMjkvajUrdi9FQUI4QkFBTUJBUUVCQVFFQkFRRUFBQUFBQUFBQkFnTUVCUVlIQ0FrS0MvL0VBTFVSQUFJQkFnUUVBd1FIQlFRRUFBRUNkd0FCQWdNUkJBVWhNUVlTUVZFSFlYRVRJaktCQ0JSQ2thR3h3UWtqTTFMd0ZXSnkwUW9XSkRUaEpmRVhHQmthSmljb0tTbzFOamM0T1RwRFJFVkdSMGhKU2xOVVZWWlhXRmxhWTJSbFptZG9hV3B6ZEhWMmQzaDVlb0tEaElXR2g0aUppcEtUbEpXV2w1aVptcUtqcEtXbXA2aXBxckt6dExXMnQ3aTV1c0xEeE1YR3g4akp5dExUMU5YVzE5aloydUxqNU9YbTUranA2dkx6OVBYMjkvajUrdi9hQUF3REFRQUNFUU1SQUQ4QThLbjBtTFZZdzRiTCt0Y2I0ajBGdE11QTBYelo2MXlOeDQ5MWpSWXZMaEJrWDFOVm8vaWhleWpOM0Z1SXI4K2psK0t3OVQzSGVKOW5MR1lXdFM5N2M2bXkwalVOUXVWanRvV2tjL3dpcnQ1NFAxRzJiekxpMFpDT3VSVWZ3NytJc3AxVkpvRlZaQjBCcjBqVjllMVRXb1pCSXFndnp3Szk3QjVlOFJGdXJvenlwNG5rOTJpcm84SDE0RFowcmlkUk9DYUtLNjZlN1BQZjhKSFJmQzVqL2JzZko2MTlIdy82cGZwUlJYdDRUWm10UFkvLzJRPT0iPgoJPC9pbWFnZT4KPC9zdmc+ 32w",
+			"url": "https://stream.kick.com/thumbnails/livestream/677601/thumb167/video_thumbnail/thumb167.jpg"
+		},
+		"viewers": 12757,
+		"categories": [
+			{
+				"id": 1396,
+				"category_id": 1,
+				"name": "They Are Billions",
+				"slug": "they-are-billions",
+				"tags": [
+					"Indie",
+					"Real Time Strategy (RTS)",
+					"Role-playing (RPG)",
+					"Strategy"
+				],
+				"description": null,
+				"deleted_at": null,
+				"category": {
+					"id": 1,
+					"name": "Games",
+					"slug": "games",
+					"icon": "🕹️"
+				}
+			}
+		],
+		"tags": []
+	},
+	"role": null,
+	"muted": false,
+	"follower_badges": [],
+	"offline_banner_image": {
+		"src": "https://files.kick.com/images/channel/1772249/offline_banner/conversion/b8a91fbd-1796-4952-b4e9-d79685292a36-fullsize.jpg",
+		"srcset": "https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_1200_675.webp 1200w, https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_1003_564.webp 1003w, https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_839_472.webp 839w, https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_702_395.webp 702w, https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_588_331.webp 588w, https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_491_276.webp 491w, https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_411_231.webp 411w, https://files.kick.com/images/channel/1772249/offline_banner/responsives/b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_344_194.webp 344w, data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHg9IjAiCiB5PSIwIiB2aWV3Qm94PSIwIDAgMTIwMCA2NzUiPgoJPGltYWdlIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjY3NSIgeGxpbms6aHJlZj0iZGF0YTppbWFnZS9qcGVnO2Jhc2U2NCwvOWovNEFBUVNrWkpSZ0FCQVFFQVlBQmdBQUQvL2dBN1ExSkZRVlJQVWpvZ1oyUXRhbkJsWnlCMk1TNHdJQ2gxYzJsdVp5QkpTa2NnU2xCRlJ5QjJPREFwTENCeGRXRnNhWFI1SUQwZ09UQUsvOXNBUXdBREFnSURBZ0lEQXdNREJBTURCQVVJQlFVRUJBVUtCd2NHQ0F3S0RBd0xDZ3NMRFE0U0VBME9FUTRMQ3hBV0VCRVRGQlVWRlF3UEZ4Z1dGQmdTRkJVVS85c0FRd0VEQkFRRkJBVUpCUVVKRkEwTERSUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVLzhBQUVRZ0FFZ0FnQXdFaUFBSVJBUU1SQWYvRUFCOEFBQUVGQVFFQkFRRUJBQUFBQUFBQUFBQUJBZ01FQlFZSENBa0tDLy9FQUxVUUFBSUJBd01DQkFNRkJRUUVBQUFCZlFFQ0F3QUVFUVVTSVRGQkJoTlJZUWNpY1JReWdaR2hDQ05Dc2NFVlV0SHdKRE5pY29JSkNoWVhHQmthSlNZbktDa3FORFUyTnpnNU9rTkVSVVpIU0VsS1UxUlZWbGRZV1ZwalpHVm1aMmhwYW5OMGRYWjNlSGw2ZzRTRmhvZUlpWXFTazVTVmxwZVltWnFpbzZTbHBxZW9xYXF5czdTMXRyZTR1YnJDdzhURnhzZkl5Y3JTMDlUVjF0ZlkyZHJoNHVQazVlYm42T25xOGZMejlQWDI5L2o1K3YvRUFCOEJBQU1CQVFFQkFRRUJBUUVBQUFBQUFBQUJBZ01FQlFZSENBa0tDLy9FQUxVUkFBSUJBZ1FFQXdRSEJRUUVBQUVDZHdBQkFnTVJCQVVoTVFZU1FWRUhZWEVUSWpLQkNCUkNrYUd4d1Frak0xTHdGV0p5MFFvV0pEVGhKZkVYR0JrYUppY29LU28xTmpjNE9UcERSRVZHUjBoSlNsTlVWVlpYV0ZsYVkyUmxabWRvYVdwemRIVjJkM2g1ZW9LRGhJV0doNGlKaXBLVGxKV1dsNWlabXFLanBLV21wNmlwcXJLenRMVzJ0N2k1dXNMRHhNWEd4OGpKeXRMVDFOWFcxOWpaMnVMajVPWG01K2pwNnZMejlQWDI5L2o1K3YvYUFBd0RBUUFDRVFNUkFEOEE3L1gvQUFQOXF1Qm1JZzF6L2p6d25aK0cvQ2ozbTc5N2pwWEpmRGY5cUkrTU5aaHRkUmpFRFNIYUNhN1g0MGFScWQvb1RKYXQ1bHZNdVFSMDVyOVZ3K2VZakV0MHFkNHVMKzhqRlpMaGxGVmFUdW10anl6dzRJYnJUeGVHVU9kM1FWNjdIZHlRK0VrZTB6a2puRmVOZUMvREwrR2JSMXZaUzI0NTJtdlNORjhWVzlyQjVBSU1mOTAxOTdScDRuRVVVNTZ1OXo4QTRoeE5QQzR5Q2pUYjVXZkgvaDRtUHhYWmJEdC9lRDd2SGV2ME1BRW53K3NDdzNIeWh5ZWUxRkZmbEdEL0FOOXBuOUdVZG9uaG5pemlkc2NjMWdXekh6T3Bvb3I5K3dmOEJINFJ4SC92OGovLzJRPT0iPgoJPC9pbWFnZT4KPC9zdmc+ 32w"
+	},
+	"can_host": true,
+	"user": {
+		"id": 1823122,
+		"username": "Destiny",
+		"agreed_to_terms": true,
+		"bio": "",
+		"country": "",
+		"state": "",
+		"city": "",
+		"instagram": "destiny",
+		"twitter": "TheOmniLiberal",
+		"youtube": "destiny",
+		"discord": "destiny",
+		"tiktok": "destinydebates",
+		"facebook": "",
+		"birthdate": null,
+		"profile_pic": "https://files.kick.com/images/user/1823122/profile_image/conversion/72da0b52-5f20-4ca8-9d36-2b66e72dd094-fullsize.webp"
+	},
+	"chatroom": {
+		"id": 1764849,
+		"chatable_type": "App\\Models\\Channel",
+		"channel_id": 1772249,
+		"created_at": "2023-03-18T04:18:56.000000Z",
+		"updated_at": "2023-03-24T19:41:50.000000Z",
+		"chat_mode_old": "public",
+		"chat_mode": "followers_only",
+		"slow_mode": true,
+		"chatable_id": 1772249
+	},
+	"ascending_links": [],
+	"plan": null,
+	"previous_livestreams": [],
+	"verified": {
+		"id": 947,
+		"channel_id": 1772249,
+		"created_at": "2023-03-18T07:00:46.000000Z",
+		"updated_at": "2023-03-18T07:00:46.000000Z"
+	},
+	"media": [
+		{
+			"id": 18572309,
+			"model_type": "App\\Models\\Channel",
+			"model_id": 1772249,
+			"collection_name": "banner_image",
+			"name": "0ad16d02-648a-4724-8450-26f73948c65f",
+			"file_name": "0ad16d02-648a-4724-8450-26f73948c65f",
+			"mime_type": "image/jpeg",
+			"disk": "s3",
+			"size": 641101,
+			"manipulations": [],
+			"custom_properties": {
+				"generated_conversions": {
+					"fullsize": true,
+					"medium": true
+				}
+			},
+			"responsive_images": [],
+			"order_column": 6690504,
+			"created_at": "2023-03-24T16:58:19.000000Z",
+			"updated_at": "2023-03-24T16:58:20.000000Z",
+			"uuid": "904fded0-0f4e-469f-a712-915a26958c72",
+			"conversions_disk": "s3"
+		},
+		{
+			"id": 18578834,
+			"model_type": "App\\Models\\Channel",
+			"model_id": 1772249,
+			"collection_name": "offline_banner",
+			"name": "b8a91fbd-1796-4952-b4e9-d79685292a36",
+			"file_name": "b8a91fbd-1796-4952-b4e9-d79685292a36",
+			"mime_type": "image/jpeg",
+			"disk": "s3",
+			"size": 676178,
+			"manipulations": [],
+			"custom_properties": {
+				"generated_conversions": {
+					"fullsize": true
+				}
+			},
+			"responsive_images": {
+				"fullsize": {
+					"urls": [
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_1200_675.webp",
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_1003_564.webp",
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_839_472.webp",
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_702_395.webp",
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_588_331.webp",
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_491_276.webp",
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_411_231.webp",
+						"b8a91fbd-1796-4952-b4e9-d79685292a36___fullsize_344_194.webp"
+					],
+					"base64svg": "data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHg9IjAiCiB5PSIwIiB2aWV3Qm94PSIwIDAgMTIwMCA2NzUiPgoJPGltYWdlIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjY3NSIgeGxpbms6aHJlZj0iZGF0YTppbWFnZS9qcGVnO2Jhc2U2NCwvOWovNEFBUVNrWkpSZ0FCQVFFQVlBQmdBQUQvL2dBN1ExSkZRVlJQVWpvZ1oyUXRhbkJsWnlCMk1TNHdJQ2gxYzJsdVp5QkpTa2NnU2xCRlJ5QjJPREFwTENCeGRXRnNhWFI1SUQwZ09UQUsvOXNBUXdBREFnSURBZ0lEQXdNREJBTURCQVVJQlFVRUJBVUtCd2NHQ0F3S0RBd0xDZ3NMRFE0U0VBME9FUTRMQ3hBV0VCRVRGQlVWRlF3UEZ4Z1dGQmdTRkJVVS85c0FRd0VEQkFRRkJBVUpCUVVKRkEwTERSUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVLzhBQUVRZ0FFZ0FnQXdFaUFBSVJBUU1SQWYvRUFCOEFBQUVGQVFFQkFRRUJBQUFBQUFBQUFBQUJBZ01FQlFZSENBa0tDLy9FQUxVUUFBSUJBd01DQkFNRkJRUUVBQUFCZlFFQ0F3QUVFUVVTSVRGQkJoTlJZUWNpY1JReWdaR2hDQ05Dc2NFVlV0SHdKRE5pY29JSkNoWVhHQmthSlNZbktDa3FORFUyTnpnNU9rTkVSVVpIU0VsS1UxUlZWbGRZV1ZwalpHVm1aMmhwYW5OMGRYWjNlSGw2ZzRTRmhvZUlpWXFTazVTVmxwZVltWnFpbzZTbHBxZW9xYXF5czdTMXRyZTR1YnJDdzhURnhzZkl5Y3JTMDlUVjF0ZlkyZHJoNHVQazVlYm42T25xOGZMejlQWDI5L2o1K3YvRUFCOEJBQU1CQVFFQkFRRUJBUUVBQUFBQUFBQUJBZ01FQlFZSENBa0tDLy9FQUxVUkFBSUJBZ1FFQXdRSEJRUUVBQUVDZHdBQkFnTVJCQVVoTVFZU1FWRUhZWEVUSWpLQkNCUkNrYUd4d1Frak0xTHdGV0p5MFFvV0pEVGhKZkVYR0JrYUppY29LU28xTmpjNE9UcERSRVZHUjBoSlNsTlVWVlpYV0ZsYVkyUmxabWRvYVdwemRIVjJkM2g1ZW9LRGhJV0doNGlKaXBLVGxKV1dsNWlabXFLanBLV21wNmlwcXJLenRMVzJ0N2k1dXNMRHhNWEd4OGpKeXRMVDFOWFcxOWpaMnVMajVPWG01K2pwNnZMejlQWDI5L2o1K3YvYUFBd0RBUUFDRVFNUkFEOEE3L1gvQUFQOXF1Qm1JZzF6L2p6d25aK0cvQ2ozbTc5N2pwWEpmRGY5cUkrTU5aaHRkUmpFRFNIYUNhN1g0MGFScWQvb1RKYXQ1bHZNdVFSMDVyOVZ3K2VZakV0MHFkNHVMKzhqRlpMaGxGVmFUdW10anl6dzRJYnJUeGVHVU9kM1FWNjdIZHlRK0VrZTB6a2puRmVOZUMvREwrR2JSMXZaUzI0NTJtdlNORjhWVzlyQjVBSU1mOTAxOTdScDRuRVVVNTZ1OXo4QTRoeE5QQzR5Q2pUYjVXZkgvaDRtUHhYWmJEdC9lRDd2SGV2ME1BRW53K3NDdzNIeWh5ZWUxRkZmbEdEL0FOOXBuOUdVZG9uaG5pemlkc2NjMWdXekh6T3Bvb3I5K3dmOEJINFJ4SC92OGovLzJRPT0iPgoJPC9pbWFnZT4KPC9zdmc+"
+				}
+			},
+			"order_column": 6691803,
+			"created_at": "2023-03-24T17:13:50.000000Z",
+			"updated_at": "2023-03-24T17:13:53.000000Z",
+			"uuid": "e59fa9ac-e55a-4bb5-b351-84b744ccbeba",
+			"conversions_disk": "s3"
+		}
+	]
+}
