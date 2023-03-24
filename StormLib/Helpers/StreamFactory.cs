@@ -68,6 +68,10 @@ namespace StormLib.Helpers
 				{
 					stream = new RumbleStream(uri);
 				}
+				else if (host.EndsWith("kick.com", sc))
+				{
+					stream = new KickStream(uri);
+				}
 				else
 				{
 					stream = new UnsupportedStream(uri);
