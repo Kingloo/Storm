@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
-using StormDesktop.Common;
 using StormDesktop.Gui;
 
 namespace StormDesktop
@@ -18,7 +18,9 @@ namespace StormDesktop
 			{
 				string message = string.Format(CultureInfo.CurrentCulture, "exited with code {0}", exitCode);
 
-				LogStatic.Message(message);
+				Console.Error.WriteLine(message);
+
+				Debug.WriteLineIf(Debugger.IsAttached, message);
 			}
 
 			return exitCode;
