@@ -63,7 +63,7 @@ namespace StormLib.Services.YouTube
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				stream.Status = Status.Offline;
+				stream.Status = Status.Problem;
 				stream.ViewersCount = null;
 
 				return new Result(UpdaterType, statusCode);
@@ -112,7 +112,7 @@ namespace StormLib.Services.YouTube
 			};
         }
 
-        private static Nullable<int> SetViewers(string text)
+        private static int? SetViewers(string text)
         {
             const string beginning = "viewCountText\":{\"runs\":[{\"text\":\"";
             const string ending = "\"}";

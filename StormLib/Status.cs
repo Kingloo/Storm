@@ -8,7 +8,8 @@
 		Private,
 		Banned,
 		Rerun,
-		Unknown,
-		Offline
+		Offline,
+		Problem,
+		Unknown
 	}
 }

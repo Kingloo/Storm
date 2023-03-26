@@ -65,7 +65,7 @@ namespace StormLib.Services.Chaturbate
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				stream.Status = Status.Offline;
+				stream.Status = Status.Problem;
 				stream.ViewersCount = null;
 
 				return new Result(UpdaterType, statusCode);
@@ -74,29 +74,36 @@ namespace StormLib.Services.Chaturbate
 			if (text.Contains(bannedMarker, StringComparison.OrdinalIgnoreCase))
 			{
 				stream.Status = Status.Banned;
+				stream.ViewersCount = null;
 				
 				return new Result(UpdaterType, statusCode);
 			}
 
-			int index = text.IndexOf(roomStatus, StringComparison.OrdinalIgnoreCase);
+			int roomStatusIndex = text.IndexOf(roomStatus, StringComparison.OrdinalIgnoreCase);
 
-			if (index < 0)
+			if (roomStatusIndex < 0)
 			{
-				stream.Status = Status.Offline;
+				stream.Status = Status.Problem;
 				stream.ViewersCount = null;
 
-				return new Result(UpdaterType, statusCode);
+				return new Result(UpdaterType, statusCode)
+				{
+					Message = $"text did not contain room status: '{roomStatus}'"
+				};
 			}
 
-			if (text.Length < index + 100)
+			if (text.Length < roomStatusIndex + 100)
 			{
-				stream.Status = Status.Offline;
+				stream.Status = Status.Problem;
 				stream.ViewersCount = null;
 
-				return new Result(UpdaterType, statusCode);
+				return new Result(UpdaterType, statusCode)
+				{
+					Message = $"there was not 100 characters after room status index, there were actually {text.Length - roomStatusIndex} characters"
+				};
 			}
 
-			string searchRadius = text.Substring(index, 100);
+			string searchRadius = text.Substring(roomStatusIndex, 100);
 
 			if (searchRadius.Contains(publicStatus, StringComparison.OrdinalIgnoreCase))
 			{

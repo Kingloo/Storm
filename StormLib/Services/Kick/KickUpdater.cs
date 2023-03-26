@@ -80,7 +80,7 @@ namespace StormLib.Services.Kick
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				stream.Status = Status.Offline;
+				stream.Status = Status.Problem;
 				stream.ViewersCount = null;
 
 				return new Result(UpdaterType, statusCode);
@@ -88,7 +88,7 @@ namespace StormLib.Services.Kick
 
 			if (!JsonHelpers.TryParse(text, out JsonNode? json))
 			{
-				stream.Status = Status.Offline;
+				stream.Status = Status.Problem;
 				stream.ViewersCount = null;
 				
 				return new Result(UpdaterType, statusCode);
