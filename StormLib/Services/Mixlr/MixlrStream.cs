@@ -3,7 +3,7 @@ using System.IO;
 
 namespace StormLib.Streams
 {
-	public class MixlrStream : StreamBase
+	public class MixlrStream : BaseStream
 	{
 		private Uri? _icon = null;
 		public override Uri Icon

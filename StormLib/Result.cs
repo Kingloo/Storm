@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
+using StormLib.Services;
 
 namespace StormLib
 {
 	public class Result
 	{
-		public IList<HttpStatusCode> Statuses { get; init; } = Array.Empty<HttpStatusCode>();
+		public UpdaterType UpdaterType { get; } = UpdaterType.None;
+		public HttpStatusCode StatusCode { get; } = HttpStatusCode.Unused;
+		public string Message { get; init; } = string.Empty;
 
-		public Result() { }
-
-		public Result(HttpStatusCode statusCode)
+		public Result(UpdaterType updaterType)
 		{
-			Statuses = new [] { statusCode };
+			UpdaterType = updaterType;
 		}
 
-		public Result(IEnumerable<HttpStatusCode> statusCodes)
+		public Result(UpdaterType updaterType, HttpStatusCode statusCode)
+			: this(updaterType)
 		{
-			Statuses = statusCodes.ToArray();
+			StatusCode = statusCode;
 		}
 	}
 }

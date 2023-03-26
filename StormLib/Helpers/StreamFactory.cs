@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading.Tasks;
 using StormLib.Interfaces;
 using StormLib.Streams;
 
@@ -40,80 +38,43 @@ namespace StormLib.Helpers
 				return false;
 			}
 
-			string host = uri.DnsSafeHost;
-
-			try
+			stream = uri.DnsSafeHost switch
 			{
-				if (host.EndsWith("twitch.tv", sc))
-				{
-					stream = new TwitchStream(uri);
-				}
-				else if (host.EndsWith("chaturbate.com", sc))
-				{
-					stream = new ChaturbateStream(uri);
-				}
-				else if (host.EndsWith("mixer.com", sc))
-				{
-					stream = new UnsupportedStream(uri);
-				}
-				else if (host.EndsWith("mixlr.com", sc))
-				{
-					stream = new MixlrStream(uri);
-				}
-				else if (host.EndsWith("youtube.com", sc))
-				{
-					stream = new YouTubeStream(uri);
-				}
-				else if (host.EndsWith("rumble.com", sc))
-				{
-					stream = new RumbleStream(uri);
-				}
-				else if (host.EndsWith("kick.com", sc))
-				{
-					stream = new KickStream(uri);
-				}
-				else
-				{
-					stream = new UnsupportedStream(uri);
-				}
-			}
-			catch (ArgumentException)
-			{
-				stream = null;
-				return false;
-			}
+				"chaturbate.com" => new ChaturbateStream(uri),
+				"kick.com" => new KickStream(uri),
+				"mixlr.com" => new MixlrStream(uri),
+				"rumble.com" => new RumbleStream(uri),
+				"twitch.tv" => new TwitchStream(uri),
+				"youtube.com" => new YouTubeStream(uri),
+				_ => new UnsupportedStream(uri)
+			};
 
-			return stream is not null;
+			return true;
 		}
 
-		public static IReadOnlyCollection<IStream> CreateMany(string[] lines, string commentCharacter)
+		public static IReadOnlyList<IStream> CreateMany(string[] lines)
+			=> CreateMany(lines, Char.MaxValue);
+
+		public static IReadOnlyList<IStream> CreateMany(string[] lines, char commentCharacter)
 		{
-			if (lines is null)
-            {
-                throw new ArgumentNullException(nameof(lines));
-            }
+			ArgumentNullException.ThrowIfNull(lines);
 
             if (lines.Length == 0)
             {
                 return Array.Empty<IStream>();
             }
 
-            ConcurrentBag<IStream> streams = new ConcurrentBag<IStream>();
+			IList<IStream> streams = new List<IStream>();
 
-            IEnumerable<string> nonCommentLines = lines.Where(l => !l.StartsWith(commentCharacter, StringComparison.OrdinalIgnoreCase));
+			foreach (string line in lines.Where(line => !line.StartsWith(commentCharacter)))
+			{
+				if (TryCreate(line, out IStream? stream))
+				{
+					streams.Add(stream);
+				}
+			}
 
-            Parallel.ForEach(nonCommentLines, (line, loopState) =>
-            {
-                // Don't do a "if (!streams.Contains)" check before adding
-                // Race condition!
-
-                if (TryCreate(line, out IStream? stream))
-                {
-                    streams.Add(stream);
-                }
-            });
-
-			return streams.AsEnumerable().Distinct().ToList().AsReadOnly();
+			return streams.Distinct().ToList().AsReadOnly();
 		}
 	}
 }

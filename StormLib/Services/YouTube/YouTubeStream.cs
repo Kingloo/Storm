@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace StormLib.Streams
 {
-	public class YouTubeStream : StreamBase
+	public class YouTubeStream : BaseStream
 	{
 		private Uri? _icon = null;
 		public override Uri Icon

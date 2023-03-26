@@ -3,7 +3,7 @@ using System.IO;
 
 namespace StormLib.Streams
 {
-	public class RumbleStream : StreamBase
+	public class RumbleStream : BaseStream
 	{
 		private Uri? _icon = null;
 		public override Uri Icon

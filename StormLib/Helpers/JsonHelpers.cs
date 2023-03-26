@@ -1,19 +1,32 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-namespace StormLib.Helpers
+﻿namespace StormLib.Helpers
 {
 	public static class JsonHelpers
 	{
-		public static bool TryParse(string text, out JObject? json)
+		public static bool TryParse(string text, out Newtonsoft.Json.Linq.JObject? json)
 		{
 			try
 			{
-				json = JObject.Parse(text);
+				json = Newtonsoft.Json.Linq.JObject.Parse(text);
 
 				return true;
 			}
-			catch (JsonReaderException)
+			catch (Newtonsoft.Json.JsonReaderException)
+			{
+				json = null;
+
+				return false;
+			}
+		}
+
+		public static bool TryParse(string text, out System.Text.Json.Nodes.JsonNode? json)
+		{
+			try
+			{
+				json = System.Text.Json.Nodes.JsonNode.Parse(text);
+
+				return true;
+			}
+			catch (System.Text.Json.JsonException)
 			{
 				json = null;
 

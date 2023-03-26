@@ -3,7 +3,7 @@ using System.IO;
 
 namespace StormLib.Streams
 {
-	public class UnsupportedStream : StreamBase
+	public class UnsupportedStream : BaseStream
 	{
 		private Uri? _icon = null;
 		public override Uri Icon

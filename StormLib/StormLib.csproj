@@ -6,14 +6,19 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.*" />
-	</ItemGroup>
-
-	<ItemGroup>
+		<None Update="Icons\DefaultIcon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Icons\Chaturbate.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Icons\Kick.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Icons\Mixlr.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Icons\Rumble.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Icons\Twitch.ico">
@@ -23,15 +28,6 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Icons\YouTube.ico">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Icons\Rumble.ico">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Icons\Kick.ico">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Icons\DefaultIcon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

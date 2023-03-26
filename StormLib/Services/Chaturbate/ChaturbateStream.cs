@@ -3,7 +3,7 @@ using System.IO;
 
 namespace StormLib.Streams
 {
-	public class ChaturbateStream : StreamBase
+	public class ChaturbateStream : BaseStream
 	{
 		private Uri? _icon = null;
 		public override Uri Icon

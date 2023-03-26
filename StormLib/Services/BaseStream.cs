@@ -54,10 +54,7 @@ namespace StormLib
 
 		protected BaseStream(Uri uri)
 		{
-			if (uri is null)
-			{
-				throw new ArgumentNullException(nameof(uri));
-			}
+			ArgumentNullException.ThrowIfNull(uri);
 
 			Link = uri;
 
