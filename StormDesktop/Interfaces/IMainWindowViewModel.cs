@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using StormDesktop.Common;
@@ -11,20 +11,18 @@ namespace StormDesktop.Interfaces
 	{
 		IReadOnlyCollection<IStream> Streams { get; }
 
-		void StartUpdateTimer(TimeSpan updateFrequency);
-		void StopUpdateTimer();
-
 		Task UpdateAsync();
+		Task UpdateAsync(CancellationToken cancellationToken);
 		Task UpdateAsync(IEnumerable<IStream> streams);
+		Task UpdateAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken);
 
 		Task LoadStreamsAsync();
+		Task LoadStreamsAsync(CancellationToken cancellationToken);
 
 		DelegateCommandAsync UpdateCommand { get; }
 		DelegateCommandAsync LoadStreamsCommand { get; }
 		DelegateCommand<IStream> OpenPageCommand { get; }
 		DelegateCommand<IStream> OpenStreamCommand { get; }
 		DelegateCommand<Window> ExitCommand { get; }
-
-		void CleanUp();
 	}
 }

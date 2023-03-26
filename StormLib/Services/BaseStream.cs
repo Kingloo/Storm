@@ -6,9 +6,9 @@ using System.Text;
 using StormLib.Common;
 using StormLib.Interfaces;
 
-namespace StormLib.Streams
+namespace StormLib
 {
-	public abstract class StreamBase : BindableBase, IStream
+	public abstract class BaseStream : BindableBase, IStream
 	{
 		public Uri Link { get; }
 
@@ -52,7 +52,7 @@ namespace StormLib.Streams
 		public abstract bool HasStreamlinkSupport { get; }
 		public abstract string ServiceName { get; }
 
-		protected StreamBase(Uri uri)
+		protected BaseStream(Uri uri)
 		{
 			if (uri is null)
 			{
@@ -80,11 +80,11 @@ namespace StormLib.Streams
 			?? uri.AbsoluteUri;
 		}
 
-		public bool Equals(IStream? other) => (other is StreamBase sb) && EqualsInternal(sb);
+		public bool Equals(IStream? other) => (other is BaseStream sb) && EqualsInternal(sb);
 
-		public override bool Equals(object? obj) => (obj is StreamBase sb) && EqualsInternal(sb);
+		public override bool Equals(object? obj) => (obj is BaseStream sb) && EqualsInternal(sb);
 
-		public static bool operator ==(StreamBase lhs, StreamBase rhs)
+		public static bool operator ==(BaseStream lhs, BaseStream rhs)
 		{
 			if (lhs is null && rhs is null)
 			{
@@ -104,7 +104,7 @@ namespace StormLib.Streams
 			return lhs.Equals(rhs);
 		}
 
-		public static bool operator !=(StreamBase lhs, StreamBase rhs)
+		public static bool operator !=(BaseStream lhs, BaseStream rhs)
 		{
 			if (lhs is null && rhs is null)
 			{
@@ -124,11 +124,35 @@ namespace StormLib.Streams
 			return !lhs.Equals(rhs);
 		}
 
-		private bool EqualsInternal(StreamBase other) => Link.Equals(other.Link);
+		private bool EqualsInternal(BaseStream other) => Link.Equals(other.Link);
 
-		public virtual int CompareTo(IStream? other) => String.Compare(Name, other?.Name ?? string.Empty, StringComparison.Ordinal);
+		public virtual int CompareTo(IStream? other)
+		{
+			if (other is null)
+			{
+				return -1;
+			}
+			
+			int compareNames = CompareNames(this, other);
 
-		public static bool operator >(StreamBase lhs, StreamBase rhs)
+			return compareNames switch
+			{
+				0 => CompareServiceNames(this, other),
+				_ => compareNames
+			};
+		}
+
+		private static int CompareNames(IStream thisOne, IStream otherOne)
+		{
+			return String.Compare(thisOne.Name, otherOne.Name, StringComparison.Ordinal);
+		}
+
+		private static int CompareServiceNames(IStream thisOne, IStream otherOne)
+		{
+			return String.Compare(thisOne.ServiceName, otherOne.ServiceName, StringComparison.Ordinal);
+		}
+
+		public static bool operator >(BaseStream lhs, BaseStream rhs)
 		{
 			if (lhs is null && rhs is null)
 			{
@@ -148,7 +172,7 @@ namespace StormLib.Streams
 			return lhs.CompareTo(rhs) > 0;
 		}
 
-		public static bool operator >=(StreamBase lhs, StreamBase rhs)
+		public static bool operator >=(BaseStream lhs, BaseStream rhs)
 		{
 			if (lhs is null && rhs is null)
 			{
@@ -168,7 +192,7 @@ namespace StormLib.Streams
 			return lhs.CompareTo(rhs) >= 0;
 		}
 
-		public static bool operator <(StreamBase lhs, StreamBase rhs)
+		public static bool operator <(BaseStream lhs, BaseStream rhs)
 		{
 			if (lhs is null && rhs is null)
 			{
@@ -188,7 +212,7 @@ namespace StormLib.Streams
 			return lhs.CompareTo(rhs) < 0;
 		}
 
-		public static bool operator <=(StreamBase lhs, StreamBase rhs)
+		public static bool operator <=(BaseStream lhs, BaseStream rhs)
 		{
 			if (lhs is null && rhs is null)
 			{

@@ -1,96 +1,167 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Net.Security;
-using System.Security.Authentication;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
-using StormDesktop.Common;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using FileLogger;
 using StormDesktop.Interfaces;
 using StormLib;
-using StormLib.Helpers;
-using StormLib.Interfaces;
+using StormLib.Services.Chaturbate;
+using StormLib.Services.Kick;
+using StormLib.Services.Mixlr;
+using StormLib.Services.Rumble;
+using StormLib.Services.Twitch;
+using StormLib.Services.YouTube;
 
 namespace StormDesktop.Gui
 {
 	public partial class App : Application
 	{
-		private static readonly string defaultLogFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-		private const string defaultLogFileName = "logfile.txt";
-		private static readonly string defaultLogFilePath = Path.Combine(defaultLogFileDirectory, defaultLogFileName);
-
-		private static readonly string defaultStreamsFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-#if DEBUG
-		private const string defaultStreamsFileName = "StormUrls-test.txt";
-#else
-        private const string defaultStreamsFileName = "StormUrls.txt";
-#endif
-		private static readonly string defaultStreamsFilePath = Path.Combine(defaultStreamsFileDirectory, defaultStreamsFileName);
-
-		private readonly string filePath = string.Empty;
+		private readonly IHost host;
+		private readonly ILogger<App> logger;
 
 		public App()
-			: this(defaultStreamsFilePath)
-		{ }
-
-		public App(string filePath)
 		{
-			if (String.IsNullOrWhiteSpace(filePath))
-			{
-				throw new ArgumentNullException(nameof(filePath), "URLs file path was null or whitespace");
-			}
-
 			InitializeComponent();
 
-			this.filePath = filePath;
+			host = BuildHost();
+
+			logger = host.Services.GetRequiredService<ILogger<App>>();
+		}
+
+		private static IHost BuildHost()
+		{
+			return new HostBuilder()
+				.ConfigureHostConfiguration(ConfigureHostConfiguration)
+				.ConfigureHostOptions(ConfigureHostOptions)
+				.ConfigureAppConfiguration(ConfigureAppConfiguration)
+				.ConfigureServices(ConfigureServices)
+				.Build();
+		}
+
+		private static void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
+		{
+			configurationBuilder
+				.AddCommandLine(Environment.GetCommandLineArgs())
+				.AddEnvironmentVariables();
+		}
+
+		private static void ConfigureHostOptions(HostOptions hostOptions)
+		{
+			hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+		}
+
+		private static void ConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder configurationBuilder)
+		{
+			if (!context.HostingEnvironment.IsProduction())
+			{
+				Console.Out.WriteLine($"environment is {context.HostingEnvironment.EnvironmentName}");
+			}
+
+			const string permanent = "appsettings.json";
+			string environment = $"appsettings.{context.HostingEnvironment.EnvironmentName}.json";
+
+			configurationBuilder
+				.AddJsonFile(permanent, optional: false, reloadOnChange: true)
+				.AddJsonFile(environment, optional: true, reloadOnChange: true);
+		}
+
+		private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+		{
+			services.AddLogging((ILoggingBuilder loggingBuilder) =>
+			{
+				loggingBuilder.AddConfiguration(context.Configuration.GetSection("Logging"));
+
+				loggingBuilder.AddSimpleConsole(static (SimpleConsoleFormatterOptions options) =>
+				{
+					options.ColorBehavior = LoggerColorBehavior.Enabled;
+					options.IncludeScopes = true;
+					options.SingleLine = true;
+					options.TimestampFormat = "HH:mm:ss ";
+					options.UseUtcTimestamp = false;
+				});
+
+				loggingBuilder.AddFileLogger();
+			});
+
+			services.AddSingleton<IFileLoggerSink, FileLoggerSink>();
+
+			services.Configure<StormOptions>(context.Configuration.GetSection("Storm"));
+
+			services.Configure<ChaturbateOptions>(context.Configuration.GetSection("Chaturbate"));
+			services.Configure<KickOptions>(context.Configuration.GetSection("Kick"));
+			services.Configure<MixlrOptions>(context.Configuration.GetSection("Mixlr"));
+			services.Configure<RumbleOptions>(context.Configuration.GetSection("Rumble"));
+			services.Configure<TwitchOptions>(context.Configuration.GetSection("Twitch"));
+			services.Configure<YouTubeOptions>(context.Configuration.GetSection("YouTube"));
+
+			services.AddHostedService<ChaturbateService>();
+			services.AddHostedService<KickService>();
+			services.AddHostedService<MixlrService>();
+			services.AddHostedService<RumbleService>();
+			services.AddHostedService<TwitchService>();
+			services.AddHostedService<YouTubeService>();
+
+			services.AddTransient<IMainWindowViewModel, MainWindowViewModel>();
+			services.AddTransient<MainWindow>();
 		}
 
 		private void Application_Startup(object sender, StartupEventArgs e)
 		{
-			ILog logger = new Log(defaultLogFilePath, Severity.Warning);
+			logger.LogDebug("app startup started");
 
-			SocketsHttpHandler handler = new SocketsHttpHandler
-			{
-				AllowAutoRedirect = true,
-				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-				MaxAutomaticRedirections = 3,
-				MaxConnectionsPerServer = 10,
-				SslOptions = new SslClientAuthenticationOptions
-				{
-					AllowRenegotiation = false,
-					ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
-#pragma warning disable CA5398
-					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
-#pragma warning restore CA5398
-					EncryptionPolicy = EncryptionPolicy.RequireEncryption
-				}
-			};
+			host.Start();
 
-			IDownload downloader = new Download(handler);
+			IHostApplicationLifetime appLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+			appLifetime.ApplicationStopping.Register(this.Shutdown);
 
-			IServicesManager servicesManager = new ServicesManager(downloader);
-			servicesManager.AddDefaultServices();
+			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
 
-			IMainWindowViewModel viewModel = new MainWindowViewModel(logger, servicesManager, filePath);
+			sink.StartSink();
 
-			MainWindow = new MainWindow(viewModel);
+			MainWindow = host.Services.GetRequiredService<MainWindow>();
+
 			MainWindow.Show();
+
+			logger.LogInformation("app started");
+		}
+
+		private void Application_Exit(object? sender, ExitEventArgs e)
+		{
+			logger.LogDebug("app exit started");
+
+			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
+			
+			sink.StopSink();
+
+			host.StopAsync().GetAwaiter().GetResult();
+
+			logger.LogInformation("app exited");
+
+			host.Dispose();
 		}
 
 		private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
 		{
 			if (e.Exception is Exception ex)
 			{
-				LogStatic.Exception(ex, includeStackTrace: true);
+				Exception toLog = ex;
+
+				if (ex is TargetInvocationException tie && tie.InnerException is not null)
+				{
+					toLog = tie.InnerException;
+				}
+				
+				logger.LogError(toLog, "an unhandled exception occurred in WinGui ({FullName} from {Source})", toLog.GetType().FullName, toLog.Source);
+				logger.LogDebug("STackTrace of {FullName}{NewLine}{StackTrace}", toLog.GetType().FullName, Environment.NewLine, ex.StackTrace);
 			}
 			else
 			{
-				string message = string.Format(CultureInfo.CurrentCulture, "an empty {0} was thrown", nameof(DispatcherUnhandledException));
-
-				LogStatic.Message(message);
+				logger.LogError("an EMPTY unhandled exception occurred in WinGui");
 			}
 		}
 	}

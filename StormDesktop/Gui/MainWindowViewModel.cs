@@ -5,46 +5,27 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StormDesktop.Common;
 using StormDesktop.Interfaces;
 using StormLib;
 using StormLib.Helpers;
 using StormLib.Interfaces;
-using StormLib.Services;
-using StormLib.Streams;
 
 namespace StormDesktop.Gui
 {
 	public class MainWindowViewModel : BindableBase, IMainWindowViewModel
 	{
-		private readonly ILog logger;
-		private readonly IServicesManager servicesManager;
-		private readonly string filePath = string.Empty;
-
-		private DispatcherTimer? updateTimer = null;
-
-		private readonly ObservableCollection<IStream> _streams = new ObservableCollection<IStream>();
-		public IReadOnlyCollection<IStream> Streams => _streams;
-
-		private bool _isActive = false;
-		public bool IsActive
-		{
-			get => _isActive;
-			set => SetProperty(ref _isActive, value, nameof(IsActive));
-		}
-
 		private DelegateCommandAsync? _updateCommand;
 		public DelegateCommandAsync UpdateCommand
 		{
 			get
 			{
-				if (_updateCommand is null)
-				{
-					_updateCommand = new DelegateCommandAsync(UpdateAsync, CanExecuteAsync);
-				}
+				_updateCommand ??= new DelegateCommandAsync(UpdateAsync, CanExecuteAsync);
 
 				return _updateCommand;
 			}
@@ -55,10 +36,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				if (_loadStreamsCommand is null)
-				{
-					_loadStreamsCommand = new DelegateCommandAsync(LoadStreamsAsync, CanExecuteAsync);
-				}
+				_loadStreamsCommand ??= new DelegateCommandAsync(LoadStreamsAsync, CanExecuteAsync);
 
 				return _loadStreamsCommand;
 			}
@@ -69,10 +47,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				if (_openPageCommand is null)
-				{
-					_openPageCommand = new DelegateCommand<IStream>(OpenPage, (_) => true);
-				}
+				_openPageCommand ??= new DelegateCommand<IStream>(OpenPage, (_) => true);
 
 				return _openPageCommand;
 			}
@@ -83,10 +58,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				if (_openStreamCommand is null)
-				{
-					_openStreamCommand = new DelegateCommand<IStream>(OpenStream, (_) => true);
-				}
+				_openStreamCommand ??= new DelegateCommand<IStream>(OpenStream, (_) => true);
 
 				return _openStreamCommand;
 			}
@@ -97,26 +69,9 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				if (_openStreamsFileCommand is null)
-				{
-					_openStreamsFileCommand = new DelegateCommand(OpenStreamsFile, (_) => true);
-				}
+				_openStreamsFileCommand ??= new DelegateCommand(OpenStreamsFile, (_) => true);
 
 				return _openStreamsFileCommand;
-			}
-		}
-
-		private DelegateCommand<TwitchStream>? _openTwitchPlayerCommand;
-		public DelegateCommand<TwitchStream> OpenTwitchPlayerCommand
-		{
-			get
-			{
-				if (_openTwitchPlayerCommand is null)
-				{
-					_openTwitchPlayerCommand = new DelegateCommand<TwitchStream>(OpenTwitchPlayer, stream => stream.Status == Status.Public);
-				}
-
-				return _openTwitchPlayerCommand;
 			}
 		}
 
@@ -125,10 +80,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				if (_exitCommand is null)
-				{
-					_exitCommand = new DelegateCommand<Window>(window => window.Close(), (_) => true);
-				}
+				_exitCommand ??= new DelegateCommand<Window>(window => window.Close(), (_) => true);
 
 				return _exitCommand;
 			}
@@ -136,26 +88,48 @@ namespace StormDesktop.Gui
 
 		private bool CanExecuteAsync(object? _) => !IsActive;
 
-		public void RaiseCommandExecuteChanged()
+		public void TriggerCanExecuteChanged()
 		{
 			UpdateCommand.RaiseCanExecuteChanged();
 			LoadStreamsCommand.RaiseCanExecuteChanged();
 			OpenPageCommand.RaiseCanExecuteChanged();
 			OpenStreamCommand.RaiseCanExecuteChanged();
 			OpenStreamsFileCommand.RaiseCanExecuteChanged();
-			OpenTwitchPlayerCommand.RaiseCanExecuteChanged();
 		}
 
-		public MainWindowViewModel(ILog logger, IServicesManager servicesManager, string filePath)
+		private readonly ILogger<IMainWindowViewModel> logger;
+		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
+
+		private readonly ObservableCollection<IStream> streams = new ObservableCollection<IStream>();
+		public IReadOnlyCollection<IStream> Streams { get => streams; }
+
+		private bool isActive = false;
+		public bool IsActive
 		{
+			get => isActive;
+			set
+			{
+				SetProperty(ref isActive, value, nameof(IsActive));
+
+				TriggerCanExecuteChanged();
+			}
+		}
+
+		public MainWindowViewModel(ILogger<IMainWindowViewModel> logger, IOptionsMonitor<StormOptions> stormOptionsMonitor)
+		{
+			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(stormOptionsMonitor);
+
 			this.logger = logger;
-			this.servicesManager = servicesManager;
-			this.filePath = filePath;
+			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
-		public async Task LoadStreamsAsync()
+		public Task LoadStreamsAsync()
+			=> LoadStreamsAsync(CancellationToken.None);
+
+		public async Task LoadStreamsAsync(CancellationToken cancellationToken)
 		{
-			string[] lines = await FileSystem.LoadLinesFromFileAsync(filePath).ConfigureAwait(true);
+			string[] lines = await FileSystem.LoadLinesFromFileAsync(stormOptionsMonitor.CurrentValue.StreamsFilePath).ConfigureAwait(true);
 
 			if (lines.Length == 0)
             {
@@ -178,7 +152,7 @@ namespace StormDesktop.Gui
 			{
 				if (!Streams.Contains(stream))
 				{
-					_streams.Add(stream);
+					streams.Add(stream);
 
 					addedStreams.Add(stream);
 				}
@@ -195,57 +169,36 @@ namespace StormDesktop.Gui
 
 			foreach (IStream stream in toRemove)
 			{
-				_streams.Remove(stream);
-			}
-		}
-
-		public void StartUpdateTimer(TimeSpan updateFrequency)
-		{
-			if (updateTimer is null)
-			{
-				updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
-				{
-					Interval = updateFrequency
-				};
-
-				updateTimer.Tick += UpdateTimer_Tick;
-
-				updateTimer.Start();
+				streams.Remove(stream);
 			}
 		}
 
 		private void UpdateTimer_Tick(object? sender, EventArgs e) => UpdateCommand.Execute(null);
 
-		public void StopUpdateTimer()
-		{
-			if (updateTimer is not null)
-			{
-				updateTimer.Stop();
-				updateTimer.Tick -= UpdateTimer_Tick;
+		public Task UpdateAsync()
+			=> UpdateAsync(Streams, CancellationToken.None);
 
-				updateTimer = null;
-			}
-		}
+		public Task UpdateAsync(CancellationToken cancellationToken)
+			=> UpdateAsync(Streams, cancellationToken);
 
-		public Task UpdateAsync() => UpdateAsync(Streams);
+		public Task UpdateAsync(IEnumerable<IStream> streams)
+			=> UpdateAsync(streams, CancellationToken.None);
 
-		public async Task UpdateAsync(IEnumerable<IStream> streams)
+		public async Task UpdateAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
 		{
 			IsActive = true;
 
-			IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
+			IList<IStream> notLiveBeforeUpdate = Streams.Where(static s => s.Status != Status.Public).ToList();
 
 			await servicesManager.UpdateAsync(streams).ConfigureAwait(true);
 
-			IEnumerable<IStream> liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
+			IEnumerable<IStream> liveAfterUpdate = Streams.Where(static s => s.Status == Status.Public);
 
 			IList<IStream> forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
 
 			SendNotifications(forWhichToNotify);
 
 			IsActive = false;
-
-			RaiseCommandExecuteChanged();
 		}
 
 		private void SendNotifications(IEnumerable<IStream> forWhichToNotify)
@@ -264,7 +217,7 @@ namespace StormDesktop.Gui
 		{
 			if (!SystemLaunch.Uri(stream.Link))
 			{
-				logger.Message($"{stream.Link.AbsoluteUri} could not be opened", Severity.Error);
+				logger.LogWarning("failed to open URI: '{uri}'", stream.Link.AbsoluteUri);
 			}
 		}
 
@@ -285,9 +238,7 @@ namespace StormDesktop.Gui
 
 				if (!SystemLaunch.Launch(pInfo))
 				{
-					string message = $"launching streamlink for {stream.Name} failed!";
-
-					logger.Message(message, Severity.Error);
+					logger.LogWarning("failed to launch streamlink for '{uri} ({service})'", stream.Name, stream.ServiceName);
 				}
 			}
 			else
@@ -298,25 +249,10 @@ namespace StormDesktop.Gui
 
 		private void OpenStreamsFile()
 		{
-			if (!SystemLaunch.Path(filePath))
+			if (!SystemLaunch.Path(stormOptionsMonitor.CurrentValue.StreamsFilePath))
 			{
-				logger.Message($"file could not be opened: {filePath}", Severity.Error);
+				logger.LogWarning("failed to open file: '{file}'", stormOptionsMonitor.CurrentValue.StreamsFilePath);
 			}
-		}
-
-		private void OpenTwitchPlayer(TwitchStream stream)
-		{
-			Uri player = TwitchService.GetPlayerUriForStream(stream);
-
-			if (!SystemLaunch.Uri(player))
-			{
-				logger.Message($"{player.AbsoluteUri} could not be opened", Severity.Error);
-			}
-		}
-
-		public void CleanUp()
-		{
-			servicesManager.Dispose();
 		}
 
 		public override string ToString()
@@ -326,20 +262,6 @@ namespace StormDesktop.Gui
 			sb.AppendLine(base.ToString());
 			sb.AppendLine(CultureInfo.CurrentCulture, $"number of streams: {Streams.Count}");
 			sb.AppendLine(CultureInfo.CurrentCulture, $"is active: {IsActive}");
-
-			sb.AppendLine("services:");
-
-			if (servicesManager.Services.Count > 0)
-			{
-				foreach (IService service in servicesManager.Services)
-				{
-					sb.Append(service.ToString());
-				}
-			}
-			else
-			{
-				sb.AppendLine("no services registered");
-			}
 
 			return sb.ToString();
 		}

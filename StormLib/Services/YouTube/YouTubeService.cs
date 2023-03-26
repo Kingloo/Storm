@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -125,7 +124,7 @@ namespace StormLib.Services
 		private static string GetOnlyDigits(string text)
 		{
 			return new StringBuilder()
-				.Append(text.Trim().Where(c => Char.IsDigit(c)).ToArray())
+				.Append(text.Trim().Where(static c => Char.IsDigit(c)).ToArray())
 				.ToString();
 		}
 

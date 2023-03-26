@@ -8,12 +8,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		mc:Ignorable="d"
 		d:DataContext="{d:DesignInstance Type=gui:MainWindowViewModel}"
-        Name="mainWindow"
-        SourceInitialized="mainWindow_SourceInitialized"
-        Loaded="mainWindow_Loaded"
-        LocationChanged="mainWindow_LocationChanged"
-        Closing="mainWindow_Closing"
-        Closed="mainWindow_Closed">
+        Name="MainWindow"
+        SourceInitialized="MainWindow_SourceInitialized"
+        Loaded="MainWindow_Loaded"
+        LocationChanged="MainWindow_LocationChanged"
+        Closing="MainWindow_Closing">
 
     <Window.Style>
         <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type Window}}">
@@ -30,7 +29,7 @@
     <Window.InputBindings>
         <KeyBinding Key="Esc"
                     Command="{Binding Path=ExitCommand, Mode=OneTime}"
-                    CommandParameter="{Binding ElementName=mainWindow}" />
+                    CommandParameter="{Binding ElementName=MainWindow}" />
         <KeyBinding Key="F5"
                     Command="{Binding Path=UpdateCommand, Mode=OneTime}" />
         <KeyBinding Key="F11"

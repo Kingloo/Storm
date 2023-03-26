@@ -1,13 +1,24 @@
-﻿namespace StormLib
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+
+namespace StormLib
 {
-	public enum Result
+	public class Result
 	{
-		Success = 0,
-		NothingToDo = 1,
-		Failure = 2,
-		WebFailure = 3,
-		ParsingJsonFailed = 4,
-		Unknown = 5,
-		Other = 6
+		public IList<HttpStatusCode> Statuses { get; init; } = Array.Empty<HttpStatusCode>();
+
+		public Result() { }
+
+		public Result(HttpStatusCode statusCode)
+		{
+			Statuses = new [] { statusCode };
+		}
+
+		public Result(IEnumerable<HttpStatusCode> statusCodes)
+		{
+			Statuses = statusCodes.ToArray();
+		}
 	}
 }

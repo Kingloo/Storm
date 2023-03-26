@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using StormLib.Common;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -30,20 +29,6 @@ namespace StormLib.Services
 		//417752,    // "Talk Shows & Podcasts"
 		//509658,    // "Just Chatting"
 		//509670,    // "Science & Technology"
-
-		// private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
-		// {
-		// 	{ "Host", "gql.twitch.tv" },
-		// 	{ "User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/75.0" },
-		// 	{ "Accept", "*/*" },
-		// 	{ "Accept-Language", "en-GB" },
-		// 	{ "Accept-Encoding", "gzip, deflate, br" },
-		// 	{ "Client-Id", "kimne78kx3ncx6brgo4mv6wki5h1ko" }, // this has yet to fail
-        //     { "Origin", "https://www.twitch.tv" },
-		// 	{ "Upgrade-Insecure-Requests", "1" },
-		// 	{ "Pragma", "no-cache" },
-		// 	{ "Cache-Control", "no-cache" }
-		// };
 
 		private static readonly IDictionary<string, string> graphQlRequestHeaders = new Dictionary<string, string>
 		{
@@ -127,7 +112,7 @@ namespace StormLib.Services
 			{
 				if (status != HttpStatusCode.Unused)
 				{
-					await LogStatic.MessageAsync($"updating Twitch streams failed: {status}").ConfigureAwait(preserveSynchronizationContext);
+					// await LogStatic.MessageAsync($"updating Twitch streams failed: {status}").ConfigureAwait(preserveSynchronizationContext);
 				}
 
 				return Result.WebFailure;
@@ -135,7 +120,7 @@ namespace StormLib.Services
 
 			if (!JsonHelpers.TryParse("{\"dummy\":" + text + "}", out JObject? json))
 			{
-				await LogStatic.MessageAsync("TwitchService: parsing JSON failed").ConfigureAwait(preserveSynchronizationContext);
+				// await LogStatic.MessageAsync("TwitchService: parsing JSON failed").ConfigureAwait(preserveSynchronizationContext);
 
 				return Result.ParsingJsonFailed;
 			}
