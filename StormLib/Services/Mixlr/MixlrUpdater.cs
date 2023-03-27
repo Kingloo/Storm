@@ -78,24 +78,43 @@ namespace StormLib.Services.Mixlr
 
 				return new Result(UpdaterType, statusCode)
 				{
-					Message = "json parsing failed"
+					Message = "JSON parsing failed"
 				};
 			}
 
-			if (json?["username"] is JsonNode usernameToken)
-			{
-				string? username = (string?)usernameToken;
+			JsonNode? userNameToken = json?["username"];
+			JsonNode? isLiveToken = json?["is_live"];
 
-				if (String.IsNullOrWhiteSpace(username) == false && stream.DisplayName != username)
+			if (userNameToken is null)
+			{
+				stream.Status = Status.Problem;
+				stream.ViewersCount = null;
+
+				return new Result(UpdaterType, statusCode)
 				{
-					stream.DisplayName = username;
-				}
+					Message = "token did not exist: 'username'"
+				};
 			}
 
-			if (json?["is_live"] is JsonNode isLiveToken)
+			if (isLiveToken is null)
 			{
-				stream.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
+				stream.Status = Status.Problem;
+				stream.ViewersCount = null;
+
+				return new Result(UpdaterType, statusCode)
+				{
+					Message = "token did not exist: 'is_live'"
+				};
 			}
+
+			string? userName = (string?)userNameToken;
+
+			if (String.IsNullOrWhiteSpace(userName) == false && stream.DisplayName != userName)
+			{
+				stream.DisplayName = userName;
+			}
+
+			stream.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
 
 			return new Result(UpdaterType, statusCode);
 		}

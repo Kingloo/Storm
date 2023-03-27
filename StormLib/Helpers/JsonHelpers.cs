@@ -1,8 +1,10 @@
-﻿namespace StormLib.Helpers
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace StormLib.Helpers
 {
 	public static class JsonHelpers
 	{
-		public static bool TryParse(string text, out Newtonsoft.Json.Linq.JObject? json)
+		public static bool TryParse(string text, [NotNullWhen(true)] out Newtonsoft.Json.Linq.JObject? json)
 		{
 			try
 			{
@@ -18,13 +20,13 @@
 			}
 		}
 
-		public static bool TryParse(string text, out System.Text.Json.Nodes.JsonNode? json)
+		public static bool TryParse(string text, [NotNullWhen(true)] out System.Text.Json.Nodes.JsonNode? json)
 		{
 			try
 			{
 				json = System.Text.Json.Nodes.JsonNode.Parse(text);
 
-				return true;
+				return json is not null;
 			}
 			catch (System.Text.Json.JsonException)
 			{

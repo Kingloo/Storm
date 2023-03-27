@@ -9,8 +9,8 @@ namespace StormLib.Services.Twitch
 		public Uri GraphQlApiUri { get; init; }
 		public IDictionary<HeaderName, HeaderValue> Headers { get; init; } = new Dictionary<HeaderName, HeaderValue>();
 		public int MaxStreamsPerUpdate { get; init; } = 0;
-		public TwitchGameId[] UnwantedGameIds { get; init; } = Array.Empty<TwitchGameId>();
-		public TwitchTopicId[] UnwantedTopicIds { get; init; } = Array.Empty<TwitchTopicId>();
+		public IReadOnlyList<TwitchGameId> UnwantedGameIds { get; init; } = new List<TwitchGameId>();
+		public IReadOnlyList<TwitchTopicId> UnwantedTopicIds { get; init; } = new List<TwitchTopicId>();
 		public Uri EmbeddedPlayerUriFormat { get; init; }
 
 		public TwitchOptions() { }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using StormLib.Services.Twitch;
 
 namespace StormLib.Streams
 {
@@ -21,15 +22,15 @@ namespace StormLib.Streams
 			}
 		}
 
-		public override bool HasStreamlinkSupport => true;
+		public override bool HasStreamlinkSupport { get => true; }
 
-		public override string ServiceName => "Twitch";
+		public override string ServiceName { get => "Twitch"; }
 
-		private string _game = string.Empty;
-		public string Game
+		private TwitchGame? game = null;
+		public TwitchGame? Game
 		{
-			get => _game;
-			set => SetProperty(ref _game, value, nameof(Game));
+			get => game;
+			set => SetProperty(ref game, value, nameof(TwitchGame));
 		}
 
 		public TwitchStream(Uri uri)
