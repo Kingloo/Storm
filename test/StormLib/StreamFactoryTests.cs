@@ -19,7 +19,7 @@ namespace StormTests.StormLib
 		private const string youtubeAccount = "youtube.com/linustechtips";
 		private const string kickAccount = "kick.com/destiny";
 		private const string rumbleAccount = "rumble.com/destiny";
-		private const string commentChar = "#";
+		private const char commentChar = '#';
 
 		[Test]
 		public void TryCreate_ValidUri_ShouldReturnTrue()
