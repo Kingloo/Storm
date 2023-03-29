@@ -65,10 +65,7 @@ namespace StormLib
 
 		protected virtual string DetermineName(Uri uri)
 		{
-			if (uri is null)
-			{
-				throw new ArgumentNullException(nameof(uri));
-			}
+			ArgumentNullException.ThrowIfNull(uri);
 
 			return uri
 				.Segments
