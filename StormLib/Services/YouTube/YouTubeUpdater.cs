@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StormLib.Extensions;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -14,16 +17,19 @@ namespace StormLib.Services.YouTube
 	public class YouTubeUpdater : IUpdater<YouTubeStream>
 	{
 		private readonly ILogger<YouTubeUpdater> logger;
+		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<YouTubeOptions> youTubeOptionsMonitor;
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
-		public YouTubeUpdater(ILogger<YouTubeUpdater> logger, IOptionsMonitor<YouTubeOptions> youTubeOptionsMonitor)
+		public YouTubeUpdater(ILogger<YouTubeUpdater> logger, IHttpClientFactory httpClientFactory, IOptionsMonitor<YouTubeOptions> youTubeOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(httpClientFactory);
 			ArgumentNullException.ThrowIfNull(youTubeOptionsMonitor);
 
 			this.logger = logger;
+			this.httpClientFactory = httpClientFactory;
 			this.youTubeOptionsMonitor = youTubeOptionsMonitor;
 		}
 
@@ -59,7 +65,15 @@ namespace StormLib.Services.YouTube
 
 		private async Task<Result> UpdateOneAsync(YouTubeStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
 		{
-			(HttpStatusCode statusCode, string text) = await download.StringAsync(new Uri($"{stream.Link.AbsoluteUri}?ucbcb=1")).ConfigureAwait(preserveSynchronizationContext);
+			Uri uri = new Uri($"{stream.Link.AbsoluteUri}?ucbcb=1", UriKind.Absolute);
+
+			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			string text = string.Empty;
+
+			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.YouTube))
+			{
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, uri, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{

@@ -4,6 +4,7 @@ namespace StormLib.Helpers
 {
 	public static class JsonHelpers
 	{
+/*
 		public static bool TryParse(string text, [NotNullWhen(true)] out Newtonsoft.Json.Linq.JObject? json)
 		{
 			try
@@ -19,6 +20,7 @@ namespace StormLib.Helpers
 				return false;
 			}
 		}
+*/
 
 		public static bool TryParse(string text, [NotNullWhen(true)] out System.Text.Json.Nodes.JsonNode? json)
 		{

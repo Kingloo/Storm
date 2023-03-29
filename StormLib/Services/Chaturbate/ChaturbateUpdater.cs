@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using StormLib.Interfaces;
 using StormLib.Streams;
 
@@ -21,12 +23,15 @@ namespace StormLib.Services.Chaturbate
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
 		private readonly ILogger<ChaturbateUpdater> logger;
+		private readonly IHttpClientFactory httpClientFactory;
 
-		public ChaturbateUpdater(ILogger<ChaturbateUpdater> logger)
+		public ChaturbateUpdater(ILogger<ChaturbateUpdater> logger, IHttpClientFactory httpClientFactory)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(httpClientFactory);
 
 			this.logger = logger;
+			this.httpClientFactory = httpClientFactory;
 		}
 
 		public Task<Result[]> UpdateAsync(IList<ChaturbateStream> streams)
@@ -61,7 +66,13 @@ namespace StormLib.Services.Chaturbate
 
 		private async Task<Result> UpdateOneAsync(ChaturbateStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
 		{
-			(HttpStatusCode statusCode, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
+			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			string text = string.Empty;
+			
+			using (HttpClient client = httpClientFactory.CreateClient("ChaturbateHttpClient"))
+			{
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{

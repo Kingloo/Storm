@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -14,16 +17,19 @@ namespace StormLib.Services.Mixlr
 	public class MixlrUpdater : IUpdater<MixlrStream>
 	{
 		private readonly ILogger<MixlrUpdater> logger;
+		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<MixlrOptions> mixlrOptionsMonitor;
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
-		public MixlrUpdater(ILogger<MixlrUpdater> logger, IOptionsMonitor<MixlrOptions> mixlrOptionsMonitor)
+		public MixlrUpdater(ILogger<MixlrUpdater> logger, IHttpClientFactory httpClientFactory, IOptionsMonitor<MixlrOptions> mixlrOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(httpClientFactory);
 			ArgumentNullException.ThrowIfNull(mixlrOptionsMonitor);
 
 			this.logger = logger;
+			this.httpClientFactory = httpClientFactory;
 			this.mixlrOptionsMonitor = mixlrOptionsMonitor;
 		}
 
@@ -59,9 +65,15 @@ namespace StormLib.Services.Mixlr
 
 		private async Task<Result> UpdateOneAsync(MixlrStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
 		{
-			Uri api = new Uri($"{mixlrOptionsMonitor.CurrentValue.ApiUri}/users/{stream.Name}", UriKind.Absolute);
+			Uri uri = new Uri($"{mixlrOptionsMonitor.CurrentValue.ApiUri}/users/{stream.Name}", UriKind.Absolute);
 
-			(HttpStatusCode statusCode, string text) = await download.StringAsync(api).ConfigureAwait(preserveSynchronizationContext);
+			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			string text = string.Empty;
+
+			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Mixlr))
+			{
+				(statusCode, text) = await HttpClientHelpers.GetStringAsync(client, uri, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{

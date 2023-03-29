@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StormLib.Interfaces;
 using StormLib.Streams;
 
@@ -14,16 +17,19 @@ namespace StormLib.Services.Rumble
 		private const string liveMarker = "data-value=\"LIVE\"";
 
 		private readonly ILogger<RumbleUpdater> logger;
+		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<RumbleOptions> rumbleOptionsMonitor;
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
-		public RumbleUpdater(ILogger<RumbleUpdater> logger, IOptionsMonitor<RumbleOptions> rumbleOptionsMonitor)
+		public RumbleUpdater(ILogger<RumbleUpdater> logger, IHttpClientFactory httpClientFactory, IOptionsMonitor<RumbleOptions> rumbleOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(httpClientFactory);
 			ArgumentNullException.ThrowIfNull(rumbleOptionsMonitor);
 
 			this.logger = logger;
+			this.httpClientFactory = httpClientFactory;
 			this.rumbleOptionsMonitor = rumbleOptionsMonitor;
 		}
 
@@ -59,7 +65,13 @@ namespace StormLib.Services.Rumble
 
 		private async Task<Result> UpdateOneAsync(RumbleStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
 		{
-			(HttpStatusCode statusCode, string text) = await download.StringAsync(stream.Link).ConfigureAwait(preserveSynchronizationContext);
+			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			string text = string.Empty;
+			
+			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Rumble))
+			{
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{

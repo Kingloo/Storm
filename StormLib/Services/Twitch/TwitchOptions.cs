@@ -11,7 +11,7 @@ namespace StormLib.Services.Twitch
 		public int MaxStreamsPerUpdate { get; init; } = 0;
 		public IReadOnlyList<TwitchGameId> UnwantedGameIds { get; init; } = new List<TwitchGameId>();
 		public IReadOnlyList<TwitchTopicId> UnwantedTopicIds { get; init; } = new List<TwitchTopicId>();
-		public Uri EmbeddedPlayerUriFormat { get; init; }
+		public string EmbeddedPlayerUriFormat { get; init; }
 
 		public TwitchOptions() { }
 	}

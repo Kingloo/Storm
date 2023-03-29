@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -19,18 +21,21 @@ namespace StormLib.Services.Twitch
 	public class TwitchUpdater : IUpdater<TwitchStream>
 	{
 		private readonly ILogger<TwitchUpdater> logger;
+		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<TwitchOptions> twitchOptionsMonitor;
 		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.Many;
 
-		public TwitchUpdater(ILogger<TwitchUpdater> logger, IOptionsMonitor<TwitchOptions> twitchOptionsMonitor, IOptionsMonitor<StormOptions> stormOptionsMonitor)
+		public TwitchUpdater(ILogger<TwitchUpdater> logger, IHttpClientFactory httpClientFactory, IOptionsMonitor<TwitchOptions> twitchOptionsMonitor, IOptionsMonitor<StormOptions> stormOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(httpClientFactory);
 			ArgumentNullException.ThrowIfNull(twitchOptionsMonitor);
 			ArgumentNullException.ThrowIfNull(stormOptionsMonitor);
 
             this.logger = logger;
+            this.httpClientFactory = httpClientFactory;
             this.twitchOptionsMonitor = twitchOptionsMonitor;
             this.stormOptionsMonitor = stormOptionsMonitor;
 		}
@@ -111,7 +116,7 @@ namespace StormLib.Services.Twitch
 				{
 					if (twitchStreamForThisNode.DisplayName != displayName.DisplayName)
 					{
-						twitchStreamForThisNode.DisplayName = displayName;
+						twitchStreamForThisNode.DisplayName = displayName.DisplayName;
 					}
 				}
 
@@ -127,7 +132,16 @@ namespace StormLib.Services.Twitch
 
 				if (TryGetGame(userData, out TwitchGame? game))
 				{
-					twitchStreamForThisNode.Game = game;
+					if (IsUnwantedGameId(game.Id))
+					{
+						twitchStreamForThisNode.Status = Status.Offline;
+						twitchStreamForThisNode.ViewersCount = null;
+						twitchStreamForThisNode.Game = null;
+					}
+					else
+					{
+						twitchStreamForThisNode.Game = game;
+					}
 				}
 			}
 
@@ -202,11 +216,11 @@ namespace StormLib.Services.Twitch
 			return twitchOptionsMonitor.CurrentValue.UnwantedTopicIds.Contains(topicId);
 		}
 
-		private Task<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
+		private ValueTask<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
 		{
 			string requestBody = BuildRequestBody(streams);
 
-			void configureRequest(HttpRequestMessage requestMessage)
+			void ConfigureRequest(HttpRequestMessage requestMessage)
 			{
 				AddHeaders(twitchOptionsMonitor.CurrentValue.Headers, requestMessage);
 				AddHeaders(stormOptionsMonitor.CurrentValue.CommonHeaders, requestMessage);
@@ -216,7 +230,9 @@ namespace StormLib.Services.Twitch
 				requestMessage.Version = HttpVersion.Version20;
 			}
 
-			return download.StringAsync(graphQlEndpoint, configureRequest, cancellationToken);
+			using HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Twitch);
+			
+			return HttpClientHelpers.GetStringAsync(client, twitchOptionsMonitor.CurrentValue.GraphQlApiUri, ConfigureRequest, cancellationToken);
 		}
 
 		private static string BuildRequestBody(IEnumerable<IStream> streams)

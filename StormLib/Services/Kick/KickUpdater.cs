@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -16,18 +18,25 @@ namespace StormLib.Services.Kick
 	public class KickUpdater : IUpdater<KickStream>
 	{
 		private readonly ILogger<KickUpdater> logger;
+		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<KickOptions> kickOptionsMonitor;
 		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
-		public KickUpdater(ILogger<KickUpdater> logger, IOptionsMonitor<KickOptions> kickOptionsMonitor, IOptionsMonitor<StormOptions> stormOptionsMonitor)
+		public KickUpdater(
+			ILogger<KickUpdater> logger,
+			IHttpClientFactory httpClientFactory,
+			IOptionsMonitor<KickOptions> kickOptionsMonitor,
+			IOptionsMonitor<StormOptions> stormOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(httpClientFactory);
 			ArgumentNullException.ThrowIfNull(kickOptionsMonitor);
 			ArgumentNullException.ThrowIfNull(stormOptionsMonitor);
 
 			this.logger = logger;
+			this.httpClientFactory = httpClientFactory;
 			this.kickOptionsMonitor = kickOptionsMonitor;
 			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
@@ -68,15 +77,21 @@ namespace StormLib.Services.Kick
 
 			void ConfigureRequest(HttpRequestMessage requestMessage)
 			{
-				AddHeaders(kickOptionsMonitor.CurrentValue.headers, requestMessage);
-				AddHeaders(stormOptionsMonitor.CurrentValue.headers, requestMessage);
+				AddHeaders(kickOptionsMonitor.CurrentValue.Headers, requestMessage);
+				AddHeaders(stormOptionsMonitor.CurrentValue.CommonHeaders, requestMessage);
 
 				requestMessage.Headers.Host = "kick.com";
 				requestMessage.Method = HttpMethod.Get;
 				requestMessage.Version = HttpVersion.Version20;
 			};
 
-			(HttpStatusCode statusCode, string text) = await download.StringAsync(apiEndpointForStream, ConfigureRequest).ConfigureAwait(preserveSynchronizationContext);
+			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			string text = string.Empty;
+
+			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Kick))
+			{
+				(statusCode, text) = await HttpClientHelpers.GetStringAsync(client, apiEndpointForStream, ConfigureRequest, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{
