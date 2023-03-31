@@ -10,22 +10,15 @@ namespace StormDesktop.Common
 	public static class FileSystem
 	{
 		private const char defaultCommentChar = '#';
+		private static readonly Encoding defaultEncoding = Encoding.UTF8;
 
 		public static void EnsureDirectoryExists(string? folder)
 		{
-			if (String.IsNullOrWhiteSpace(folder))
-			{
-				throw new ArgumentNullException(nameof(folder), "folder was null or empty");
-			}
+			ArgumentNullException.ThrowIfNull(folder);
 
 			if (!Directory.Exists(folder))
 			{
 				Directory.CreateDirectory(folder);
-
-				if (!Directory.Exists(folder))
-				{
-					throw new DirectoryNotFoundException($"{folder} could not be created");
-				}
 			}
 		}
 
@@ -33,62 +26,54 @@ namespace StormDesktop.Common
 		{
 			if (!File.Exists(path))
 			{
-				EnsureDirectoryExists(new FileInfo(path).DirectoryName ?? string.Empty);
+				EnsureDirectoryExists(Path.GetDirectoryName(path));
 
 				using (File.Create(path)) { }
-
-				if (!File.Exists(path))
-				{
-					throw new FileNotFoundException($"file could not be created ({path})", path);
-				}
 			}
 		}
 
 		[System.Diagnostics.DebuggerStepThrough]
-		public static ValueTask<string[]> LoadLinesFromFileAsync(string path)
-			=> LoadLinesFromFileAsync(path, defaultCommentChar, Encoding.UTF8, CancellationToken.None);
+		public static ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path)
+			=> LoadLinesFromFileAsync(path, defaultCommentChar, defaultEncoding, CancellationToken.None);
 
 		[System.Diagnostics.DebuggerStepThrough]
-		public static ValueTask<string[]> LoadLinesFromFileAsync(string path, char comment)
-			=> LoadLinesFromFileAsync(path, comment, Encoding.UTF8, CancellationToken.None);
+		public static ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path, char comment)
+			=> LoadLinesFromFileAsync(path, comment, defaultEncoding, CancellationToken.None);
 
 		[System.Diagnostics.DebuggerStepThrough]
-		public static ValueTask<string[]> LoadLinesFromFileAsync(string path, Encoding encoding)
-			=> LoadLinesFromFileAsync(path, defaultCommentChar, Encoding.UTF8, CancellationToken.None);
+		public static ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path, Encoding encoding)
+			=> LoadLinesFromFileAsync(path, defaultCommentChar, encoding, CancellationToken.None);
 
-		public static async ValueTask<string[]> LoadLinesFromFileAsync(string path, char comment, Encoding encoding, CancellationToken token)
+		public static async ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path, char commentChar, Encoding encoding, CancellationToken cancellationToken)
 		{
+			if (char.IsWhiteSpace(commentChar))
+			{
+				throw new ArgumentException("comment char cannot be whitespace", nameof(commentChar));
+			}
+
 			List<string> lines = new List<string>();
 
-			FileStream fsAsync = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+			FileStream fsAsync = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None, bufferSize: 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
 			try
 			{
-				using (StreamReader sr = new StreamReader(fsAsync, encoding))
+				using StreamReader sr = new StreamReader(fsAsync, encoding);
+
+				string? line = string.Empty;
+
+				while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
 				{
-					string? line = string.Empty;
+					cancellationToken.ThrowIfCancellationRequested();
 
-					while (!String.IsNullOrEmpty(line = await sr.ReadLineAsync().ConfigureAwait(false)))
+					bool shouldAddLine = line.Length switch
 					{
-						if (token.IsCancellationRequested)
-						{
-							break;
-						}
+						0 => true,
+						_ => line[0] != commentChar
+					};
 
-						bool shouldAddLine = true;
-
-						if (!Char.IsWhiteSpace(comment))
-						{
-							if (line[0] == comment)
-							{
-								shouldAddLine = false;
-							}
-						}
-
-						if (shouldAddLine)
-						{
-							lines.Add(line);
-						}
+					if (shouldAddLine)
+					{
+						lines.Add(line);
 					}
 				}
 			}
@@ -97,33 +82,33 @@ namespace StormDesktop.Common
 				await fsAsync.DisposeAsync().ConfigureAwait(false);
 			}
 
-			return lines.ToArray();
+			return lines.AsReadOnly();
 		}
 
 		[System.Diagnostics.DebuggerStepThrough]
 		public static ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode)
-			=> WriteLinesToFileAsync(lines, path, mode, Encoding.UTF8, CancellationToken.None);
+			=> WriteLinesToFileAsync(lines, path, mode, defaultEncoding, CancellationToken.None);
 
-		public static async ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding, CancellationToken token)
+		[System.Diagnostics.DebuggerStepThrough]
+		public static ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding)
+			=> WriteLinesToFileAsync(lines, path, mode, encoding, CancellationToken.None);
+
+		public static async ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding, CancellationToken cancellationToken)
 		{
-			if (lines is null)
-			{
-				throw new ArgumentNullException(nameof(lines));
-			}
+			ArgumentNullException.ThrowIfNull(lines);
 
-			FileStream fsAsync = new FileStream(path, mode, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+			FileStream fsAsync = new FileStream(path, mode, FileAccess.Write, FileShare.None, bufferSize: 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
 			try
 			{
-				using (StreamWriter sw = new StreamWriter(fsAsync, encoding))
-				{
-					foreach (string line in lines)
-					{
-						await sw.WriteLineAsync(line.AsMemory(), token).ConfigureAwait(false);
-					}
+				using StreamWriter sw = new StreamWriter(fsAsync, encoding);
 
-					await sw.FlushAsync().ConfigureAwait(false);
+				foreach (string line in lines)
+				{
+					await sw.WriteLineAsync(line.AsMemory(), cancellationToken).ConfigureAwait(false);
 				}
+
+				await sw.FlushAsync().ConfigureAwait(false);
 			}
 			finally
 			{
