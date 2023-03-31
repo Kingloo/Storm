@@ -17,4 +17,4 @@ dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.CA1805.severity = none
 
 # CA1848: LoggerMessage
-dotnet_diagnostic.CA1805.severity = none
+dotnet_diagnostic.CA1848.severity = none
