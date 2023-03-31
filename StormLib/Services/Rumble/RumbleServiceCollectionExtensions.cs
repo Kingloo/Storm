@@ -4,28 +4,28 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace StormLib.Services.Chaturbate
+namespace StormLib.Services.Rumble
 {
-	public static class ChaturbateServiceCollectionExtensions
+	public static class RumbleServiceCollectionExtensions
 	{
-		public static IServiceCollection AddChaturbate(this IServiceCollection services, IConfiguration configuration)
+		public static IServiceCollection AddRumble(this IServiceCollection services, IConfiguration configuration)
 		{
 			ArgumentNullException.ThrowIfNull(configuration);
 
-			services.Configure<ChaturbateOptions>(configuration.GetSection("Chaturbate"));
+			services.Configure<RumbleOptions>(configuration.GetSection("Rumble"));
 
-			services.AddHttpClient<ChaturbateUpdater>(HttpClientNames.Chaturbate)
+			services.AddHttpClient<RumbleUpdater>(HttpClientNames.Rumble)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
 			
-			services.AddTransient<ChaturbateUpdater>();
+			services.AddTransient<RumbleUpdater>();
 
 			return services;
 		}
 
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
-			httpClient.BaseAddress = new Uri("https://chaturbate.com/", UriKind.Absolute);
+			httpClient.BaseAddress = new Uri("https://rumble.com/", UriKind.Absolute);
 			httpClient.DefaultRequestVersion = HttpVersion.Version20;
 			httpClient.Timeout = TimeSpan.FromSeconds(5d);
 		}

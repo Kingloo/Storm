@@ -4,28 +4,28 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace StormLib.Services.Chaturbate
+namespace StormLib.Services.YouTube
 {
-	public static class ChaturbateServiceCollectionExtensions
+	public static class YouTubeServiceCollectionExtensions
 	{
-		public static IServiceCollection AddChaturbate(this IServiceCollection services, IConfiguration configuration)
+		public static IServiceCollection AddYouTube(this IServiceCollection services, IConfiguration configuration)
 		{
 			ArgumentNullException.ThrowIfNull(configuration);
 
-			services.Configure<ChaturbateOptions>(configuration.GetSection("Chaturbate"));
+			services.Configure<YouTubeOptions>(configuration.GetSection("YouTube"));
 
-			services.AddHttpClient<ChaturbateUpdater>(HttpClientNames.Chaturbate)
+			services.AddHttpClient<YouTubeUpdater>(HttpClientNames.YouTube)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
 			
-			services.AddTransient<ChaturbateUpdater>();
+			services.AddTransient<YouTubeUpdater>();
 
 			return services;
 		}
 
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
-			httpClient.BaseAddress = new Uri("https://chaturbate.com/", UriKind.Absolute);
+			httpClient.BaseAddress = new Uri("https://youtube.com/", UriKind.Absolute);
 			httpClient.DefaultRequestVersion = HttpVersion.Version20;
 			httpClient.Timeout = TimeSpan.FromSeconds(5d);
 		}

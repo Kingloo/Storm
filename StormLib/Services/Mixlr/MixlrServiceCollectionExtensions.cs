@@ -4,28 +4,27 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace StormLib.Services.Chaturbate
+namespace StormLib.Services.Mixlr
 {
-	public static class ChaturbateServiceCollectionExtensions
+	public static class MixlrServiceCollectionExtensions
 	{
-		public static IServiceCollection AddChaturbate(this IServiceCollection services, IConfiguration configuration)
+		public static IServiceCollection AddMixlr(this IServiceCollection services, IConfiguration configuration)
 		{
 			ArgumentNullException.ThrowIfNull(configuration);
 
-			services.Configure<ChaturbateOptions>(configuration.GetSection("Chaturbate"));
+			services.Configure<MixlrOptions>(configuration.GetSection("Mixlr"));
 
-			services.AddHttpClient<ChaturbateUpdater>(HttpClientNames.Chaturbate)
+			services.AddHttpClient<MixlrUpdater>(HttpClientNames.Mixlr)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
 			
-			services.AddTransient<ChaturbateUpdater>();
+			services.AddTransient<MixlrUpdater>();
 
 			return services;
 		}
 
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
-			httpClient.BaseAddress = new Uri("https://chaturbate.com/", UriKind.Absolute);
 			httpClient.DefaultRequestVersion = HttpVersion.Version20;
 			httpClient.Timeout = TimeSpan.FromSeconds(5d);
 		}
