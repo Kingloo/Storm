@@ -35,7 +35,7 @@ namespace StormLib.Helpers
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
 			string text = string.Empty;
 
-			HttpResponseMessage? responseMessage = null;;
+			HttpResponseMessage? responseMessage = null;
 			
 			try
 			{

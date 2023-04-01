@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib.Interfaces;
-using StormLib.Streams;
 
 namespace StormLib.Services.Rumble
 {

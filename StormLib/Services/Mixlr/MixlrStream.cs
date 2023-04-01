@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using StormLib.Services;
 
-namespace StormLib.Streams
+namespace StormLib.Services.Mixlr
 {
 	public class MixlrStream : BaseStream
 	{
@@ -22,9 +21,9 @@ namespace StormLib.Streams
 			}
 		}
 
-		public override bool HasStreamlinkSupport => true;
+		public override bool HasStreamlinkSupport { get => true; }
 
-		public override string ServiceName => "Mixlr";
+		public override string ServiceName { get => "Mixlr"; }
 
 		public MixlrStream(Uri uri)
 			: base(uri)

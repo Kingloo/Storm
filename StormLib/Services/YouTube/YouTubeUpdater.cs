@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib.Extensions;
 using StormLib.Interfaces;
-using StormLib.Streams;
 
 namespace StormLib.Services.YouTube
 {

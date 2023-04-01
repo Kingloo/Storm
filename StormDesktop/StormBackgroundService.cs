@@ -38,26 +38,49 @@ namespace StormDesktop
 			this.optionsMonitor = optionsMonitor;
 			this.updaterMessageQueue = updaterMessageQueue;
 		}
+
+		public override Task StartAsync(CancellationToken cancellationToken)
+		{
+			logger.LogDebug("start");
+
+			return base.StartAsync(cancellationToken);
+		}
 		
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			while (!stoppingToken.IsCancellationRequested)
+			logger.LogDebug("execute for {ServiceName}", nameof(TStream));
+
+			try
 			{
-				logger.LogDebug("start updating Chaturbate");
+				string serviceName = typeof(TStream).Name;
 
-				await RunUpdate(stoppingToken).ConfigureAwait(false);
+				while (!stoppingToken.IsCancellationRequested)
+				{
+					logger.LogDebug("start updating {ServiceName} streams", serviceName);
 
-				logger.LogInformation("updated Chaturbate");
+					await RunUpdate(serviceName, stoppingToken).ConfigureAwait(false);
 
-				await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
+					logger.LogInformation("updated {ServiceName}", serviceName);
+
+					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
+				}
+			}
+			finally
+			{
+				if (!stoppingToken.IsCancellationRequested)
+				{
+					logger.LogWarning("background service for {ServiceName} stopped", nameof(TStream));
+				}
 			}
 		}
 
-		private async ValueTask RunUpdate(CancellationToken cancellationToken)
+		private async ValueTask RunUpdate(string serviceName, CancellationToken cancellationToken)
 		{
 			IReadOnlyList<TStream> streams = updaterMessageQueue.StreamSource.OfType<TStream>().ToList();
 
 			IList<Result<TStream>> results = await updater.UpdateAsync(streams, cancellationToken).ConfigureAwait(false);
+
+			logger.LogDebug("update completed for {ServiceName} with {Count} results", serviceName, results.Count);
 
 			foreach (Result<TStream> each in results)
 			{

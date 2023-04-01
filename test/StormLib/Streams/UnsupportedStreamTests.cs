@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using StormLib.Helpers;
 using StormLib.Interfaces;
-using StormLib.Streams;
+using StormLib.Services;
 
 namespace StormTests.StormLib.Streams
 {

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using StormLib.Services;
 
-namespace StormLib.Streams
+namespace StormLib.Services.Kick
 {
 	public class KickStream : BaseStream
 	{

@@ -1,8 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:stormLibStreams="clr-namespace:StormLib.Streams;assembly=StormLib">
+                    xmlns:mixlr="clr-namespace:StormLib.Services.Mixlr;assembly=StormLib">
 
-    <DataTemplate DataType="{x:Type stormLibStreams:MixlrStream}">
+    <DataTemplate DataType="{x:Type mixlr:MixlrStream}">
         <Grid Style="{StaticResource gridStyle}">
             <ContentPresenter ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />

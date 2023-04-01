@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using StormLib.Services;
 
-namespace StormLib.Streams
+namespace StormLib.Services.YouTube
 {
 	public class YouTubeStream : BaseStream
 	{
@@ -23,9 +22,9 @@ namespace StormLib.Streams
 			}
 		}
 
-		public override bool HasStreamlinkSupport => true;
+		public override bool HasStreamlinkSupport { get => true; }
 
-		public override string ServiceName => "YouTube";
+		public override string ServiceName { get => "YouTube"; }
 
 		public YouTubeStream(Uri uri)
 			: base(uri)
@@ -33,10 +32,7 @@ namespace StormLib.Streams
 
 		protected override string DetermineName(Uri uri)
 		{
-			if (uri is null)
-			{
-				throw new ArgumentNullException(nameof(uri));
-			}
+			ArgumentNullException.ThrowIfNull(uri);
 
 			return uri.Segments.LastOrDefault(s => s != "/")?.TrimEnd(Char.Parse("/")) ?? uri.AbsoluteUri;
 		}

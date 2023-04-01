@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "StormDesktop-Dev": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Environment": "Development"
+      }
+    }
+  }
+}

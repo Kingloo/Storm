@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using StormLib.Helpers;
 using StormLib.Interfaces;
-using StormLib.Streams;
+using StormLib.Services.Chaturbate;
+using StormLib.Services.Kick;
+using StormLib.Services.Mixlr;
+using StormLib.Services.Rumble;
+using StormLib.Services.Twitch;
+using StormLib.Services.YouTube;
 
 namespace StormTests.StormLib
 {

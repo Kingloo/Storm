@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib.Helpers;
 using StormLib.Interfaces;
-using StormLib.Streams;
 using static StormLib.Helpers.UpdaterHelpers;
 
 namespace StormLib.Services.Kick
@@ -74,9 +73,7 @@ namespace StormLib.Services.Kick
 				AddHeaders(kickOptionsMonitor.CurrentValue.Headers, requestMessage);
 				AddHeaders(stormOptionsMonitor.CurrentValue.CommonHeaders, requestMessage);
 
-				requestMessage.Headers.Host = "kick.com";
 				requestMessage.Method = HttpMethod.Get;
-				requestMessage.Version = HttpVersion.Version20;
 			};
 
 			HttpStatusCode statusCode = HttpStatusCode.Unused;

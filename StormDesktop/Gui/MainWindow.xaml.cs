@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
@@ -39,12 +40,23 @@ namespace StormDesktop.Gui
 
 		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-            viewModel.LoadStreamsCommand.Execute(null);
+            logger.LogDebug("main window loaded");
+
+			viewModel.LoadStreamsCommand.Execute(null);
+
+			viewModel.StartListeningToMessageQueue();
 		}
 
 		private void MainWindow_LocationChanged(object sender, EventArgs e)
 		{
 			SetMaxHeight();
+		}
+
+		private void MainWindow_Closing(object sender, CancelEventArgs e)
+		{
+			logger.LogDebug("main window closing");
+
+			viewModel.StopListeningToQueue();
 		}
 
 		private void SetMaxHeight()

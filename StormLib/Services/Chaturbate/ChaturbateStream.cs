@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using StormLib.Services;
 
-namespace StormLib.Streams
+namespace StormLib.Services.Chaturbate
 {
 	public class ChaturbateStream : BaseStream
 	{
@@ -22,9 +21,9 @@ namespace StormLib.Streams
 			}
 		}
 
-		public override bool HasStreamlinkSupport => true;
+		public override bool HasStreamlinkSupport { get => true; }
 
-		public override string ServiceName => "Chaturbate";
+		public override string ServiceName { get => "Chaturbate"; }
 
 		public ChaturbateStream(Uri uri)
 			: base(uri)

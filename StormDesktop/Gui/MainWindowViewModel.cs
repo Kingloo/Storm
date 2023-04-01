@@ -15,7 +15,12 @@ using StormDesktop.Interfaces;
 using StormLib;
 using StormLib.Helpers;
 using StormLib.Interfaces;
-using StormLib.Streams;
+using StormLib.Services.Chaturbate;
+using StormLib.Services.Kick;
+using StormLib.Services.Mixlr;
+using StormLib.Services.Rumble;
+using StormLib.Services.Twitch;
+using StormLib.Services.YouTube;
 
 namespace StormDesktop.Gui
 {
@@ -118,7 +123,7 @@ namespace StormDesktop.Gui
 		}
 
 		private CancellationTokenSource? listenToMessageQueueCts = null;
-		
+
 		public MainWindowViewModel(
 			ILogger<IMainWindowViewModel> logger,
 			IOptionsMonitor<StormOptions> stormOptionsMonitor,
@@ -142,6 +147,8 @@ namespace StormDesktop.Gui
 				listenToMessageQueueCts = new CancellationTokenSource();
 
 				Task _ = Task.Run(ListenToMessageQueueAsync, listenToMessageQueueCts.Token);
+
+				logger.LogDebug("listening to update message queue");
 			}
 		}
 
@@ -150,10 +157,16 @@ namespace StormDesktop.Gui
 			while (listenToMessageQueueCts is not null
 				&& listenToMessageQueueCts.IsCancellationRequested == false)
 			{
+				logger.LogDebug("begin message queue outer loop");
+
 				IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
+
+				logger.LogDebug("message queue has {Count} messages", updaterMessageQueue.ResultsQueue.Count);
 
 				while (updaterMessageQueue.ResultsQueue.TryDequeue(out object? result))
 				{
+					logger.LogDebug("dequeued message");
+
 					PerformResultAction(result);
 				}
 
@@ -163,8 +176,12 @@ namespace StormDesktop.Gui
 
 				SendNotifications(toSendNotificationsFor);
 
-				await Task.Delay(TimeSpan.FromSeconds(10d)).ConfigureAwait(true);
+				logger.LogDebug("end message queue outer loop");
+
+				await Task.Delay(TimeSpan.FromSeconds(3d)).ConfigureAwait(true);
 			}
+
+			logger.LogDebug("message queue listening outer loop stopped");
 		}
 
 		private static void PerformResultAction(object result)

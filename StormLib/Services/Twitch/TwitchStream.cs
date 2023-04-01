@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
-using StormLib.Services;
-using StormLib.Services.Twitch;
 
-namespace StormLib.Streams
+namespace StormLib.Services.Twitch
 {
 	public class TwitchStream : BaseStream
 	{

@@ -3,7 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using StormLib.Interfaces;
-using StormLib.Streams;
+using StormLib.Services;
+using StormLib.Services.Chaturbate;
+using StormLib.Services.Kick;
+using StormLib.Services.Mixlr;
+using StormLib.Services.Rumble;
+using StormLib.Services.Twitch;
+using StormLib.Services.YouTube;
 
 namespace StormLib.Helpers
 {

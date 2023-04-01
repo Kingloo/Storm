@@ -5,7 +5,8 @@ namespace StormLib
 	public class StormOptions
 	{
 		public string StreamsFilePath { get; init; } = string.Empty;
-		public IDictionary<HeaderName, HeaderValue> CommonHeaders { get; init; } = new Dictionary<HeaderName, HeaderValue>();
+		
+		public IList<Header> CommonHeaders { get; init; } = new List<Header>();
 
 		public StormOptions() { }
 	}

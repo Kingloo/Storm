@@ -17,6 +17,7 @@ namespace StormDesktop.Converters
 		public Brush Banned { get; set; } = Brushes.Transparent;
 		public Brush Rerun { get; set; } = Brushes.Transparent;
 		public Brush Offline { get; set; } = Brushes.Transparent;
+		public Brush Problem { get; set; } = Brushes.Transparent;
 		public Brush Unknown { get; set; } = Brushes.Transparent;
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -33,6 +34,7 @@ namespace StormDesktop.Converters
 					Status.Rerun => Rerun,
 					Status.Offline => Offline,
 					Status.Unknown => Unknown,
+					Status.Problem => Problem,
 					_ => throw new ArgumentException("you submitted an invalid Status value", nameof(value))
 				},
 				_ => None
@@ -41,7 +43,7 @@ namespace StormDesktop.Converters
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 	}
 }

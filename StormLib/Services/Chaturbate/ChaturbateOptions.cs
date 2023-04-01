@@ -1,8 +1,9 @@
 using System;
+using StormLib.Interfaces;
 
 namespace StormLib.Services.Chaturbate
 {
-	public class ChaturbateOptions
+	public class ChaturbateOptions : IUpdateIntervalOption
 	{
 		public TimeSpan UpdateInterval { get; init; } = TimeSpan.FromMinutes(3d);
 

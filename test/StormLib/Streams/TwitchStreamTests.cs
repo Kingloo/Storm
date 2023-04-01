@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using StormLib.Helpers;
 using StormLib.Interfaces;
-using StormLib.Streams;
+using StormLib.Services.Twitch;
 
 namespace StormTests.StormLib.Streams
 {

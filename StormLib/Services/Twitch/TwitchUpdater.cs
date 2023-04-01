@@ -13,7 +13,6 @@ using Microsoft.Extensions.Options;
 using StormLib.Exceptions;
 using StormLib.Helpers;
 using StormLib.Interfaces;
-using StormLib.Streams;
 using static StormLib.Helpers.UpdaterHelpers;
 
 namespace StormLib.Services.Twitch

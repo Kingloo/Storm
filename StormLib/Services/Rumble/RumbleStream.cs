@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using StormLib.Services;
 
-namespace StormLib.Streams
+namespace StormLib.Services.Rumble
 {
 	public class RumbleStream : BaseStream
 	{

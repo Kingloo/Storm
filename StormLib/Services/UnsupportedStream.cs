@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using StormLib.Services;
 
-namespace StormLib.Streams
+namespace StormLib.Services
 {
 	public class UnsupportedStream : BaseStream
 	{
@@ -22,9 +21,9 @@ namespace StormLib.Streams
 			}
 		}
 
-		public override bool HasStreamlinkSupport => true;
+		public override bool HasStreamlinkSupport { get => false; }
 
-		public override string ServiceName => "Unsupported";
+		public override string ServiceName { get => "Unsupported"; }
 
 		public UnsupportedStream(Uri uri)
 			: base(uri)

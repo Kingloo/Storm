@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
+using StormLib.Interfaces;
 
 namespace StormLib.Services.Kick
 {
-	public class KickOptions
+	public class KickOptions : IUpdateIntervalOption
 	{
-		public TimeSpan UpdateInterval { get; init; } = TimeSpan.FromMinutes(2d);
-		public Uri ApiUri { get; init; }
-		public IDictionary<HeaderName, HeaderValue> Headers { get; init; } = new Dictionary<HeaderName, HeaderValue>();
+		public TimeSpan UpdateInterval { get; init; } = TimeSpan.FromSeconds(5d);
+		public Uri? ApiUri { get; init; }
+		public IList<Header> Headers { get; init; } = new List<Header>();
 
 		public KickOptions() { }
 	}
