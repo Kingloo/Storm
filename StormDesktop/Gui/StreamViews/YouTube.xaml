@@ -11,7 +11,7 @@
 			</Grid.ColumnDefinitions>
 
 			<ContentPresenter Grid.Column="0"
-							  ContentTemplate="{StaticResource StreamBaseTemplate}"
+							  ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
 
 			<Label Grid.Column="1"

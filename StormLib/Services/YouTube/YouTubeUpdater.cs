@@ -33,37 +33,31 @@ namespace StormLib.Services.YouTube
 			this.youTubeOptionsMonitor = youTubeOptionsMonitor;
 		}
 
-		public Task<Result[]> UpdateAsync(IList<YouTubeStream> streams)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, CancellationToken.None);
+		public Task<IList<Result<YouTubeStream>>> UpdateAsync(IReadOnlyList<YouTubeStream> streams)
+			=> UpdateAsync(streams, CancellationToken.None);
 
-		public Task<Result[]> UpdateAsync(IList<YouTubeStream> streams, bool preserveSynchronizationContext)
-			=> UpdateAsync(streams, preserveSynchronizationContext, CancellationToken.None);
-
-		public Task<Result[]> UpdateAsync(IList<YouTubeStream> streams, CancellationToken cancellationToken)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, cancellationToken);
-
-		public async Task<Result[]> UpdateAsync(IList<YouTubeStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		public async Task<IList<Result<YouTubeStream>>> UpdateAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
 			if (!streams.Any())
 			{
-				return Array.Empty<Result>();
+				return Array.Empty<Result<YouTubeStream>>();
 			}
 
 			if (streams.Count == 1)
 			{
-				Result singleResult = await UpdateOneAsync(streams[0], preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				Result<YouTubeStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
 
 				return new [] { singleResult };
 			}
 			else
 			{
-				return await UpdateManyAsync(streams, preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 			}
 		}
 
-		private async Task<Result> UpdateOneAsync(YouTubeStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private async Task<Result<YouTubeStream>> UpdateOneAsync(YouTubeStream stream, CancellationToken cancellationToken)
 		{
 			Uri uri = new Uri($"{stream.Link.AbsoluteUri}?ucbcb=1", UriKind.Absolute);
 
@@ -72,31 +66,39 @@ namespace StormLib.Services.YouTube
 
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.YouTube))
 			{
-				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, uri, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, uri, cancellationToken).ConfigureAwait(false);
 			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode);
+				return new Result<YouTubeStream>(stream, statusCode)
+				{
+					Action = (YouTubeStream y) =>
+					{
+						stream.Status = Status.Problem;
+						stream.ViewersCount = null;
+					}
+				};
 			}
 
-			stream.DisplayName = SetDisplayName(text, stream.Name);
-            stream.Status = SetStatus(text, youTubeOptionsMonitor.CurrentValue);
-            stream.ViewersCount = SetViewers(text);
-
-			return new Result(UpdaterType, statusCode);
+			return new Result<YouTubeStream>(stream, statusCode)
+			{
+				Action = (YouTubeStream y) =>
+				{
+					y.DisplayName = SetDisplayName(text, stream.Name);
+					y.Status = SetStatus(text, youTubeOptionsMonitor.CurrentValue);
+            		y.ViewersCount = SetViewers(text);
+				}
+			};
 		}
 
-		private Task<Result[]> UpdateManyAsync(IList<YouTubeStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private Task<Result<YouTubeStream>[]> UpdateManyAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result>> updateTasks = new List<Task<Result>>();
+			IList<Task<Result<YouTubeStream>>> updateTasks = new List<Task<Result<YouTubeStream>>>();
 
 			foreach (YouTubeStream each in streams)
 			{
-				Task<Result> updateTask = Task.Run(() => UpdateOneAsync(each, preserveSynchronizationContext, cancellationToken));
+				Task<Result<YouTubeStream>> updateTask = Task.Run(() => UpdateOneAsync(each, cancellationToken));
 
 				updateTasks.Add(updateTask);
 			}

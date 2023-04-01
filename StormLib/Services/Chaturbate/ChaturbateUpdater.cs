@@ -34,82 +34,97 @@ namespace StormLib.Services.Chaturbate
 			this.httpClientFactory = httpClientFactory;
 		}
 
-		public Task<Result[]> UpdateAsync(IList<ChaturbateStream> streams)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, CancellationToken.None);
+		public Task<IList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams)
+			=> UpdateAsync(streams, CancellationToken.None);
 		
-		public Task<Result[]> UpdateAsync(IList<ChaturbateStream> streams, bool preserveSynchronizationContext)
-			=> UpdateAsync(streams, preserveSynchronizationContext, CancellationToken.None);
-		
-		public Task<Result[]> UpdateAsync(IList<ChaturbateStream> streams, CancellationToken cancellationToken)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, cancellationToken);
-
-		public async Task<Result[]> UpdateAsync(IList<ChaturbateStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		public async Task<IList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
 			if (!streams.Any())
 			{
-				return Array.Empty<Result>();
+				return Array.Empty<Result<ChaturbateStream>>();
 			}
 
 			if (streams.Count == 1)
 			{
-				Result singleResult = await UpdateOneAsync(streams[0], preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				Result<ChaturbateStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
 				
 				return new [] { singleResult };
 			}
 			else
 			{
-				return await UpdateManyAsync(streams, preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 			}
 		}
 
-		private async Task<Result> UpdateOneAsync(ChaturbateStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private async Task<Result<ChaturbateStream>> UpdateOneAsync(ChaturbateStream stream, CancellationToken cancellationToken)
 		{
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
 			string text = string.Empty;
-			
-			using (HttpClient client = httpClientFactory.CreateClient("ChaturbateHttpClient"))
+
+			Status newStatus = Status.Unknown;
+			int? newViewersCount = null;
+
+			void ConfigureRequest(HttpRequestMessage requestMessage)
 			{
-				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				requestMessage.Headers.Host = stream.Link.DnsSafeHost;
+				requestMessage.Headers.Referrer = stream.Link;
+			};
+			
+			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Chaturbate))
+			{
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, ConfigureRequest, cancellationToken).ConfigureAwait(false);
 			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode);
+				return new Result<ChaturbateStream>(stream, statusCode)
+				{
+					Action = (ChaturbateStream c) =>
+					{
+						c.Status = Status.Problem;
+						c.ViewersCount = null;
+					}
+				};
 			}
 
 			if (text.Contains(bannedMarker, StringComparison.OrdinalIgnoreCase))
 			{
-				stream.Status = Status.Banned;
-				stream.ViewersCount = null;
-				
-				return new Result(UpdaterType, statusCode);
+				return new Result<ChaturbateStream>(stream, statusCode)
+				{
+					Action = (ChaturbateStream c) =>
+					{
+						c.Status = Status.Banned;
+						c.ViewersCount = null;
+					}
+				};
 			}
 
 			int roomStatusIndex = text.IndexOf(roomStatus, StringComparison.OrdinalIgnoreCase);
 
 			if (roomStatusIndex < 0)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode)
+				return new Result<ChaturbateStream>(stream, statusCode)
 				{
+					Action = (ChaturbateStream c) =>
+					{
+						c.Status = Status.Problem;
+						c.ViewersCount = null;
+					},
 					Message = $"text did not contain room status: '{roomStatus}'"
 				};
 			}
 
 			if (text.Length < roomStatusIndex + 100)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode)
+				return new Result<ChaturbateStream>(stream, statusCode)
 				{
+					Action = (ChaturbateStream c) =>
+					{
+						c.Status = Status.Problem;
+						c.ViewersCount = null;
+					},
 					Message = $"there was not 100 characters after room status index, there were actually {text.Length - roomStatusIndex} characters"
 				};
 			}
@@ -118,32 +133,39 @@ namespace StormLib.Services.Chaturbate
 
 			if (searchRadius.Contains(publicStatus, StringComparison.OrdinalIgnoreCase))
 			{
-				stream.Status = Status.Public;
+				newStatus = Status.Public;
 			}
 			else if (searchRadius.Contains(offlineStatus, StringComparison.OrdinalIgnoreCase)
 				|| searchRadius.Contains(awayStatus, StringComparison.OrdinalIgnoreCase))
 			{
-				stream.Status = Status.Offline;
+				newStatus = Status.Offline;
 			}
 			else if (searchRadius.Contains(privateStatus, StringComparison.OrdinalIgnoreCase))
 			{
-				stream.Status = Status.Private;
+				newStatus = Status.Private;
 			}
 			else
 			{
-				stream.Status = Status.Unknown;
+				newStatus = Status.Unknown;
 			}
-
-			return new Result(UpdaterType, statusCode);
+			
+			return new Result<ChaturbateStream>(stream, statusCode)
+			{
+				Action = (ChaturbateStream c) =>
+				{
+					c.Status = newStatus;
+					c.ViewersCount = newViewersCount;
+				}
+			};
 		}
 
-		private Task<Result[]> UpdateManyAsync(IList<ChaturbateStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private Task<Result<ChaturbateStream>[]> UpdateManyAsync(IReadOnlyList<ChaturbateStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result>> updateTasks = new List<Task<Result>>();
+			IList<Task<Result<ChaturbateStream>>> updateTasks = new List<Task<Result<ChaturbateStream>>>();
 
 			foreach (ChaturbateStream each in streams)
 			{
-				Task<Result> updateTask = Task.Run(() => UpdateOneAsync(each, preserveSynchronizationContext, cancellationToken));
+				Task<Result<ChaturbateStream>> updateTask = Task.Run(() => UpdateOneAsync(each, cancellationToken));
 
 				updateTasks.Add(updateTask);
 			}

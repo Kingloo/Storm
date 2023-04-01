@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:gui="clr-namespace:StormDesktop.Gui"
                     xmlns:converter="clr-namespace:StormDesktop.Converters"
-                    xmlns:stormLibStreams="clr-namespace:StormLib.Streams;assembly=StormLib">
+                    xmlns:stormLibServices="clr-namespace:StormLib.Services;assembly=StormLib">
 
 	<converter:StatusConverter x:Key="statusConverter"
                                None="Gray"
@@ -30,7 +30,7 @@
         <Setter Property="FontStretch" Value="UltraExpanded" />
     </Style>
 
-    <DataTemplate DataType="{x:Type stormLibStreams:StreamBase}" x:Key="StreamBaseTemplate">
+    <DataTemplate DataType="{x:Type stormLibServices:BaseStream}" x:Key="BaseStreamTemplate">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50" />

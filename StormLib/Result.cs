@@ -1,22 +1,21 @@
-﻿using System.Net;
-using StormLib.Services;
+﻿using System;
+using System.Net;
+using StormLib.Interfaces;
 
 namespace StormLib
 {
-	public class Result
+	public class Result<TStream> where TStream : IStream
 	{
-		public UpdaterType UpdaterType { get; } = UpdaterType.None;
-		public HttpStatusCode StatusCode { get; } = HttpStatusCode.Unused;
+		public TStream Stream { get; init; }
+		public Action<TStream> Action { get; init; } = (_) => { };
+		public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.Unused;
 		public string Message { get; init; } = string.Empty;
 
-		public Result(UpdaterType updaterType)
+		public Result(TStream stream, HttpStatusCode statusCode)
 		{
-			UpdaterType = updaterType;
-		}
+			ArgumentNullException.ThrowIfNull(stream);
 
-		public Result(UpdaterType updaterType, HttpStatusCode statusCode)
-			: this(updaterType)
-		{
+			Stream = stream;
 			StatusCode = statusCode;
 		}
 	}

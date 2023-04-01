@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using StormLib.Services;
 
 namespace StormLib.Streams
 {

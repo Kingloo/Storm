@@ -11,15 +11,13 @@ namespace StormDesktop.Interfaces
 	{
 		IReadOnlyCollection<IStream> Streams { get; }
 
-		Task UpdateAsync();
-		Task UpdateAsync(CancellationToken cancellationToken);
-		Task UpdateAsync(IEnumerable<IStream> streams);
-		Task UpdateAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken);
-
 		Task LoadStreamsAsync();
 		Task LoadStreamsAsync(CancellationToken cancellationToken);
 
-		DelegateCommandAsync UpdateCommand { get; }
+		void StartListeningToMessageQueue();
+		void StopListeningToQueue();
+
+		DelegateCommandAsync<IStream> UpdateCommand { get; }
 		DelegateCommandAsync LoadStreamsCommand { get; }
 		DelegateCommand<IStream> OpenPageCommand { get; }
 		DelegateCommand<IStream> OpenStreamCommand { get; }

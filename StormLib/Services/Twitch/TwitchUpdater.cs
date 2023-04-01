@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -11,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StormLib.Exceptions;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using StormLib.Streams;
@@ -49,166 +49,161 @@ namespace StormLib.Services.Twitch
 			return new Uri(string.Format(CultureInfo.InvariantCulture, format, stream.Name), UriKind.Absolute);
 		}
 
-		public Task<Result[]> UpdateAsync(IList<TwitchStream> streams)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, CancellationToken.None);
+		public Task<IList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams)
+			=> UpdateAsync(streams, CancellationToken.None);
 
-		public Task<Result[]> UpdateAsync(IList<TwitchStream> streams, bool preserveSynchronizationContext)
-			=> UpdateAsync(streams, preserveSynchronizationContext, CancellationToken.None);
-
-		public Task<Result[]> UpdateAsync(IList<TwitchStream> streams, CancellationToken cancellationToken)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, cancellationToken);
-
-		public async Task<Result[]> UpdateAsync(IList<TwitchStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		public Task<IList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
-			if (!streams.Any())
-			{
-				return Array.Empty<Result>();
-			}
-
-			IList<Result> allResults = new List<Result>();
-
-			foreach (IList<TwitchStream> chunkOfStreams in streams.Chunk(twitchOptionsMonitor.CurrentValue.MaxStreamsPerUpdate))
-			{
-				Result chunkResult = await UpdateManyAsync(chunkOfStreams, preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
-
-				allResults.Add(chunkResult);
-			}
-			
-			return allResults.ToArray();
+			return UpdateManyAsync(streams, cancellationToken);
 		}
 
-		private async Task<Result> UpdateManyAsync(IList<TwitchStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private async Task<IList<Result<TwitchStream>>> UpdateManyAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
 		{
-			(HttpStatusCode statusCode, string text) = await RequestGraphQlDataAsync(streams, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+			(HttpStatusCode statusCode, string text) = await RequestGraphQlDataAsync(streams, cancellationToken).ConfigureAwait(false);
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				return new Result(UpdaterType, statusCode);
+				return streams
+					.Select(s => new Result<TwitchStream>(s, statusCode)
+					{
+						Action = BlankTwitchStream,
+						Message = "status code was not OK"
+					})
+					.ToList();
 			}
 
 			if (!JsonHelpers.TryParse(text, out JsonNode? json))
 			{
-				return new Result(UpdaterType, statusCode)
-				{
-					Message = "JSON parsing failed" 
-				};
+				return streams
+					.Select(s => new Result<TwitchStream>(s, statusCode)
+					{
+						Action = BlankTwitchStream,
+						Message = "JSON parsing failed"
+					})
+					.ToList();
 			}
 
-			foreach (JsonNode? streamData in json.AsArray())
+			if (json is not JsonArray jsonArray)
 			{
-				JsonNode? userData = json?["data"]?["user"];
-				string? userName = (string?)userData?["login"];
+				throw new System.Text.Json.JsonException("Twitch data format has changed: JsonNode is not an array");
+			}
 
-				TwitchStream? twitchStreamForThisNode = streams.SingleOrDefault(s => String.Equals(s.Name, userName, StringComparison.OrdinalIgnoreCase));
+			IList<Result<TwitchStream>> results = new List<Result<TwitchStream>>();
 
-				if (twitchStreamForThisNode is null)
-				{
-					continue;
-				}
+			foreach (TwitchStream each in streams)
+			{
+				JsonNode? userData = jsonArray
+					.SingleOrDefault((JsonNode? element) =>
+					{
+						bool elementHasUserData = false;
+						bool doesUserDataLoginMatchStreamName = false;
+
+						if (element?["data"]?["user"] is JsonNode node)
+						{
+							elementHasUserData = true;
+
+							doesUserDataLoginMatchStreamName = String.Equals((string?)node["login"], each.Name, StringComparison.OrdinalIgnoreCase);
+						}
+						
+						return elementHasUserData && doesUserDataLoginMatchStreamName;
+					});
 				
-				// if we find a stream to update, we remove it from the list of streams
-				// then every stream left in streams is 'blanked'
-				streams.Remove(twitchStreamForThisNode);
+				Action<TwitchStream> action;
 
-				if (TryGetDisplayName(userData, out TwitchDisplayName? displayName))
+				if (userData is null)
 				{
-					if (twitchStreamForThisNode.DisplayName != displayName.DisplayName)
+					action = (TwitchStream t) =>
 					{
-						twitchStreamForThisNode.DisplayName = displayName.DisplayName;
-					}
-				}
+						// Twitch's GraphQl API does not distinguish between does-not-exist, banned or closed so we default to Banned for all possibilities
+						// don't blank or reset DisplayName: this allows it to persist while the programme is open
 
-				if (TryGetStatus(userData, out Status status))
-				{
-					twitchStreamForThisNode.Status = status;
+						t.Status = Status.Banned;
+						t.ViewersCount = null;
+						t.Game = null;
+					};
 				}
-
-				if (TryGetViewersCount(userData, out int? viewers))
+				else
 				{
-					twitchStreamForThisNode.ViewersCount = viewers;
-				}
+					string DisplayName = GetDisplayName(userData) ?? each.Name;
+					Status newStatus = GetStatus(userData);
+					int? newViewersCount = GetViewersCount(userData);
+					TwitchGame? newGame = GetGame(userData);
 
-				if (TryGetGame(userData, out TwitchGame? game))
-				{
-					if (IsUnwantedGameId(game.Id))
+					action = IsUnwantedGameId(newGame?.Id) switch
 					{
-						twitchStreamForThisNode.Status = Status.Offline;
-						twitchStreamForThisNode.ViewersCount = null;
-						twitchStreamForThisNode.Game = null;
-					}
-					else
-					{
-						twitchStreamForThisNode.Game = game;
-					}
+						true => BlankTwitchStream,
+						false => (TwitchStream t) =>
+						{
+							t.DisplayName = GetDisplayName(userData) ?? each.Name;
+							t.Status = GetStatus(userData);
+							t.ViewersCount = GetViewersCount(userData);
+							t.Game = GetGame(userData);
+						}
+					};
 				}
+
+				Result<TwitchStream> result = new Result<TwitchStream>(each, statusCode)
+				{
+					Action = action
+				};
+
+				results.Add(result);
 			}
 
-			foreach (TwitchStream streamLeft in streams)
-			{
-				streamLeft.Status = Status.Banned;
-				streamLeft.ViewersCount = null;
-				streamLeft.Game = null;
-			}
-
-			return new Result(UpdaterType, statusCode);
+			return results;
 		}
 
-		private static bool TryGetDisplayName(JsonNode? userData, [NotNullWhen(true)] out TwitchDisplayName? displayName)
+		private static void BlankTwitchStream(TwitchStream twitchStream)
 		{
-			string? displayNameValue = (string?)userData?["displayName"];
-
-			if (String.IsNullOrEmpty(displayNameValue) == false)
-			{
-				displayName = new TwitchDisplayName(displayNameValue);
-				return true;
-			}
-			else
-			{
-				displayName = null;
-				return false;
-			}
+			twitchStream.Status = Status.Offline;
+			twitchStream.ViewersCount = null;
+			twitchStream.Game = null;
 		}
 
-		private static bool TryGetStatus(JsonNode? userData, [NotNullWhen(true)] out Status status)
+		private static string? GetDisplayName(JsonNode? userData)
 		{
-			status = (string?)userData?["stream"]?["type"] switch
+			return (string?)userData?["displayName"];
+		}
+
+		private static Status GetStatus(JsonNode? userData)
+		{
+			return (string?)userData?["stream"]?["type"] switch
 			{
 				"live" => Status.Public,
 				"rerun" => Status.Rerun,
 				_ => Status.Problem
 			};
-
-			return true;
 		}
 
-		private static bool TryGetViewersCount(JsonNode? userData, [NotNullWhen(true)] out int? viewersCount)
+		private static int? GetViewersCount(JsonNode? userData)
 		{
-			viewersCount = (int?)userData?["stream"]?["viewersCount"];
-			
-			return viewersCount != null && viewersCount != 0;
+			return (int?)userData?["stream"]?["viewersCount"];
 		}
 
-		private static bool TryGetGame(JsonNode? userData, [NotNullWhen(true)] out TwitchGame? game)
+		private static TwitchGame? GetGame(JsonNode? userData)
 		{
 			int? gameIdValue = (int?)userData?["stream"]?["game"]?["id"];
 			string? gameNameValue = (string?)userData?["stream"]?["game"]?["displayName"];
 
 			if (gameIdValue is null || gameNameValue is null)
 			{
-				game = null;
-				return false;
+				return null;
 			}
 
-			game = new TwitchGame(new TwitchGameId(gameIdValue.Value), new TwitchGameName(gameNameValue));
-
-			return true;
+			return new TwitchGame(new TwitchGameId(gameIdValue.Value), new TwitchGameName(gameNameValue));
 		}
 
-		private bool IsUnwantedGameId(TwitchGameId gameId)
+		private bool IsUnwantedGameId(TwitchGameId? gameId)
 		{
-			return twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(gameId);
+			// if game Id is null, we say it is not unwanted
+
+			return (gameId is null) switch
+			{
+				true => false,
+				false => twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(gameId), 
+			};
 		}
 
 		private bool IsUnwantedTopicId(TwitchTopicId topicId)
@@ -230,9 +225,16 @@ namespace StormLib.Services.Twitch
 				requestMessage.Version = HttpVersion.Version20;
 			}
 
-			using HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Twitch);
+			if (twitchOptionsMonitor.CurrentValue.GraphQlApiUri is Uri apiUri)
+			{
+				using HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Twitch);
 			
-			return HttpClientHelpers.GetStringAsync(client, twitchOptionsMonitor.CurrentValue.GraphQlApiUri, ConfigureRequest, cancellationToken);
+				return HttpClientHelpers.GetStringAsync(client, apiUri, ConfigureRequest, cancellationToken);
+			}
+			else
+			{
+				throw new TwitchException("GraphQl API was null");
+			}
 		}
 
 		private static string BuildRequestBody(IEnumerable<IStream> streams)

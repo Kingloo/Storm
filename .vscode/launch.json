@@ -8,6 +8,9 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/StormDesktop/bin/Debug/net6.0-windows/Storm.dll",
             "args": [],
+			"env": {
+				"Environment": "Development"
+			},
             "cwd": "${workspaceFolder}/StormDesktop",
             "console": "internalConsole",
             "stopAtEntry": false

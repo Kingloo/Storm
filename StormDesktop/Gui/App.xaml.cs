@@ -92,19 +92,14 @@ namespace StormDesktop.Gui
 
 			services.Configure<StormOptions>(context.Configuration.GetSection("Storm"));
 
-			services.Configure<ChaturbateOptions>(context.Configuration.GetSection("Chaturbate"));
-			services.Configure<KickOptions>(context.Configuration.GetSection("Kick"));
-			services.Configure<MixlrOptions>(context.Configuration.GetSection("Mixlr"));
-			services.Configure<RumbleOptions>(context.Configuration.GetSection("Rumble"));
-			services.Configure<TwitchOptions>(context.Configuration.GetSection("Twitch"));
-			services.Configure<YouTubeOptions>(context.Configuration.GetSection("YouTube"));
+			services.AddChaturbate(context.Configuration);
+			services.AddKick(context.Configuration);
+			services.AddMixlr(context.Configuration);
+			services.AddRumble(context.Configuration);
+			services.AddTwitch(context.Configuration);
+			services.AddYouTube(context.Configuration);
 
-			services.AddHostedService<ChaturbateService>();
-			services.AddHostedService<KickService>();
-			services.AddHostedService<MixlrService>();
-			services.AddHostedService<RumbleService>();
-			services.AddHostedService<TwitchService>();
-			services.AddHostedService<YouTubeService>();
+			services.AddSingleton<UpdaterMessageQueue>();
 
 			services.AddTransient<IMainWindowViewModel, MainWindowViewModel>();
 			services.AddTransient<MainWindow>();
@@ -117,7 +112,7 @@ namespace StormDesktop.Gui
 			host.Start();
 
 			IHostApplicationLifetime appLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-			appLifetime.ApplicationStopping.Register(this.Shutdown);
+			appLifetime.ApplicationStopping.Register(Shutdown);
 
 			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
 

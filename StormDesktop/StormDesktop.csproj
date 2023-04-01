@@ -15,16 +15,26 @@
 
 	<ItemGroup>
 		<None Remove="Gui\BasicView.xaml" />
+		<None Remove="Gui\StreamViews\BaseStream.xaml" />
 		<None Remove="Gui\StreamViews\Chaturbate.xaml" />
+		<None Remove="Gui\StreamViews\Kick.xaml" />
 		<None Remove="Gui\StreamViews\Mixlr.xaml" />
-		<None Remove="Gui\StreamViews\StreamBase.xaml" />
+		<None Remove="Gui\StreamViews\Rumble.xaml" />
 		<None Remove="Gui\StreamViews\Twitch.xaml" />
 		<None Remove="Gui\StreamViews\Unsupported.xaml" />
 		<None Remove="Gui\StreamViews\YouTube.xaml" />
+
+		<None Update="appsettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</None>
+
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.*" /> -->
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.*" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.*" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.*" />

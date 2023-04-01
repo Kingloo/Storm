@@ -6,7 +6,7 @@ using System.Text;
 using StormLib.Common;
 using StormLib.Interfaces;
 
-namespace StormLib
+namespace StormLib.Services
 {
 	public abstract class BaseStream : BindableBase, IStream
 	{

@@ -14,8 +14,6 @@ namespace StormLib.Services.Rumble
 {
 	public class RumbleUpdater : IUpdater<RumbleStream>
 	{
-		private const string liveMarker = "data-value=\"LIVE\"";
-
 		private readonly ILogger<RumbleUpdater> logger;
 		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<RumbleOptions> rumbleOptionsMonitor;
@@ -33,70 +31,74 @@ namespace StormLib.Services.Rumble
 			this.rumbleOptionsMonitor = rumbleOptionsMonitor;
 		}
 
-		public Task<Result[]> UpdateAsync(IList<RumbleStream> streams)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, CancellationToken.None);
+		public Task<IList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams)
+			=> UpdateAsync(streams, CancellationToken.None);
 		
-		public Task<Result[]> UpdateAsync(IList<RumbleStream> streams, bool preserveSynchronizationContext)
-			=> UpdateAsync(streams, preserveSynchronizationContext, CancellationToken.None);
-		
-		public Task<Result[]> UpdateAsync(IList<RumbleStream> streams, CancellationToken cancellationToken)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, cancellationToken);
-
-		public async Task<Result[]> UpdateAsync(IList<RumbleStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		public async Task<IList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
 			if (!streams.Any())
 			{
-				return Array.Empty<Result>();
+				return Array.Empty<Result<RumbleStream>>();
 			}
 
 			if (streams.Count == 1)
 			{
-				Result singleResult = await UpdateOneAsync(streams[0], preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				Result<RumbleStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
 				
 				return new [] { singleResult };
 			}
 			else
 			{
-				return await UpdateManyAsync(streams, preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 			}
 		}
 
-		private async Task<Result> UpdateOneAsync(RumbleStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private async Task<Result<RumbleStream>> UpdateOneAsync(RumbleStream stream, CancellationToken cancellationToken)
 		{
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
 			string text = string.Empty;
+
+			Status newStatus = Status.Unknown;
+			int? newViewersCount = null;
 			
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Rumble))
 			{
-				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, cancellationToken).ConfigureAwait(false);
 			}
 
-			if (statusCode != HttpStatusCode.OK)
+			if (statusCode == HttpStatusCode.OK)
 			{
-				stream.Status = Status.Offline;
-				stream.ViewersCount = null;
+				Range liveMarkerSearchRange = new Range(10_000, text.Length - 10_000); // not within the first X characters nor the last Y characters
 
-				return new Result(UpdaterType, statusCode);
+				bool containsLiveMarker = text[liveMarkerSearchRange].Contains(rumbleOptionsMonitor.CurrentValue.LiveMarker, StringComparison.OrdinalIgnoreCase);
+
+				newStatus = containsLiveMarker ? Status.Public : Status.Offline;
+			}
+			else
+			{
+				newStatus = Status.Offline;
+				newViewersCount = null;
 			}
 
-			Range liveMarkerSearchRange = new Range(10_000, text.Length - 10_000); // not within the first X characters nor the last Y characters
-
-			bool containsLiveMarker = text[liveMarkerSearchRange].Contains(liveMarker, StringComparison.OrdinalIgnoreCase);
-
-			stream.Status = containsLiveMarker ? Status.Public : Status.Offline;
-
-			return new Result(UpdaterType, statusCode);
+			return new Result<RumbleStream>(stream, statusCode)
+			{
+				Action = (RumbleStream r) =>
+				{
+					r.Status = newStatus;
+					r.ViewersCount = newViewersCount;
+				}
+			};
 		}
 
-		private Task<Result[]> UpdateManyAsync(IList<RumbleStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private Task<Result<RumbleStream>[]> UpdateManyAsync(IReadOnlyList<RumbleStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result>> updateTasks = new List<Task<Result>>();
+			var updateTasks = new List<Task<Result<RumbleStream>>>();
 
 			foreach (RumbleStream each in streams)
 			{
-				Task<Result> updateTask = Task.Run(() => UpdateOneAsync(each, preserveSynchronizationContext, cancellationToken));
+				Task<Result<RumbleStream>> updateTask = Task.Run(() => UpdateOneAsync(each, cancellationToken));
 
 				updateTasks.Add(updateTask);
 			}

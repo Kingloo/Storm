@@ -11,6 +11,7 @@ namespace StormLib.Helpers
 	{
 		private const string http = "http://";
 		private const string https = "https://";
+		private const char defaultCommentChar = '#';
 
 		private const StringComparison sc = StringComparison.CurrentCultureIgnoreCase;
 
@@ -52,14 +53,14 @@ namespace StormLib.Helpers
 			return true;
 		}
 
-		public static IReadOnlyList<IStream> CreateMany(string[] lines)
-			=> CreateMany(lines, Char.MaxValue);
+		public static IReadOnlyList<IStream> CreateMany(IList<string> lines)
+			=> CreateMany(lines, defaultCommentChar);
 
-		public static IReadOnlyList<IStream> CreateMany(string[] lines, char commentCharacter)
+		public static IReadOnlyList<IStream> CreateMany(IList<string> lines, char commentCharacter)
 		{
 			ArgumentNullException.ThrowIfNull(lines);
 
-            if (lines.Length == 0)
+            if (!lines.Any())
             {
                 return Array.Empty<IStream>();
             }

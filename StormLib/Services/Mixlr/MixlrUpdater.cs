@@ -33,37 +33,31 @@ namespace StormLib.Services.Mixlr
 			this.mixlrOptionsMonitor = mixlrOptionsMonitor;
 		}
 
-		public Task<Result[]> UpdateAsync(IList<MixlrStream> streams)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, CancellationToken.None);
+		public Task<IList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams)
+			=> UpdateAsync(streams, CancellationToken.None);
 		
-		public Task<Result[]> UpdateAsync(IList<MixlrStream> streams, bool preserveSynchronizationContext)
-			=> UpdateAsync(streams, preserveSynchronizationContext, CancellationToken.None);
-		
-		public Task<Result[]> UpdateAsync(IList<MixlrStream> streams, CancellationToken cancellationToken)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, cancellationToken);
-
-		public async Task<Result[]> UpdateAsync(IList<MixlrStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		public async Task<IList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
 			if (!streams.Any())
 			{
-				return Array.Empty<Result>();
+				return Array.Empty<Result<MixlrStream>>();
 			}
 
 			if (streams.Count == 1)
 			{
-				Result singleResult = await UpdateOneAsync(streams[0], preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				Result<MixlrStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
 
 				return new [] { singleResult };
 			}
 			else
 			{
-				return await UpdateManyAsync(streams, preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 			}
 		}
 
-		private async Task<Result> UpdateOneAsync(MixlrStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private async Task<Result<MixlrStream>> UpdateOneAsync(MixlrStream stream, CancellationToken cancellationToken)
 		{
 			Uri uri = new Uri($"{mixlrOptionsMonitor.CurrentValue.ApiUri}/users/{stream.Name}", UriKind.Absolute);
 
@@ -72,7 +66,7 @@ namespace StormLib.Services.Mixlr
 
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Mixlr))
 			{
-				(statusCode, text) = await HttpClientHelpers.GetStringAsync(client, uri, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				(statusCode, text) = await HttpClientHelpers.GetStringAsync(client, uri, cancellationToken).ConfigureAwait(false);
 			}
 
 			if (statusCode != HttpStatusCode.OK)
@@ -80,16 +74,24 @@ namespace StormLib.Services.Mixlr
 				stream.Status = Status.Problem;
 				stream.ViewersCount = null;
 				
-				return new Result(UpdaterType, statusCode);
+				return new Result<MixlrStream>(stream, statusCode)
+				{
+					Action = (MixlrStream m) =>
+					{
+
+					}
+				};
 			}
 
 			if (!JsonHelpers.TryParse(text, out JsonNode? json))
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode)
+				return new Result<MixlrStream>(stream, statusCode)
 				{
+					Action = (MixlrStream m) =>
+					{
+						m.Status = Status.Problem;
+						m.ViewersCount = null;
+					},
 					Message = "JSON parsing failed"
 				};
 			}
@@ -99,22 +101,26 @@ namespace StormLib.Services.Mixlr
 
 			if (userNameToken is null)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode)
+				return new Result<MixlrStream>(stream, statusCode)
 				{
+					Action = (MixlrStream m) =>
+					{
+						m.Status = Status.Problem;
+						m.ViewersCount = null;
+					},
 					Message = "token did not exist: 'username'"
 				};
 			}
 
 			if (isLiveToken is null)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode)
+				return new Result<MixlrStream>(stream, statusCode)
 				{
+					Action = (MixlrStream m) =>
+					{
+						m.Status = Status.Problem;
+						m.ViewersCount = null;
+					},
 					Message = "token did not exist: 'is_live'"
 				};
 			}
@@ -126,18 +132,22 @@ namespace StormLib.Services.Mixlr
 				stream.DisplayName = userName;
 			}
 
-			stream.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
-
-			return new Result(UpdaterType, statusCode);
+			return new Result<MixlrStream>(stream, statusCode)
+			{
+				Action = (MixlrStream m) =>
+				{
+					m.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
+				}
+			};
 		}
 
-		private Task<Result[]> UpdateManyAsync(IList<MixlrStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private Task<Result<MixlrStream>[]> UpdateManyAsync(IReadOnlyList<MixlrStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result>> updateTasks = new List<Task<Result>>();
+			IList<Task<Result<MixlrStream>>> updateTasks = new List<Task<Result<MixlrStream>>>();
 
 			foreach (MixlrStream each in streams)
 			{
-				Task<Result> updateTask = Task.Run(() => UpdateOneAsync(each, preserveSynchronizationContext, cancellationToken));
+				Task<Result<MixlrStream>> updateTask = Task.Run(() => UpdateOneAsync(each, cancellationToken));
 
 				updateTasks.Add(updateTask);
 			}

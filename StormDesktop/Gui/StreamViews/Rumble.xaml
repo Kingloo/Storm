@@ -4,7 +4,7 @@
 
     <DataTemplate DataType="{x:Type stormLibStreams:RumbleStream}">
         <Grid Style="{StaticResource gridStyle}">
-            <ContentPresenter ContentTemplate="{StaticResource StreamBaseTemplate}"
+            <ContentPresenter ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
         </Grid>
     </DataTemplate>

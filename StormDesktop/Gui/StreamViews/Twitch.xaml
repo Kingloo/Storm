@@ -18,7 +18,7 @@
             <!--Grid.Row="0" Grid.ColumnSpan="2" this used to be on ContentPresenter, but I don't think it is needed -->
             <ContentPresenter Grid.Column="0"
 							  Grid.Row="0"
-							  ContentTemplate="{StaticResource StreamBaseTemplate}"
+							  ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
 
 			<Label Grid.Column="1" Grid.Row="1"

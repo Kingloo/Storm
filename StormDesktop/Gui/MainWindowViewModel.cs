@@ -15,17 +15,18 @@ using StormDesktop.Interfaces;
 using StormLib;
 using StormLib.Helpers;
 using StormLib.Interfaces;
+using StormLib.Streams;
 
 namespace StormDesktop.Gui
 {
-	public class MainWindowViewModel : BindableBase, IMainWindowViewModel
+	public class MainWindowViewModel : BindableBase, IMainWindowViewModel, IDisposable
 	{
-		private DelegateCommandAsync? _updateCommand;
-		public DelegateCommandAsync UpdateCommand
+		private DelegateCommandAsync<IStream>? _updateCommand;
+		public DelegateCommandAsync<IStream> UpdateCommand
 		{
 			get
 			{
-				_updateCommand ??= new DelegateCommandAsync(UpdateAsync, CanExecuteAsync);
+				_updateCommand ??= new DelegateCommandAsync<IStream>(UpdateAsync, CanExecuteAsync);
 
 				return _updateCommand;
 			}
@@ -99,6 +100,7 @@ namespace StormDesktop.Gui
 
 		private readonly ILogger<IMainWindowViewModel> logger;
 		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
+		private readonly UpdaterMessageQueue updaterMessageQueue;
 
 		private readonly ObservableCollection<IStream> streams = new ObservableCollection<IStream>();
 		public IReadOnlyCollection<IStream> Streams { get => streams; }
@@ -115,13 +117,93 @@ namespace StormDesktop.Gui
 			}
 		}
 
-		public MainWindowViewModel(ILogger<IMainWindowViewModel> logger, IOptionsMonitor<StormOptions> stormOptionsMonitor)
+		private CancellationTokenSource? listenToMessageQueueCts = null;
+		
+		public MainWindowViewModel(
+			ILogger<IMainWindowViewModel> logger,
+			IOptionsMonitor<StormOptions> stormOptionsMonitor,
+			UpdaterMessageQueue updaterMessageQueue)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
 			ArgumentNullException.ThrowIfNull(stormOptionsMonitor);
+			ArgumentNullException.ThrowIfNull(updaterMessageQueue);
 
 			this.logger = logger;
 			this.stormOptionsMonitor = stormOptionsMonitor;
+			this.updaterMessageQueue = updaterMessageQueue;
+
+			updaterMessageQueue.SetStreamSource(Streams);
+		}
+
+		public void StartListeningToMessageQueue()
+		{
+			if (listenToMessageQueueCts is null)
+			{
+				listenToMessageQueueCts = new CancellationTokenSource();
+
+				Task _ = Task.Run(ListenToMessageQueueAsync, listenToMessageQueueCts.Token);
+			}
+		}
+
+		private async ValueTask ListenToMessageQueueAsync()
+		{
+			while (listenToMessageQueueCts is not null
+				&& listenToMessageQueueCts.IsCancellationRequested == false)
+			{
+				IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
+
+				while (updaterMessageQueue.ResultsQueue.TryDequeue(out object? result))
+				{
+					PerformResultAction(result);
+				}
+
+				IEnumerable<IStream> liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
+
+				IList<IStream> toSendNotificationsFor = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
+
+				SendNotifications(toSendNotificationsFor);
+
+				await Task.Delay(TimeSpan.FromSeconds(10d)).ConfigureAwait(true);
+			}
+		}
+
+		private static void PerformResultAction(object result)
+		{
+			switch (result)
+			{
+				case Result<ChaturbateStream> chaturbateResult:
+					chaturbateResult.Action.Invoke(chaturbateResult.Stream);
+					break;
+				case Result<KickStream> kickResult:
+					kickResult.Action.Invoke(kickResult.Stream);
+					break;
+				case Result<MixlrStream> mixlrResult:
+					mixlrResult.Action.Invoke(mixlrResult.Stream);
+					break;
+				case Result<RumbleStream> rumbleResult:
+					rumbleResult.Action.Invoke(rumbleResult.Stream);
+					break;
+				case Result<TwitchStream> twitchResult:
+					twitchResult.Action.Invoke(twitchResult.Stream);
+					break;
+				case Result<YouTubeStream> youTubeResult:
+					youTubeResult.Action.Invoke(youTubeResult.Stream);
+					break;
+				default:
+					break;
+			}
+		}
+
+		public void StopListeningToQueue()
+		{
+			if (listenToMessageQueueCts is not null)
+			{
+				listenToMessageQueueCts.Cancel();
+
+				listenToMessageQueueCts.Dispose();
+
+				listenToMessageQueueCts = null;
+			}
 		}
 
 		public Task LoadStreamsAsync()
@@ -129,39 +211,34 @@ namespace StormDesktop.Gui
 
 		public async Task LoadStreamsAsync(CancellationToken cancellationToken)
 		{
-			string[] lines = await FileSystem.LoadLinesFromFileAsync(stormOptionsMonitor.CurrentValue.StreamsFilePath).ConfigureAwait(true);
+			IReadOnlyList<string> lines = await FileSystem
+				.LoadLinesFromFileAsync(stormOptionsMonitor.CurrentValue.StreamsFilePath)
+				.ConfigureAwait(true);
 
-			if (lines.Length == 0)
+			if (!lines.Any())
             {
                 return;
             }
 
-			IReadOnlyCollection<IStream> loadedStreams = StreamFactory.CreateMany(lines, "#");
+			IReadOnlyList<IStream> loadedStreams = StreamFactory.CreateMany(lines.ToList());
 
-			var addedStreams = AddNew(loadedStreams);
+			AddNew(loadedStreams);
+			
 			RemoveOld(loadedStreams);
-
-			await UpdateAsync(addedStreams).ConfigureAwait(true);
 		}
 
-		private IReadOnlyCollection<IStream> AddNew(IReadOnlyCollection<IStream> loadedStreams)
+		private void AddNew(IEnumerable<IStream> loadedStreams)
 		{
-			Collection<IStream> addedStreams = new Collection<IStream>();
-
 			foreach (IStream stream in loadedStreams)
 			{
 				if (!Streams.Contains(stream))
 				{
 					streams.Add(stream);
-
-					addedStreams.Add(stream);
 				}
 			}
-
-			return addedStreams;
 		}
 
-		private void RemoveOld(IReadOnlyCollection<IStream> loadedStreams)
+		private void RemoveOld(IEnumerable<IStream> loadedStreams)
 		{
 			var toRemove = Streams
 				.Where(s => !loadedStreams.Contains(s))
@@ -171,34 +248,6 @@ namespace StormDesktop.Gui
 			{
 				streams.Remove(stream);
 			}
-		}
-
-		private void UpdateTimer_Tick(object? sender, EventArgs e) => UpdateCommand.Execute(null);
-
-		public Task UpdateAsync()
-			=> UpdateAsync(Streams, CancellationToken.None);
-
-		public Task UpdateAsync(CancellationToken cancellationToken)
-			=> UpdateAsync(Streams, cancellationToken);
-
-		public Task UpdateAsync(IEnumerable<IStream> streams)
-			=> UpdateAsync(streams, CancellationToken.None);
-
-		public async Task UpdateAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
-		{
-			IsActive = true;
-
-			IList<IStream> notLiveBeforeUpdate = Streams.Where(static s => s.Status != Status.Public).ToList();
-
-			await servicesManager.UpdateAsync(streams).ConfigureAwait(true);
-
-			IEnumerable<IStream> liveAfterUpdate = Streams.Where(static s => s.Status == Status.Public);
-
-			IList<IStream> forWhichToNotify = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
-
-			SendNotifications(forWhichToNotify);
-
-			IsActive = false;
 		}
 
 		private void SendNotifications(IEnumerable<IStream> forWhichToNotify)
@@ -213,45 +262,71 @@ namespace StormDesktop.Gui
 			}
 		}
 
-		private void OpenPage(IStream stream)
+		private async Task UpdateAsync(IStream stream)
 		{
-			if (!SystemLaunch.Uri(stream.Link))
+			var updateTask = stream switch
 			{
-				logger.LogWarning("failed to open URI: '{uri}'", stream.Link.AbsoluteUri);
-			}
+				ChaturbateStream c => updaterMessageQueue.UpdateAsync<ChaturbateStream>(c, CancellationToken.None),
+				KickStream k => updaterMessageQueue.UpdateAsync<KickStream>(k, CancellationToken.None),
+				MixlrStream m => updaterMessageQueue.UpdateAsync<MixlrStream>(m, CancellationToken.None),
+				RumbleStream r => updaterMessageQueue.UpdateAsync<RumbleStream>(r, CancellationToken.None),
+				TwitchStream t => updaterMessageQueue.UpdateAsync<TwitchStream>(t, CancellationToken.None),
+				YouTubeStream y => updaterMessageQueue.UpdateAsync<YouTubeStream>(y, CancellationToken.None),
+				_ => throw new InvalidCastException("bad stream type")
+			};
+
+			await updateTask.ConfigureAwait(false);
 		}
 
 		private void OpenStream(IStream stream)
 		{
 			if (stream.HasStreamlinkSupport)
 			{
-				string command = string.Format(CultureInfo.CurrentCulture, "/C streamlink {0} best", stream.Link);
-
-				ProcessStartInfo pInfo = new ProcessStartInfo()
+				if (!OpenWithStreamlink(stream))
 				{
-					Arguments = command,
-					ErrorDialog = true, // maybe remove
-					FileName = "powershell.exe",
-					WindowStyle = ProcessWindowStyle.Hidden,
-					UseShellExecute = true
-				};
-
-				if (!SystemLaunch.Launch(pInfo))
-				{
-					logger.LogWarning("failed to launch streamlink for '{uri} ({service})'", stream.Name, stream.ServiceName);
+					logger.LogWarning("failed to launch streamlink for '{Uri} ({Service})'", stream.Name, stream.ServiceName);
 				}
 			}
 			else
 			{
-				OpenPage(stream);
+				if (!OpenWithBrowser(stream))
+				{
+					logger.LogWarning("failed to open URI: '{Uri}'", stream.Link.AbsoluteUri);
+				}
 			}
+		}
+
+		private static bool OpenWithStreamlink(IStream stream)
+		{
+			string command = string.Format(CultureInfo.CurrentCulture, "/C streamlink {0} best", stream.Link);
+
+			ProcessStartInfo pInfo = new ProcessStartInfo()
+			{
+				Arguments = command,
+				ErrorDialog = true, // maybe remove
+				FileName = "powershell.exe",
+				WindowStyle = ProcessWindowStyle.Hidden,
+				UseShellExecute = true
+			};
+
+			return SystemLaunch.Launch(pInfo);
+		}
+
+		private static bool OpenWithBrowser(IStream stream)
+		{
+			return SystemLaunch.Uri(stream.Link);
+		}
+
+		private void OpenPage(IStream stream)
+		{
+			OpenWithBrowser(stream);
 		}
 
 		private void OpenStreamsFile()
 		{
 			if (!SystemLaunch.Path(stormOptionsMonitor.CurrentValue.StreamsFilePath))
 			{
-				logger.LogWarning("failed to open file: '{file}'", stormOptionsMonitor.CurrentValue.StreamsFilePath);
+				logger.LogWarning("failed to open file: '{File}'", stormOptionsMonitor.CurrentValue.StreamsFilePath);
 			}
 		}
 
@@ -264,6 +339,35 @@ namespace StormDesktop.Gui
 			sb.AppendLine(CultureInfo.CurrentCulture, $"is active: {IsActive}");
 
 			return sb.ToString();
+		}
+
+		private bool disposedValue = false;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					if (listenToMessageQueueCts is not null)
+					{
+						listenToMessageQueueCts.Cancel();
+
+						listenToMessageQueueCts.Dispose();
+
+						listenToMessageQueueCts = null;
+					}
+				}
+
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+
+			GC.SuppressFinalize(this);
 		}
 	}
 }

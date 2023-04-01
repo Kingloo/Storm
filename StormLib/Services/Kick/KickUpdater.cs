@@ -41,37 +41,31 @@ namespace StormLib.Services.Kick
 			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
-		public Task<Result[]> UpdateAsync(IList<KickStream> streams)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, CancellationToken.None);
+		public Task<IList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams)
+			=> UpdateAsync(streams, CancellationToken.None);
 
-		public Task<Result[]> UpdateAsync(IList<KickStream> streams, bool preserveSynchronizationContext)
-			=> UpdateAsync(streams, preserveSynchronizationContext, CancellationToken.None);
-
-		public Task<Result[]> UpdateAsync(IList<KickStream> streams, CancellationToken cancellationToken)
-			=> UpdateAsync(streams, preserveSynchronizationContext: false, cancellationToken);
-		
-		public async Task<Result[]> UpdateAsync(IList<KickStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		public async Task<IList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
 			if (!streams.Any())
 			{
-				return Array.Empty<Result>();
+				return Array.Empty<Result<KickStream>>();
 			}
 
 			if (streams.Count == 1)
 			{
-				Result singleResult = await UpdateOneAsync(streams[0], preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				Result<KickStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
 				
 				return new [] { singleResult };
 			}
 			else
 			{
-				return await UpdateManyAsync(streams, preserveSynchronizationContext, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 			}
 		}
 
-		private async Task<Result> UpdateOneAsync(KickStream stream, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private async Task<Result<KickStream>> UpdateOneAsync(KickStream stream, CancellationToken cancellationToken)
 		{
 			Uri apiEndpointForStream = new Uri($"{kickOptionsMonitor.CurrentValue.ApiUri}/channels/{stream.Name}", UriKind.Absolute);
 
@@ -90,58 +84,72 @@ namespace StormLib.Services.Kick
 
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Kick))
 			{
-				(statusCode, text) = await HttpClientHelpers.GetStringAsync(client, apiEndpointForStream, ConfigureRequest, cancellationToken).ConfigureAwait(preserveSynchronizationContext);
+				(statusCode, text) = await HttpClientHelpers.GetStringAsync(client, apiEndpointForStream, ConfigureRequest, cancellationToken).ConfigureAwait(false);
 			}
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-
-				return new Result(UpdaterType, statusCode);
+				return new Result<KickStream>(stream, statusCode)
+				{
+					Action = (KickStream k) =>
+					{
+						k.Status = Status.Problem;
+						k.ViewersCount = null;
+					}
+				};
 			}
 
 			if (!JsonHelpers.TryParse(text, out JsonNode? json))
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-				
-				return new Result(UpdaterType, statusCode);
-			}
-
-			if (json?["user"]?["username"] is JsonNode displayNameToken)
-			{
-				if ((string?)displayNameToken is string displayNameValue)
+				return new Result<KickStream>(stream, statusCode)
 				{
-					stream.DisplayName = displayNameValue;
-				}
+					Action = (KickStream k) =>
+					{
+						k.Status = Status.Problem;
+						k.ViewersCount = null;
+					}
+				};
 			}
 
-			if (json?["livestream"]?.Options.HasValue ?? false)
+			string? newDisplayName = json?["user"]?["username"] is JsonNode displayNameToken
+				? (string?)displayNameToken
+				: null;			
+			
+			bool isPublic = json?["livestream"]?.Options.HasValue ?? false;
+			
+			int? newViewersCount = isPublic switch
 			{
-				stream.Status = Status.Public;
+				true => json?["livestream"]?["viewer_count"] is JsonNode viewerCountToken ? (int?)viewerCountToken : null,
+				false => null
+			};
 
-				if (json?["livestream"]?["viewer_count"] is JsonNode viewerCountToken)
+			Status newStatus = isPublic
+				? Status.Public
+				: Status.Offline;
+
+			return new Result<KickStream>(stream, statusCode)
+			{
+				Action = (KickStream k) =>
 				{
-					stream.ViewersCount = (int)viewerCountToken;
+					if (newDisplayName != null)
+					{
+						k.DisplayName = newDisplayName;
+					}
+					
+					k.Status = Status.Public;
+					
+					k.ViewersCount = newViewersCount;
 				}
-			}
-			else
-			{
-				stream.Status = Status.Offline;
-				stream.ViewersCount = null;
-			}
-
-			return new Result(UpdaterType, statusCode);
+			};
 		}
 
-		private Task<Result[]> UpdateManyAsync(IList<KickStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken)
+		private Task<Result<KickStream>[]> UpdateManyAsync(IReadOnlyList<KickStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result>> updateTasks = new List<Task<Result>>();
+			IList<Task<Result<KickStream>>> updateTasks = new List<Task<Result<KickStream>>>();
 
 			foreach (KickStream each in streams)
 			{
-				Task<Result> updateTask = Task.Run(() => UpdateOneAsync(each, preserveSynchronizationContext, cancellationToken));
+				Task<Result<KickStream>> updateTask = Task.Run(() => UpdateOneAsync(each, cancellationToken));
 
 				updateTasks.Add(updateTask);
 			}

@@ -9,9 +9,7 @@ namespace StormLib.Interfaces
 	{
 		public UpdaterType UpdaterType { get; }
 
-		public Task<Result[]> UpdateAsync(IList<TStream> streams);
-		public Task<Result[]> UpdateAsync(IList<TStream> streams, bool preserveSynchronizationContext);
-		public Task<Result[]> UpdateAsync(IList<TStream> streams, CancellationToken cancellationToken);
-		public Task<Result[]> UpdateAsync(IList<TStream> streams, bool preserveSynchronizationContext, CancellationToken cancellationToken);
+		public Task<IList<Result<TStream>>> UpdateAsync(IReadOnlyList<TStream> streams);
+		public Task<IList<Result<TStream>>> UpdateAsync(IReadOnlyList<TStream> streams, CancellationToken cancellationToken);
 	}
 }
