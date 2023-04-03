@@ -8,7 +8,7 @@ namespace StormLib.Services.Twitch
 	{
 		public TimeSpan UpdateInterval { get; init; } = TimeSpan.FromMinutes(2d);
 		public Uri? GraphQlApiUri { get; init; }
-		public IList<Header> Headers { get; init; } = Array.Empty<Header>();
+		public IList<Header> Headers { get; init; } = new List<Header>();
 		public int MaxStreamsPerUpdate { get; init; } = 0;
 		public IReadOnlyList<TwitchGameId> UnwantedGameIds { get; init; } = new List<TwitchGameId>();
 		public IReadOnlyList<TwitchTopicId> UnwantedTopicIds { get; init; } = new List<TwitchTopicId>();

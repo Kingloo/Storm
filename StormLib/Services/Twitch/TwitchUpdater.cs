@@ -97,7 +97,7 @@ namespace StormLib.Services.Twitch
 
 			foreach (TwitchStream each in streams)
 			{
-				JsonNode? userData = jsonArray
+				JsonNode? data = jsonArray
 					.SingleOrDefault((JsonNode? element) =>
 					{
 						bool elementHasUserData = false;
@@ -112,6 +112,8 @@ namespace StormLib.Services.Twitch
 						
 						return elementHasUserData && doesUserDataLoginMatchStreamName;
 					});
+
+				JsonNode? userData = data?["data"]?["user"];
 				
 				Action<TwitchStream> action;
 
@@ -176,7 +178,7 @@ namespace StormLib.Services.Twitch
 			{
 				"live" => Status.Public,
 				"rerun" => Status.Rerun,
-				_ => Status.Problem
+				_ => Status.Offline
 			};
 		}
 
@@ -187,7 +189,7 @@ namespace StormLib.Services.Twitch
 
 		private static TwitchGame? GetGame(JsonNode? userData)
 		{
-			int? gameIdValue = (int?)userData?["stream"]?["game"]?["id"];
+			int? gameIdValue = Int32.TryParse((string?)userData?["stream"]?["game"]?["id"], out int id) ? id : null;
 			string? gameNameValue = (string?)userData?["stream"]?["game"]?["displayName"];
 
 			if (gameIdValue is null || gameNameValue is null)
@@ -214,7 +216,7 @@ namespace StormLib.Services.Twitch
 			return twitchOptionsMonitor.CurrentValue.UnwantedTopicIds.Contains(topicId);
 		}
 
-		private ValueTask<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
+		private async ValueTask<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
 		{
 			string requestBody = BuildRequestBody(streams);
 
@@ -230,9 +232,14 @@ namespace StormLib.Services.Twitch
 
 			if (twitchOptionsMonitor.CurrentValue.GraphQlApiUri is Uri apiUri)
 			{
-				using HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Twitch);
-			
-				return HttpClientHelpers.GetStringAsync(client, apiUri, ConfigureRequest, cancellationToken);
+				(HttpStatusCode, string) result = (HttpStatusCode.Unused, string.Empty);
+
+				using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Twitch))
+				{
+					result = await HttpClientHelpers.GetStringAsync(client, apiUri, ConfigureRequest, cancellationToken).ConfigureAwait(false);
+				}
+
+				return result;
 			}
 			else
 			{
