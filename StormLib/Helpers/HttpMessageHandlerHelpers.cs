@@ -11,7 +11,7 @@ namespace StormLib.Helpers
 	{
 		internal static HttpMessageHandler CreateDefaultHttpMessageHandler()
 		{
-			SocketsHttpHandler handler = new SocketsHttpHandler
+			return new SocketsHttpHandler
 			{
 				AllowAutoRedirect = false,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
@@ -30,8 +30,6 @@ namespace StormLib.Helpers
 				UseCookies = false,
 				UseProxy = false
 			};
-
-			return handler;
 		}
 	}
 }

@@ -28,7 +28,7 @@ namespace StormLib.Services.Kick
 
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
-			httpClient.Timeout = TimeSpan.FromSeconds(5d);
+			Helpers.HttpClientHelpers.ConfigureDefaultHttpClient(httpClient);
 		}
 
 		private static HttpMessageHandler ConfigurePrimaryHttpMessageHandler(IServiceProvider _)

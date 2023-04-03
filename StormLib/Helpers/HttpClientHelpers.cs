@@ -8,6 +8,12 @@ namespace StormLib.Helpers
 {
 	internal static class HttpClientHelpers
 	{
+		internal static void ConfigureDefaultHttpClient(HttpClient client)
+		{
+			client.DefaultRequestVersion = HttpVersion.Version20;
+			client.Timeout = TimeSpan.FromSeconds(10d);
+		}
+
 		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri)
 			=> GetStringAsync(client, uri, null, CancellationToken.None);
 
