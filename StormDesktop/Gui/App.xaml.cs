@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 using FileLogger;
 using StormDesktop.Interfaces;
 using StormLib;
@@ -16,8 +17,6 @@ using StormLib.Services.Mixlr;
 using StormLib.Services.Rumble;
 using StormLib.Services.Twitch;
 using StormLib.Services.YouTube;
-using StormLib.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace StormDesktop.Gui
 {
@@ -54,7 +53,7 @@ namespace StormDesktop.Gui
 
 		private static void ConfigureHostOptions(HostOptions hostOptions)
 		{
-			hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
+			hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
 		}
 
 		private static void ConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder configurationBuilder)
@@ -94,21 +93,21 @@ namespace StormDesktop.Gui
 
 			services.Configure<StormOptions>(context.Configuration.GetSection("Storm"));
 
-			// services.AddChaturbate(context.Configuration);
+			services.AddChaturbate(context.Configuration);
 			services.AddKick(context.Configuration);
-			// services.AddMixlr(context.Configuration);
-			// services.AddRumble(context.Configuration);
-			// services.AddTwitch(context.Configuration);
-			// services.AddYouTube(context.Configuration);
+			services.AddMixlr(context.Configuration);
+			services.AddRumble(context.Configuration);
+			services.AddTwitch(context.Configuration);
+			services.AddYouTube(context.Configuration);
 
 			services.AddSingleton<UpdaterMessageQueue>();
 
-			// services.AddHostedService<
-			// 	StormBackgroundService<
-			// 		ChaturbateStream,
-			// 		IUpdater<ChaturbateStream>,
-			// 		IOptionsMonitor<ChaturbateOptions>,
-			// 		ChaturbateOptions>>();
+			services.AddHostedService<
+				StormBackgroundService<
+					ChaturbateStream,
+					ChaturbateUpdater,
+					IOptionsMonitor<ChaturbateOptions>,
+					ChaturbateOptions>>();
 
 			services.AddHostedService<
 				StormBackgroundService<
@@ -117,32 +116,36 @@ namespace StormDesktop.Gui
 					IOptionsMonitor<KickOptions>,
 					KickOptions>>();
 			
-			// services.AddHostedService<
-			// 	StormBackgroundService<
-			// 		KickStream,
-			// 		KickUpdater,
-			// 		IOptionsMonitor<KickOptions>,
-			// 		KickOptions>>(ImplFactory);
-
-			// services.AddHostedService<
-			// 	StormBackgroundService<
-			// 		KickStream,
-			// 		IUpdater<KickStream>,
-			// 		IOptionsMonitor<KickOptions>,
-			// 		KickOptions>>();
-
+			services.AddHostedService<
+				StormBackgroundService<
+					MixlrStream,
+					MixlrUpdater,
+					IOptionsMonitor<MixlrOptions>,
+					MixlrOptions>>();
+			
+			services.AddHostedService<
+				StormBackgroundService<
+					RumbleStream,
+					RumbleUpdater,
+					IOptionsMonitor<RumbleOptions>,
+					RumbleOptions>>();
+			
+			services.AddHostedService<
+				StormBackgroundService<
+					TwitchStream,
+					TwitchUpdater,
+					IOptionsMonitor<TwitchOptions>,
+					TwitchOptions>>();
+			
+			services.AddHostedService<
+				StormBackgroundService<
+					YouTubeStream,
+					YouTubeUpdater,
+					IOptionsMonitor<YouTubeOptions>,
+					YouTubeOptions>>();
+			
 			services.AddTransient<IMainWindowViewModel, MainWindowViewModel>();
 			services.AddTransient<MainWindow>();
-		}
-
-		private static StormBackgroundService<KickStream, KickUpdater, IOptionsMonitor<KickOptions>, KickOptions> ImplFactory(IServiceProvider arg)
-		{
-			var logger = arg.GetRequiredService<ILogger<StormBackgroundService<KickStream, KickUpdater, IOptionsMonitor<KickOptions>, KickOptions>>>();
-			var updater = arg.GetRequiredService<KickUpdater>();
-			var optionsMonitor = arg.GetRequiredService<IOptionsMonitor<KickOptions>>();
-			var updaterMessageQueue = arg.GetRequiredService<UpdaterMessageQueue>();
-
-			return new StormBackgroundService<KickStream, KickUpdater, IOptionsMonitor<KickOptions>, KickOptions>(logger, updater, optionsMonitor, updaterMessageQueue);
 		}
 
 		private void Application_Startup(object sender, StartupEventArgs e)

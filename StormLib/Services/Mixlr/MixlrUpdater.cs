@@ -70,14 +70,12 @@ namespace StormLib.Services.Mixlr
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				stream.Status = Status.Problem;
-				stream.ViewersCount = null;
-				
 				return new Result<MixlrStream>(stream, statusCode)
 				{
 					Action = (MixlrStream m) =>
 					{
-
+						m.Status = Status.Problem;
+						m.ViewersCount = null;
 					}
 				};
 			}

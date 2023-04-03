@@ -26,7 +26,11 @@ namespace StormLib.Services.Twitch
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.Many;
 
-		public TwitchUpdater(ILogger<TwitchUpdater> logger, IHttpClientFactory httpClientFactory, IOptionsMonitor<TwitchOptions> twitchOptionsMonitor, IOptionsMonitor<StormOptions> stormOptionsMonitor)
+		public TwitchUpdater(
+			ILogger<TwitchUpdater> logger,
+			IHttpClientFactory httpClientFactory,
+			IOptionsMonitor<TwitchOptions> twitchOptionsMonitor,
+			IOptionsMonitor<StormOptions> stormOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
 			ArgumentNullException.ThrowIfNull(httpClientFactory);

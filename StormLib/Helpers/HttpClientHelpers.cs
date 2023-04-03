@@ -9,25 +9,26 @@ namespace StormLib.Helpers
 	internal static class HttpClientHelpers
 	{
 		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri)
-			=> GetStringAsync(client, uri, CancellationToken.None);
+			=> GetStringAsync(client, uri, null, CancellationToken.None);
 
 		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
-		{
-			using HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-			
-			return GetStringAsync(client, requestMessage, cancellationToken);
-		}
+			=> GetStringAsync(client, uri, null, cancellationToken);
 
-		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, Action<HttpRequestMessage> configureRequestMessage, CancellationToken cancellationToken)
+		internal static async ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, Action<HttpRequestMessage>? configureRequestMessage, CancellationToken cancellationToken)
 		{
-			using HttpRequestMessage requestMessage = new HttpRequestMessage
+			(HttpStatusCode, string) response = (HttpStatusCode.Unused, string.Empty);
+			
+			using (HttpRequestMessage requestMessage = new HttpRequestMessage
 			{
 				RequestUri = uri
-			};
+			})
+			{
+				configureRequestMessage?.Invoke(requestMessage);
 
-			configureRequestMessage.Invoke(requestMessage);
+				response = await GetStringAsync(client, requestMessage, cancellationToken).ConfigureAwait(false);
+			}
 
-			return GetStringAsync(client, requestMessage, cancellationToken);
+			return response;
 		}
 
 		internal static async ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
@@ -39,7 +40,7 @@ namespace StormLib.Helpers
 			
 			try
 			{
-				responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+				responseMessage = await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
 				text = await responseMessage.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			}

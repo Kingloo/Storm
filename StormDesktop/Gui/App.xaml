@@ -9,13 +9,13 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="BasicView.xaml" />
                 <ResourceDictionary Source="StreamViews\BaseStream.xaml" />
-                <ResourceDictionary Source="StreamViews\Twitch.xaml" />
-                <ResourceDictionary Source="StreamViews\Mixlr.xaml" />
                 <ResourceDictionary Source="StreamViews\Chaturbate.xaml" />
-                <ResourceDictionary Source="StreamViews\YouTube.xaml" />
-				<ResourceDictionary Source="StreamViews\Rumble.xaml" />
 				<ResourceDictionary Source="StreamViews\Kick.xaml" />
+                <ResourceDictionary Source="StreamViews\Mixlr.xaml" />
+				<ResourceDictionary Source="StreamViews\Rumble.xaml" />
+                <ResourceDictionary Source="StreamViews\Twitch.xaml" />
                 <ResourceDictionary Source="StreamViews\Unsupported.xaml" />
+                <ResourceDictionary Source="StreamViews\YouTube.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

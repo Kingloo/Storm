@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using StormLib.Interfaces;
 
 namespace StormLib.Services.Twitch
 {
-	public class TwitchOptions
+	public class TwitchOptions : IUpdateIntervalOption
 	{
 		public TimeSpan UpdateInterval { get; init; } = TimeSpan.FromMinutes(2d);
 		public Uri? GraphQlApiUri { get; init; }

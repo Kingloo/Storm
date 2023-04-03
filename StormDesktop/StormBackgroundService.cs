@@ -22,6 +22,8 @@ namespace StormDesktop
 		private readonly TOptionsMonitor optionsMonitor;
 		private readonly UpdaterMessageQueue updaterMessageQueue;
 
+		private bool isFirstRun = true;
+
 		public StormBackgroundService(
 			ILogger<StormBackgroundService<TStream, TUpdater, TOptionsMonitor, TOptions>> logger,
 			TUpdater updater,
@@ -41,14 +43,19 @@ namespace StormDesktop
 
 		public override Task StartAsync(CancellationToken cancellationToken)
 		{
-			logger.LogDebug("start");
+			logger.LogDebug("started background service for {StreamName}", typeof(TStream).Name);
 
 			return base.StartAsync(cancellationToken);
 		}
 		
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			logger.LogDebug("execute for {ServiceName}", nameof(TStream));
+			if (isFirstRun)
+			{
+				await Task.Delay(TimeSpan.FromSeconds(2.5d), stoppingToken).ConfigureAwait(false);
+
+				isFirstRun = false;
+			}
 
 			try
 			{
@@ -56,11 +63,7 @@ namespace StormDesktop
 
 				while (!stoppingToken.IsCancellationRequested)
 				{
-					logger.LogDebug("start updating {ServiceName} streams", serviceName);
-
 					await RunUpdate(serviceName, stoppingToken).ConfigureAwait(false);
-
-					logger.LogInformation("updated {ServiceName}", serviceName);
 
 					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
 				}
@@ -69,7 +72,7 @@ namespace StormDesktop
 			{
 				if (!stoppingToken.IsCancellationRequested)
 				{
-					logger.LogWarning("background service for {ServiceName} stopped", nameof(TStream));
+					logger.LogWarning("background service for {ServiceName} stopped unexpectedly", nameof(TStream));
 				}
 			}
 		}
@@ -80,11 +83,14 @@ namespace StormDesktop
 
 			IList<Result<TStream>> results = await updater.UpdateAsync(streams, cancellationToken).ConfigureAwait(false);
 
-			logger.LogDebug("update completed for {ServiceName} with {Count} results", serviceName, results.Count);
-
 			foreach (Result<TStream> each in results)
 			{
 				updaterMessageQueue.ResultsQueue.Enqueue(each);
+
+				if (each.StatusCode != System.Net.HttpStatusCode.OK)
+				{
+					logger.LogWarning("updating {DisplayName} on {ServiceName} was {StatusCode}", each.Stream.DisplayName, serviceName, each.StatusCode);
+				}
 			}
 		}
 	}

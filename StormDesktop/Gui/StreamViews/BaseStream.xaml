@@ -12,6 +12,7 @@
                                Offline="#FF4040"
                                Banned="Magenta"
                                Unsupported="Yellow"
+							   Problem="LightGray"
                                Unknown="MediumAquamarine" />
 
     <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}" x:Key="gridStyle">

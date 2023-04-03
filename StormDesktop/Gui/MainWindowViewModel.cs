@@ -157,16 +157,10 @@ namespace StormDesktop.Gui
 			while (listenToMessageQueueCts is not null
 				&& listenToMessageQueueCts.IsCancellationRequested == false)
 			{
-				logger.LogDebug("begin message queue outer loop");
-
 				IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
-
-				logger.LogDebug("message queue has {Count} messages", updaterMessageQueue.ResultsQueue.Count);
 
 				while (updaterMessageQueue.ResultsQueue.TryDequeue(out object? result))
 				{
-					logger.LogDebug("dequeued message");
-
 					PerformResultAction(result);
 				}
 
@@ -175,8 +169,6 @@ namespace StormDesktop.Gui
 				IList<IStream> toSendNotificationsFor = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
 
 				SendNotifications(toSendNotificationsFor);
-
-				logger.LogDebug("end message queue outer loop");
 
 				await Task.Delay(TimeSpan.FromSeconds(3d)).ConfigureAwait(true);
 			}
@@ -275,7 +267,7 @@ namespace StormDesktop.Gui
 				string description = $"on {toNotify.ServiceName}";
 				void notify() => OpenStream(toNotify);
 
-				NotificationService.Send(title, description, notify);
+				Application.Current.Dispatcher.Invoke(() => NotificationService.Send(title, description, notify));
 			}
 		}
 
@@ -289,7 +281,7 @@ namespace StormDesktop.Gui
 				RumbleStream r => updaterMessageQueue.UpdateAsync<RumbleStream>(r, CancellationToken.None),
 				TwitchStream t => updaterMessageQueue.UpdateAsync<TwitchStream>(t, CancellationToken.None),
 				YouTubeStream y => updaterMessageQueue.UpdateAsync<YouTubeStream>(y, CancellationToken.None),
-				_ => throw new InvalidCastException("bad stream type")
+				_ => throw new InvalidCastException("bad stream type: '{stream.GetType().Name}'")
 			};
 
 			await updateTask.ConfigureAwait(false);
@@ -299,7 +291,7 @@ namespace StormDesktop.Gui
 		{
 			if (stream.HasStreamlinkSupport)
 			{
-				if (!OpenWithStreamlink(stream))
+				if (!OpenWithStreamlink(stream, stormOptionsMonitor.CurrentValue.StreamlinkCommandFormat))
 				{
 					logger.LogWarning("failed to launch streamlink for '{Uri} ({Service})'", stream.Name, stream.ServiceName);
 				}
@@ -313,9 +305,9 @@ namespace StormDesktop.Gui
 			}
 		}
 
-		private static bool OpenWithStreamlink(IStream stream)
+		private static bool OpenWithStreamlink(IStream stream, string streamlinkFormat)
 		{
-			string command = string.Format(CultureInfo.CurrentCulture, "/C streamlink {0} best", stream.Link);
+			string command = string.Format(CultureInfo.CurrentCulture, streamlinkFormat, stream.Link);
 
 			ProcessStartInfo pInfo = new ProcessStartInfo()
 			{

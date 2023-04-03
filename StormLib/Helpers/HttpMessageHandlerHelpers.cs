@@ -13,11 +13,11 @@ namespace StormLib.Helpers
 		{
 			SocketsHttpHandler handler = new SocketsHttpHandler
 			{
-				AllowAutoRedirect = true,
+				AllowAutoRedirect = false,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-				CookieContainer = new CookieContainer(),
-				MaxConnectionsPerServer = 3,
-				PooledConnectionLifetime = TimeSpan.FromMinutes(5d),
+				MaxAutomaticRedirections = 2,
+				MaxConnectionsPerServer = 1,
+				PooledConnectionLifetime = TimeSpan.FromMinutes(10d),
 				SslOptions = new SslClientAuthenticationOptions
 				{
 					AllowRenegotiation = false,
@@ -27,7 +27,7 @@ namespace StormLib.Helpers
 #pragma warning restore CA5398
 					EncryptionPolicy = EncryptionPolicy.RequireEncryption
 				},
-				UseCookies = true,
+				UseCookies = false,
 				UseProxy = false
 			};
 
