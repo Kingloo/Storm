@@ -13,7 +13,7 @@ namespace StormLib.Helpers
 		{
 			return new SocketsHttpHandler
 			{
-				AllowAutoRedirect = false,
+				AllowAutoRedirect = true,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
 				MaxAutomaticRedirections = 2,
 				MaxConnectionsPerServer = 1,
