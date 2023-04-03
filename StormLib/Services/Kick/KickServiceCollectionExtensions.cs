@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Net.Security;
+using System.Security.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,23 +28,27 @@ namespace StormLib.Services.Kick
 
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
-			httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-			
-			httpClient.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
-
-			httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-			httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-			httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
-
-			httpClient.DefaultRequestHeaders.Host = "kick.com";
-			httpClient.DefaultRequestVersion = HttpVersion.Version20;
-
 			httpClient.Timeout = TimeSpan.FromSeconds(5d);
 		}
 
 		private static HttpMessageHandler ConfigurePrimaryHttpMessageHandler(IServiceProvider _)
 		{
-			return Helpers.HttpMessageHandlerHelpers.CreateDefaultHttpMessageHandler();
+			return new SocketsHttpHandler
+			{
+				AllowAutoRedirect = true,
+				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+				MaxAutomaticRedirections = 3,
+				MaxConnectionsPerServer = 10,
+				SslOptions = new SslClientAuthenticationOptions
+				{
+					AllowRenegotiation = false,
+					ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
+#pragma warning disable CA5398
+					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+#pragma warning restore CA5398
+					EncryptionPolicy = EncryptionPolicy.RequireEncryption
+				}
+			};
 		}
 	}
 }

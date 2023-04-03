@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StormLib.Common;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using static StormLib.Helpers.UpdaterHelpers;
@@ -19,25 +21,21 @@ namespace StormLib.Services.Kick
 		private readonly ILogger<KickUpdater> logger;
 		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<KickOptions> kickOptionsMonitor;
-		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
 		public KickUpdater(
 			ILogger<KickUpdater> logger,
 			IHttpClientFactory httpClientFactory,
-			IOptionsMonitor<KickOptions> kickOptionsMonitor,
-			IOptionsMonitor<StormOptions> stormOptionsMonitor)
+			IOptionsMonitor<KickOptions> kickOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
 			ArgumentNullException.ThrowIfNull(httpClientFactory);
 			ArgumentNullException.ThrowIfNull(kickOptionsMonitor);
-			ArgumentNullException.ThrowIfNull(stormOptionsMonitor);
 
 			this.logger = logger;
 			this.httpClientFactory = httpClientFactory;
 			this.kickOptionsMonitor = kickOptionsMonitor;
-			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
 		public Task<IList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams)
@@ -70,10 +68,11 @@ namespace StormLib.Services.Kick
 
 			void ConfigureRequest(HttpRequestMessage requestMessage)
 			{
-				AddHeaders(kickOptionsMonitor.CurrentValue.Headers, requestMessage);
-				AddHeaders(stormOptionsMonitor.CurrentValue.CommonHeaders, requestMessage);
-
+				requestMessage.Headers.Host = "kick.com";
 				requestMessage.Method = HttpMethod.Get;
+				requestMessage.Version = HttpVersion.Version20;
+
+				AddHeaders(kickOptionsMonitor.CurrentValue.Headers, requestMessage);
 			};
 
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
