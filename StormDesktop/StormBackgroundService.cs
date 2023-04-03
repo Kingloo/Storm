@@ -57,10 +57,10 @@ namespace StormDesktop
 				isFirstRun = false;
 			}
 
+			string serviceName = typeof(TStream).Name;
+
 			try
 			{
-				string serviceName = typeof(TStream).Name;
-
 				while (!stoppingToken.IsCancellationRequested)
 				{
 					await RunUpdate(serviceName, stoppingToken).ConfigureAwait(false);
@@ -72,7 +72,7 @@ namespace StormDesktop
 			{
 				if (!stoppingToken.IsCancellationRequested)
 				{
-					logger.LogWarning("background service for {ServiceName} stopped unexpectedly", nameof(TStream));
+					logger.LogWarning("background service for {ServiceName} stopped unexpectedly", serviceName);
 				}
 			}
 		}
