@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib;
 using StormLib.Interfaces;
+using static StormLib.Helpers.HttpStatusCodeHelpers;
 
 namespace StormDesktop
 {
@@ -89,7 +90,7 @@ namespace StormDesktop
 
 				if (each.StatusCode != System.Net.HttpStatusCode.OK)
 				{
-					logger.LogWarning("updating {DisplayName} on {ServiceName} was {StatusCode}", each.Stream.DisplayName, serviceName, each.StatusCode);
+					logger.LogWarning("updating {DisplayName} on {ServiceName} was {StatusCode}", each.Stream.DisplayName, serviceName, FormatStatusCode(each.StatusCode));
 				}
 			}
 		}
