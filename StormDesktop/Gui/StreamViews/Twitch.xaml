@@ -71,7 +71,7 @@
 					</Style>
 				</Label.Style>
 				<Label.Content>
-					<TextBlock Text="{Binding Game}" TextTrimming="CharacterEllipsis" />
+					<TextBlock Text="{Binding Game.Name.Name}" TextTrimming="CharacterEllipsis" />
 				</Label.Content>
 			</Label>
         </Grid>
