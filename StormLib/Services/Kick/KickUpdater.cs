@@ -3,39 +3,55 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using StormLib.Common;
 using StormLib.Helpers;
 using StormLib.Interfaces;
 using static StormLib.Helpers.UpdaterHelpers;
 
 namespace StormLib.Services.Kick
 {
-	public class KickUpdater : IUpdater<KickStream>
+	public class KickUpdater : IUpdater<KickStream>, IDisposable
 	{
 		private readonly ILogger<KickUpdater> logger;
-		private readonly IHttpClientFactory httpClientFactory;
+		private readonly HttpClient httpClient;
 		private readonly IOptionsMonitor<KickOptions> kickOptionsMonitor;
+		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
+		// public KickUpdater(
+		// 	ILogger<KickUpdater> logger,
+		// 	IHttpClientFactory httpClientFactory,
+		// 	IOptionsMonitor<KickOptions> kickOptionsMonitor)
+		// {
+		// 	ArgumentNullException.ThrowIfNull(logger);
+		// 	ArgumentNullException.ThrowIfNull(httpClientFactory);
+		// 	ArgumentNullException.ThrowIfNull(kickOptionsMonitor);
+
+		// 	this.logger = logger;
+		// 	this.httpClientFactory = httpClientFactory;
+		// 	this.kickOptionsMonitor = kickOptionsMonitor;
+		// }
+
 		public KickUpdater(
 			ILogger<KickUpdater> logger,
-			IHttpClientFactory httpClientFactory,
-			IOptionsMonitor<KickOptions> kickOptionsMonitor)
+			HttpClient httpClient,
+			IOptionsMonitor<KickOptions> kickOptionsMonitor,
+			IOptionsMonitor<StormOptions> stormOptionsMonitor)
 		{
 			ArgumentNullException.ThrowIfNull(logger);
-			ArgumentNullException.ThrowIfNull(httpClientFactory);
+			ArgumentNullException.ThrowIfNull(httpClient);
 			ArgumentNullException.ThrowIfNull(kickOptionsMonitor);
+			ArgumentNullException.ThrowIfNull(stormOptionsMonitor);
 
 			this.logger = logger;
-			this.httpClientFactory = httpClientFactory;
+			this.httpClient = httpClient;
 			this.kickOptionsMonitor = kickOptionsMonitor;
+			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
 		public Task<IList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams)
@@ -73,15 +89,13 @@ namespace StormLib.Services.Kick
 				requestMessage.Version = HttpVersion.Version20;
 
 				AddHeaders(kickOptionsMonitor.CurrentValue.Headers, requestMessage);
+				AddHeaders(stormOptionsMonitor.CurrentValue.CommonHeaders, requestMessage);
 			};
 
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
 			string text = string.Empty;
 
-			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Kick))
-			{
-				(statusCode, text) = await HttpClientHelpers.GetStringAsync(client, apiEndpointForStream, ConfigureRequest, cancellationToken).ConfigureAwait(false);
-			}
+			(statusCode, text) = await HttpClientHelpers.GetStringAsync(httpClient, apiEndpointForStream, ConfigureRequest, cancellationToken).ConfigureAwait(false);
 
 			if (statusCode != HttpStatusCode.OK)
 			{
@@ -89,7 +103,7 @@ namespace StormLib.Services.Kick
 				{
 					Action = (KickStream k) =>
 					{
-						k.Status = Status.Problem;
+						k.Status = Status.Problem; // as the Kick API is so unreliable, this should be changed to Offline
 						k.ViewersCount = null;
 					}
 				};
@@ -127,13 +141,13 @@ namespace StormLib.Services.Kick
 			{
 				Action = (KickStream k) =>
 				{
-					if (newDisplayName != null)
+					if (String.IsNullOrEmpty(newDisplayName) == false
+						&& String.Equals(newDisplayName, stream.DisplayName, StringComparison.Ordinal) == false)
 					{
 						k.DisplayName = newDisplayName;
 					}
 					
-					k.Status = Status.Public;
-					
+					k.Status = newStatus;
 					k.ViewersCount = newViewersCount;
 				}
 			};
@@ -151,6 +165,28 @@ namespace StormLib.Services.Kick
 			}
 
 			return Task.WhenAll(updateTasks);
+		}
+
+		private bool disposedValue = false;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					httpClient.Dispose();
+				}
+
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+
+			GC.SuppressFinalize(this);
 		}
 	}
 }

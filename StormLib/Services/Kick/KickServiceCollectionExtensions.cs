@@ -6,6 +6,8 @@ using System.Net.Security;
 using System.Security.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace StormLib.Services.Kick
 {
@@ -17,18 +19,38 @@ namespace StormLib.Services.Kick
 
 			services.Configure<KickOptions>(configuration.GetSection("Kick"));
 
-			services.AddHttpClient<KickUpdater>(HttpClientNames.Kick)
-				.ConfigureHttpClient(ConfigureHttpClient)
-				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
+			// services.AddHttpClient<KickUpdater>(HttpClientNames.Kick)
+			// 	.ConfigureHttpClient(ConfigureHttpClient)
+			// 	.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
 			
-			services.AddTransient<KickUpdater>();
+			// services.AddTransient<KickUpdater>();
+
+			services.AddTransient<KickUpdater>(CreateKickUpdater);
 
 			return services;
 		}
 
-		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
+		private static KickUpdater CreateKickUpdater(IServiceProvider serviceProvider)
 		{
-			Helpers.HttpClientHelpers.ConfigureDefaultHttpClient(httpClient);
+			var logger = serviceProvider.GetRequiredService<ILogger<KickUpdater>>();
+
+#pragma warning disable CA2000 // see HttpClient->ctor disposeHandler is true
+			var handler = ConfigurePrimaryHttpMessageHandler(serviceProvider);
+#pragma warning restore CA2000
+			
+			var httpClient = new HttpClient(handler, disposeHandler: true);
+
+			ConfigureHttpClient(httpClient);
+
+			var kickOptionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<KickOptions>>();
+			var stormOptionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<StormOptions>>();
+
+			return new KickUpdater(logger, httpClient, kickOptionsMonitor, stormOptionsMonitor);
+		}
+
+		private static void ConfigureHttpClient(HttpClient client)
+		{
+			client.Timeout = TimeSpan.FromSeconds(10d);
 		}
 
 		private static HttpMessageHandler ConfigurePrimaryHttpMessageHandler(IServiceProvider _)
@@ -37,8 +59,9 @@ namespace StormLib.Services.Kick
 			{
 				AllowAutoRedirect = true,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-				MaxAutomaticRedirections = 3,
-				MaxConnectionsPerServer = 10,
+				CookieContainer = new CookieContainer(),
+				MaxAutomaticRedirections = 2,
+				MaxConnectionsPerServer = 1,
 				SslOptions = new SslClientAuthenticationOptions
 				{
 					AllowRenegotiation = false,
@@ -47,7 +70,8 @@ namespace StormLib.Services.Kick
 					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
 #pragma warning restore CA5398
 					EncryptionPolicy = EncryptionPolicy.RequireEncryption
-				}
+				},
+				UseCookies = true
 			};
 		}
 	}
