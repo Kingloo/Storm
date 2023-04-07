@@ -158,18 +158,41 @@ namespace StormLib.Services.Chaturbate
 			};
 		}
 
-		private Task<Result<ChaturbateStream>[]> UpdateManyAsync(IReadOnlyList<ChaturbateStream> streams, CancellationToken cancellationToken)
+		private async Task<Result<ChaturbateStream>[]> UpdateManyAsync(IReadOnlyList<ChaturbateStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result<ChaturbateStream>>> updateTasks = new List<Task<Result<ChaturbateStream>>>();
+			// Chaturbate doesn't like it if you hit them too often,
+			// connections time out for minutes without connecting
 
-			foreach (ChaturbateStream each in streams)
+			IList<Result<ChaturbateStream>> updateResults = new List<Result<ChaturbateStream>>();
+
+			foreach (ChaturbateStream stream in streams)
 			{
-				Task<Result<ChaturbateStream>> updateTask = Task.Run(() => UpdateOneAsync(each, cancellationToken));
+				Result<ChaturbateStream> result;
 
-				updateTasks.Add(updateTask);
+				try
+				{
+					result = await UpdateOneAsync(stream, cancellationToken).ConfigureAwait(false);
+				}
+				catch (TaskCanceledException ex)
+				{
+					logger.LogError(ex, "{Message}", ex.Message);
+
+					result = new Result<ChaturbateStream>(stream, HttpStatusCode.RequestTimeout)
+					{
+						Action = (ChaturbateStream c) =>
+						{
+							c.Status = Status.Problem;
+							c.ViewersCount = null;
+						}
+					};
+				}
+
+				updateResults.Add(result);
+
+				await Task.Delay(TimeSpan.FromSeconds(10d), cancellationToken).ConfigureAwait(false);
 			}
 
-			return Task.WhenAll(updateTasks);
+			return updateResults.ToArray();
 		}
 	}
 }
