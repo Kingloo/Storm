@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace StormLib.Services.Twitch
@@ -29,7 +29,7 @@ namespace StormLib.Services.Twitch
 		public TwitchGame? Game
 		{
 			get => game;
-			set => SetProperty(ref game, value, nameof(TwitchGame));
+			set => SetProperty(ref game, value, nameof(Game));
 		}
 
 		public TwitchStream(Uri uri)
