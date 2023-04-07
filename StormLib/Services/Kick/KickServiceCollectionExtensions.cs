@@ -13,17 +13,15 @@ namespace StormLib.Services.Kick
 {
 	public static class KickServiceCollectionExtensions
 	{
+		/*
+			Exercise extreme caution when changing Kick's HttpClient or HttpMessageHandler settings !!!
+		*/
+
 		public static IServiceCollection AddKick(this IServiceCollection services, IConfiguration configuration)
 		{
 			ArgumentNullException.ThrowIfNull(configuration);
 
 			services.Configure<KickOptions>(configuration.GetSection("Kick"));
-
-			// services.AddHttpClient<KickUpdater>(HttpClientNames.Kick)
-			// 	.ConfigureHttpClient(ConfigureHttpClient)
-			// 	.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
-			
-			// services.AddTransient<KickUpdater>();
 
 			services.AddTransient<KickUpdater>(CreateKickUpdater);
 
@@ -50,7 +48,7 @@ namespace StormLib.Services.Kick
 
 		private static void ConfigureHttpClient(HttpClient client)
 		{
-			client.Timeout = TimeSpan.FromSeconds(10d);
+			client.Timeout = TimeSpan.FromSeconds(60d);
 		}
 
 		private static HttpMessageHandler ConfigurePrimaryHttpMessageHandler(IServiceProvider _)
