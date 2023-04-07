@@ -23,20 +23,6 @@ namespace StormLib.Services.Kick
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.One;
 
-		// public KickUpdater(
-		// 	ILogger<KickUpdater> logger,
-		// 	IHttpClientFactory httpClientFactory,
-		// 	IOptionsMonitor<KickOptions> kickOptionsMonitor)
-		// {
-		// 	ArgumentNullException.ThrowIfNull(logger);
-		// 	ArgumentNullException.ThrowIfNull(httpClientFactory);
-		// 	ArgumentNullException.ThrowIfNull(kickOptionsMonitor);
-
-		// 	this.logger = logger;
-		// 	this.httpClientFactory = httpClientFactory;
-		// 	this.kickOptionsMonitor = kickOptionsMonitor;
-		// }
-
 		public KickUpdater(
 			ILogger<KickUpdater> logger,
 			HttpClient httpClient,
@@ -103,7 +89,7 @@ namespace StormLib.Services.Kick
 				{
 					Action = (KickStream k) =>
 					{
-						k.Status = Status.Problem; // as the Kick API is so unreliable, this should be changed to Offline
+						k.Status = Status.Problem;
 						k.ViewersCount = null;
 					}
 				};
