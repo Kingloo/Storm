@@ -12,11 +12,17 @@ namespace StormLib
 		public string Message { get; init; } = string.Empty;
 
 		public Result(TStream stream, HttpStatusCode statusCode)
+			: this(stream, statusCode, (_) => { })
+		{ }
+
+		public Result(TStream stream, HttpStatusCode statusCode, Action<TStream> action)
 		{
 			ArgumentNullException.ThrowIfNull(stream);
+			ArgumentNullException.ThrowIfNull(action);
 
 			Stream = stream;
 			StatusCode = statusCode;
+			Action = action;
 		}
 	}
 }

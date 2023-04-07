@@ -149,10 +149,7 @@ namespace StormLib.Services.Twitch
 					};
 				}
 
-				Result<TwitchStream> result = new Result<TwitchStream>(each, statusCode)
-				{
-					Action = action
-				};
+				Result<TwitchStream> result = new Result<TwitchStream>(each, statusCode, action);
 
 				results.Add(result);
 			}
