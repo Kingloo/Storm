@@ -35,7 +35,7 @@ namespace StormLib.Services.Chaturbate
 
 		public Task<IList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
-		
+
 		public async Task<IList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
@@ -48,8 +48,8 @@ namespace StormLib.Services.Chaturbate
 			if (streams.Count == 1)
 			{
 				Result<ChaturbateStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
-				
-				return new [] { singleResult };
+
+				return new[] { singleResult };
 			}
 			else
 			{
@@ -70,7 +70,7 @@ namespace StormLib.Services.Chaturbate
 				requestMessage.Headers.Host = stream.Link.DnsSafeHost;
 				requestMessage.Headers.Referrer = stream.Link;
 			};
-			
+
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Chaturbate))
 			{
 				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, ConfigureRequest, cancellationToken).ConfigureAwait(false);
@@ -147,7 +147,7 @@ namespace StormLib.Services.Chaturbate
 			{
 				newStatus = Status.Unknown;
 			}
-			
+
 			return new Result<ChaturbateStream>(stream, statusCode)
 			{
 				Action = (ChaturbateStream c) =>

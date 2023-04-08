@@ -32,7 +32,7 @@ namespace StormLib.Services.Rumble
 
 		public Task<IList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
-		
+
 		public async Task<IList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
@@ -45,8 +45,8 @@ namespace StormLib.Services.Rumble
 			if (streams.Count == 1)
 			{
 				Result<RumbleStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
-				
-				return new [] { singleResult };
+
+				return new[] { singleResult };
 			}
 			else
 			{
@@ -61,7 +61,7 @@ namespace StormLib.Services.Rumble
 
 			Status newStatus = Status.Unknown;
 			int? newViewersCount = null;
-			
+
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Rumble))
 			{
 				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, cancellationToken).ConfigureAwait(false);

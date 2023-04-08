@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
@@ -115,35 +115,35 @@ namespace StormDesktop.Gui
 					KickUpdater,
 					IOptionsMonitor<KickOptions>,
 					KickOptions>>();
-			
+
 			services.AddHostedService<
 				StormBackgroundService<
 					MixlrStream,
 					MixlrUpdater,
 					IOptionsMonitor<MixlrOptions>,
 					MixlrOptions>>();
-			
+
 			services.AddHostedService<
 				StormBackgroundService<
 					RumbleStream,
 					RumbleUpdater,
 					IOptionsMonitor<RumbleOptions>,
 					RumbleOptions>>();
-			
+
 			services.AddHostedService<
 				StormBackgroundService<
 					TwitchStream,
 					TwitchUpdater,
 					IOptionsMonitor<TwitchOptions>,
 					TwitchOptions>>();
-			
+
 			services.AddHostedService<
 				StormBackgroundService<
 					YouTubeStream,
 					YouTubeUpdater,
 					IOptionsMonitor<YouTubeOptions>,
 					YouTubeOptions>>();
-			
+
 			services.AddTransient<IMainWindowViewModel, MainWindowViewModel>();
 			services.AddTransient<MainWindow>();
 		}
@@ -173,7 +173,7 @@ namespace StormDesktop.Gui
 			logger.LogDebug("app exit started");
 
 			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
-			
+
 			sink.StopSink();
 
 			host.StopAsync().GetAwaiter().GetResult();
@@ -193,7 +193,7 @@ namespace StormDesktop.Gui
 				{
 					toLog = tie.InnerException;
 				}
-				
+
 				logger.LogError(toLog, "an unhandled exception occurred in WinGui ({FullName} from {Source})", toLog.GetType().FullName, toLog.Source);
 				logger.LogDebug("STackTrace of {FullName}{NewLine}{StackTrace}", toLog.GetType().FullName, Environment.NewLine, ex.StackTrace);
 			}

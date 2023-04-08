@@ -48,7 +48,7 @@ namespace StormLib.Services.YouTube
 			{
 				Result<YouTubeStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
 
-				return new [] { singleResult };
+				return new[] { singleResult };
 			}
 			else
 			{
@@ -86,7 +86,7 @@ namespace StormLib.Services.YouTube
 				{
 					y.DisplayName = SetDisplayName(text, stream.Name);
 					y.Status = SetStatus(text, youTubeOptionsMonitor.CurrentValue);
-            		y.ViewersCount = SetViewers(text);
+					y.ViewersCount = SetViewers(text);
 				}
 			};
 		}
@@ -118,21 +118,21 @@ namespace StormLib.Services.YouTube
 			return text.FindBetween(beginning, ending).FirstOrDefault() ?? fallback;
 		}
 
-        private static Status SetStatus(string text, YouTubeOptions youTubeOptions)
-        {
-            return text.Contains(youTubeOptions.LiveMarker, StringComparison.OrdinalIgnoreCase) switch
+		private static Status SetStatus(string text, YouTubeOptions youTubeOptions)
+		{
+			return text.Contains(youTubeOptions.LiveMarker, StringComparison.OrdinalIgnoreCase) switch
 			{
 				true => Status.Public,
 				false => Status.Offline
 			};
-        }
+		}
 
-        private static int? SetViewers(string text)
-        {
-            const string beginning = "viewCountText\":{\"runs\":[{\"text\":\"";
-            const string ending = "\"}";
+		private static int? SetViewers(string text)
+		{
+			const string beginning = "viewCountText\":{\"runs\":[{\"text\":\"";
+			const string ending = "\"}";
 
-            string? viewersText = text.FindBetween(beginning, ending).FirstOrDefault();
+			string? viewersText = text.FindBetween(beginning, ending).FirstOrDefault();
 
 			if (viewersText is null)
 			{
@@ -141,15 +141,15 @@ namespace StormLib.Services.YouTube
 
 			string viewersTextDigitsOnly = GetOnlyDigits(viewersText);
 
-            if (Int32.TryParse(viewersTextDigitsOnly, out int result))
-            {
-                return result;
-            }
-            else
-            {
-                return null;
-            }
-        }
+			if (Int32.TryParse(viewersTextDigitsOnly, out int result))
+			{
+				return result;
+			}
+			else
+			{
+				return null;
+			}
+		}
 
 		private static string GetOnlyDigits(string text)
 		{

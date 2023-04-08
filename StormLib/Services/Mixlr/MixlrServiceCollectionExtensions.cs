@@ -16,7 +16,7 @@ namespace StormLib.Services.Mixlr
 			services.AddHttpClient<MixlrUpdater>(HttpClientNames.Mixlr)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
-			
+
 			services.AddTransient<MixlrUpdater>();
 
 			return services;

@@ -16,7 +16,7 @@ namespace StormLib.Services.Rumble
 			services.AddHttpClient<RumbleUpdater>(HttpClientNames.Rumble)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
-			
+
 			services.AddTransient<RumbleUpdater>();
 
 			return services;
@@ -25,7 +25,7 @@ namespace StormLib.Services.Rumble
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
 			httpClient.BaseAddress = new Uri("https://rumble.com/", UriKind.Absolute);
-			
+
 			Helpers.HttpClientHelpers.ConfigureDefaultHttpClient(httpClient);
 		}
 

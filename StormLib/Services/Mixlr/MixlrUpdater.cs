@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -34,7 +34,7 @@ namespace StormLib.Services.Mixlr
 
 		public Task<IList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
-		
+
 		public async Task<IList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
@@ -48,7 +48,7 @@ namespace StormLib.Services.Mixlr
 			{
 				Result<MixlrStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
 
-				return new [] { singleResult };
+				return new[] { singleResult };
 			}
 			else
 			{

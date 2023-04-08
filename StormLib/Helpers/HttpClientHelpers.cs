@@ -23,7 +23,7 @@ namespace StormLib.Helpers
 		internal static async ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, Action<HttpRequestMessage>? configureRequestMessage, CancellationToken cancellationToken)
 		{
 			(HttpStatusCode, string) response = (HttpStatusCode.Unused, string.Empty);
-			
+
 			using (HttpRequestMessage requestMessage = new HttpRequestMessage
 			{
 				RequestUri = uri
@@ -43,7 +43,7 @@ namespace StormLib.Helpers
 			string text = string.Empty;
 
 			HttpResponseMessage? responseMessage = null;
-			
+
 			try
 			{
 				responseMessage = await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);

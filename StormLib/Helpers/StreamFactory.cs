@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -24,12 +24,12 @@ namespace StormLib.Helpers
 		public static bool TryCreate(string line, [NotNullWhen(true)] out IStream? stream)
 		{
 			if (String.IsNullOrWhiteSpace(line))
-            {
-                stream = null;
-                return false;
-            }
+			{
+				stream = null;
+				return false;
+			}
 
-            if (!line.StartsWith(https, sc) && !line.StartsWith(http, sc))
+			if (!line.StartsWith(https, sc) && !line.StartsWith(http, sc))
 			{
 				line = $"{https}{line}";
 			}
@@ -66,10 +66,10 @@ namespace StormLib.Helpers
 		{
 			ArgumentNullException.ThrowIfNull(lines);
 
-            if (!lines.Any())
-            {
-                return Array.Empty<IStream>();
-            }
+			if (!lines.Any())
+			{
+				return Array.Empty<IStream>();
+			}
 
 			IList<IStream> streams = new List<IStream>();
 

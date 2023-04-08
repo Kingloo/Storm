@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -226,14 +226,14 @@ namespace StormDesktop.Gui
 				.ConfigureAwait(true);
 
 			if (!lines.Any())
-            {
-                return;
-            }
+			{
+				return;
+			}
 
 			IReadOnlyList<IStream> loadedStreams = StreamFactory.CreateMany(lines);
 
 			AddNew(loadedStreams);
-			
+
 			RemoveOld(loadedStreams);
 		}
 
@@ -278,12 +278,12 @@ namespace StormDesktop.Gui
 		{
 			var updateTask = stream switch
 			{
-				ChaturbateStream c => updaterMessageQueue.UpdateAsync(new [] { c }, CancellationToken.None),
-				KickStream k => updaterMessageQueue.UpdateAsync(new [] { k }, CancellationToken.None),
-				MixlrStream m => updaterMessageQueue.UpdateAsync(new [] { m }, CancellationToken.None),
-				RumbleStream r => updaterMessageQueue.UpdateAsync(new [] { r }, CancellationToken.None),
-				TwitchStream t => updaterMessageQueue.UpdateAsync(new [] { t }, CancellationToken.None),
-				YouTubeStream y => updaterMessageQueue.UpdateAsync(new [] { y }, CancellationToken.None),
+				ChaturbateStream c => updaterMessageQueue.UpdateAsync(new[] { c }, CancellationToken.None),
+				KickStream k => updaterMessageQueue.UpdateAsync(new[] { k }, CancellationToken.None),
+				MixlrStream m => updaterMessageQueue.UpdateAsync(new[] { m }, CancellationToken.None),
+				RumbleStream r => updaterMessageQueue.UpdateAsync(new[] { r }, CancellationToken.None),
+				TwitchStream t => updaterMessageQueue.UpdateAsync(new[] { t }, CancellationToken.None),
+				YouTubeStream y => updaterMessageQueue.UpdateAsync(new[] { y }, CancellationToken.None),
 				_ => throw new InvalidCastException($"bad stream type: '{stream.GetType().Name}'")
 			};
 

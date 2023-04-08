@@ -16,7 +16,7 @@ namespace StormLib.Services.Twitch
 			services.AddHttpClient<TwitchUpdater>(HttpClientNames.Twitch)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
-			
+
 			services.AddTransient<TwitchUpdater>();
 
 			return services;

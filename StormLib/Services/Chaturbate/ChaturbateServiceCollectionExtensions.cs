@@ -16,7 +16,7 @@ namespace StormLib.Services.Chaturbate
 			services.AddHttpClient<ChaturbateUpdater>(HttpClientNames.Chaturbate)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
-			
+
 			services.AddTransient<ChaturbateUpdater>();
 
 			return services;
@@ -25,7 +25,7 @@ namespace StormLib.Services.Chaturbate
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
 			httpClient.BaseAddress = new Uri("https://chaturbate.com/", UriKind.Absolute);
-			
+
 			Helpers.HttpClientHelpers.ConfigureDefaultHttpClient(httpClient);
 		}
 

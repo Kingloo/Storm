@@ -1,4 +1,4 @@
-﻿namespace StormLib
+namespace StormLib
 {
 	public enum Status
 	{

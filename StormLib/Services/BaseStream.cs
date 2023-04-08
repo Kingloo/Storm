@@ -40,13 +40,13 @@ namespace StormLib.Services
 			set => SetProperty(ref _viewersCount, value, nameof(ViewersCount));
 		}
 
-        protected static string IconDirectory
-        {
-            get
-            {
-                return Path.Combine(RuntimeCircumstance.GetRealLocation(), "Icons");
-            }
-        }
+		protected static string IconDirectory
+		{
+			get
+			{
+				return Path.Combine(RuntimeCircumstance.GetRealLocation(), "Icons");
+			}
+		}
 
 		public abstract Uri Icon { get; }
 		public abstract bool HasStreamlinkSupport { get; }
@@ -126,7 +126,7 @@ namespace StormLib.Services
 			{
 				return -1;
 			}
-			
+
 			int compareNames = CompareNames(this, other);
 
 			return compareNames switch

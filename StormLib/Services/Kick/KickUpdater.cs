@@ -55,8 +55,8 @@ namespace StormLib.Services.Kick
 			if (streams.Count == 1)
 			{
 				Result<KickStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
-				
-				return new [] { singleResult };
+
+				return new[] { singleResult };
 			}
 			else
 			{
@@ -109,10 +109,10 @@ namespace StormLib.Services.Kick
 
 			string? newDisplayName = json?["user"]?["username"] is JsonNode displayNameToken
 				? (string?)displayNameToken
-				: null;			
-			
+				: null;
+
 			bool isPublic = json?["livestream"]?.Options.HasValue ?? false;
-			
+
 			int? newViewersCount = isPublic switch
 			{
 				true => json?["livestream"]?["viewer_count"] is JsonNode viewerCountToken ? (int?)viewerCountToken : null,
@@ -132,7 +132,7 @@ namespace StormLib.Services.Kick
 					{
 						k.DisplayName = newDisplayName;
 					}
-					
+
 					k.Status = newStatus;
 					k.ViewersCount = newViewersCount;
 				}

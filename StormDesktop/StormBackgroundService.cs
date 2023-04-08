@@ -49,7 +49,7 @@ namespace StormDesktop
 
 			return base.StartAsync(cancellationToken);
 		}
-		
+
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
 			if (isFirstRun)

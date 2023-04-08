@@ -1,6 +1,6 @@
 namespace StormLib.Common
 {
-    public static class UserAgents
+	public static class UserAgents
 	{
 		public const string HeaderName = "User-Agent";
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
@@ -12,7 +12,7 @@ namespace StormDesktop.Gui
 	public partial class MainWindow : Window
 	{
 		private IntPtr hWnd = IntPtr.Zero;
-		
+
 		private readonly ILogger<MainWindow> logger;
 		private readonly IMainWindowViewModel viewModel;
 
@@ -40,7 +40,7 @@ namespace StormDesktop.Gui
 
 		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-            logger.LogDebug("main window loaded");
+			logger.LogDebug("main window loaded");
 
 			viewModel.LoadStreamsCommand.Execute(null);
 

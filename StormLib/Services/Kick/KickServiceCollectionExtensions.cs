@@ -35,7 +35,7 @@ namespace StormLib.Services.Kick
 #pragma warning disable CA2000 // see HttpClient->ctor disposeHandler is true
 			var handler = ConfigurePrimaryHttpMessageHandler(serviceProvider);
 #pragma warning restore CA2000
-			
+
 			var httpClient = new HttpClient(handler, disposeHandler: true);
 
 			ConfigureHttpClient(httpClient);

@@ -16,7 +16,7 @@ namespace StormLib.Services.YouTube
 			services.AddHttpClient<YouTubeUpdater>(HttpClientNames.YouTube)
 				.ConfigureHttpClient(ConfigureHttpClient)
 				.ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler);
-			
+
 			services.AddTransient<YouTubeUpdater>();
 
 			return services;
@@ -25,7 +25,7 @@ namespace StormLib.Services.YouTube
 		private static void ConfigureHttpClient(IServiceProvider _, HttpClient httpClient)
 		{
 			httpClient.BaseAddress = new Uri("https://youtube.com/", UriKind.Absolute);
-			
+
 			Helpers.HttpClientHelpers.ConfigureDefaultHttpClient(httpClient);
 		}
 

@@ -37,10 +37,10 @@ namespace StormLib.Services.Twitch
 			ArgumentNullException.ThrowIfNull(twitchOptionsMonitor);
 			ArgumentNullException.ThrowIfNull(stormOptionsMonitor);
 
-            this.logger = logger;
-            this.httpClientFactory = httpClientFactory;
-            this.twitchOptionsMonitor = twitchOptionsMonitor;
-            this.stormOptionsMonitor = stormOptionsMonitor;
+			this.logger = logger;
+			this.httpClientFactory = httpClientFactory;
+			this.twitchOptionsMonitor = twitchOptionsMonitor;
+			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
 		public Uri GetEmbeddedPlayerUriForStream(TwitchStream stream)
@@ -109,12 +109,12 @@ namespace StormLib.Services.Twitch
 
 							doesUserDataLoginMatchStreamName = String.Equals((string?)node["login"], each.Name, StringComparison.OrdinalIgnoreCase);
 						}
-						
+
 						return elementHasUserData && doesUserDataLoginMatchStreamName;
 					});
 
 				JsonNode? userData = data?["data"]?["user"];
-				
+
 				Action<TwitchStream> action;
 
 				if (userData is null)
@@ -204,7 +204,7 @@ namespace StormLib.Services.Twitch
 			return (gameId is null) switch
 			{
 				true => false,
-				false => twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(gameId), 
+				false => twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(gameId),
 			};
 		}
 
