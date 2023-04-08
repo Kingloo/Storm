@@ -5,7 +5,7 @@
                     xmlns:stormLibServices="clr-namespace:StormLib.Services;assembly=StormLib">
 
 	<converter:StatusConverter x:Key="statusConverter"
-                               None="Gray"
+                               None="White"
                                Public="LightGreen"
                                Private="Orange"
                                Rerun="LightBlue"

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormDesktop.Common;
@@ -229,7 +230,7 @@ namespace StormDesktop.Gui
                 return;
             }
 
-			IReadOnlyList<IStream> loadedStreams = StreamFactory.CreateMany(lines.ToList());
+			IReadOnlyList<IStream> loadedStreams = StreamFactory.CreateMany(lines);
 
 			AddNew(loadedStreams);
 			
@@ -267,7 +268,9 @@ namespace StormDesktop.Gui
 				string description = $"on {toNotify.ServiceName}";
 				void notify() => OpenStream(toNotify);
 
-				Application.Current.Dispatcher.Invoke(() => NotificationService.Send(title, description, notify));
+				Application.Current.Dispatcher.Invoke(
+					() => NotificationService.Send(title, description, notify),
+					DispatcherPriority.ApplicationIdle);
 			}
 		}
 
@@ -275,13 +278,13 @@ namespace StormDesktop.Gui
 		{
 			var updateTask = stream switch
 			{
-				ChaturbateStream c => updaterMessageQueue.UpdateAsync<ChaturbateStream>(c, CancellationToken.None),
-				KickStream k => updaterMessageQueue.UpdateAsync<KickStream>(k, CancellationToken.None),
-				MixlrStream m => updaterMessageQueue.UpdateAsync<MixlrStream>(m, CancellationToken.None),
-				RumbleStream r => updaterMessageQueue.UpdateAsync<RumbleStream>(r, CancellationToken.None),
-				TwitchStream t => updaterMessageQueue.UpdateAsync<TwitchStream>(t, CancellationToken.None),
-				YouTubeStream y => updaterMessageQueue.UpdateAsync<YouTubeStream>(y, CancellationToken.None),
-				_ => throw new InvalidCastException("bad stream type: '{stream.GetType().Name}'")
+				ChaturbateStream c => updaterMessageQueue.UpdateAsync(new [] { c }, CancellationToken.None),
+				KickStream k => updaterMessageQueue.UpdateAsync(new [] { k }, CancellationToken.None),
+				MixlrStream m => updaterMessageQueue.UpdateAsync(new [] { m }, CancellationToken.None),
+				RumbleStream r => updaterMessageQueue.UpdateAsync(new [] { r }, CancellationToken.None),
+				TwitchStream t => updaterMessageQueue.UpdateAsync(new [] { t }, CancellationToken.None),
+				YouTubeStream y => updaterMessageQueue.UpdateAsync(new [] { y }, CancellationToken.None),
+				_ => throw new InvalidCastException($"bad stream type: '{stream.GetType().Name}'")
 			};
 
 			await updateTask.ConfigureAwait(false);

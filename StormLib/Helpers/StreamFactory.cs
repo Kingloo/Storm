@@ -59,10 +59,10 @@ namespace StormLib.Helpers
 			return true;
 		}
 
-		public static IReadOnlyList<IStream> CreateMany(IList<string> lines)
+		public static IReadOnlyList<IStream> CreateMany(IReadOnlyList<string> lines)
 			=> CreateMany(lines, defaultCommentChar);
 
-		public static IReadOnlyList<IStream> CreateMany(IList<string> lines, char commentCharacter)
+		public static IReadOnlyList<IStream> CreateMany(IReadOnlyList<string> lines, char commentCharacter)
 		{
 			ArgumentNullException.ThrowIfNull(lines);
 

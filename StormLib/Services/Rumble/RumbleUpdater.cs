@@ -67,7 +67,7 @@ namespace StormLib.Services.Rumble
 				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, cancellationToken).ConfigureAwait(false);
 			}
 
-			if (statusCode == HttpStatusCode.OK)
+			if (statusCode == HttpStatusCode.OK) // change to allow for 307 TempRedir
 			{
 				Range liveMarkerSearchRange = new Range(10_000, text.Length - 10_000); // not within the first X characters nor the last Y characters
 
