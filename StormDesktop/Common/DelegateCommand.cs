@@ -22,6 +22,14 @@ namespace StormDesktop.Common
 		private readonly Action _execute;
 		private readonly Predicate<object?> _canExecute;
 
+		public DelegateCommand(Action execute)
+		{
+			ArgumentNullException.ThrowIfNull(execute);
+
+			_execute = execute;
+			_canExecute = (_) => true;
+		}
+
 		public DelegateCommand(Action execute, Predicate<object?> canExecute)
 		{
 			ArgumentNullException.ThrowIfNull(execute);
@@ -30,6 +38,9 @@ namespace StormDesktop.Common
 			_execute = execute;
 			_canExecute = canExecute;
 		}
+
+		public void Execute()
+			=> _execute();
 
 		public override void Execute(object? parameter)
 			=> _execute();
@@ -43,6 +54,14 @@ namespace StormDesktop.Common
 		private readonly Action<T> _execute;
 		private readonly Predicate<T> _canExecute;
 
+		public DelegateCommand(Action<T> execute)
+		{
+			ArgumentNullException.ThrowIfNull(execute);
+
+			_execute = execute;
+			_canExecute = (_) => true;
+		}
+
 		public DelegateCommand(Action<T> execute, Predicate<T> canExecute)
 		{
 			ArgumentNullException.ThrowIfNull(execute);
@@ -53,10 +72,18 @@ namespace StormDesktop.Common
 		}
 
 		public override void Execute(object? parameter)
-			=> _execute((T)parameter!);
+		{
+			ArgumentNullException.ThrowIfNull(parameter);
+
+			_execute((T)parameter);
+		}
 
 		public override bool CanExecute(object? parameter)
-			=> _canExecute((T)parameter!);
+		{
+			ArgumentNullException.ThrowIfNull(parameter);
+
+			return _canExecute((T)parameter);
+		}
 	}
 
 	public class DelegateCommandAsync : Command
@@ -64,6 +91,14 @@ namespace StormDesktop.Common
 		private readonly Func<Task> _executeAsync;
 		private readonly Predicate<object?> _canExecute;
 		private bool _isExecuting = false;
+
+		public DelegateCommandAsync(Func<Task> executeAsync)
+		{
+			ArgumentNullException.ThrowIfNull(executeAsync);
+
+			_executeAsync = executeAsync;
+			_canExecute = (_) => true;
+		}
 
 		public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object?> canExecute)
 		{
@@ -73,6 +108,9 @@ namespace StormDesktop.Common
 			_executeAsync = executeAsync;
 			_canExecute = canExecute;
 		}
+
+		public async void Execute()
+			=> await ExecuteAsync().ConfigureAwait(true);
 
 		public async override void Execute(object? parameter)
 			=> await ExecuteAsync().ConfigureAwait(true);
@@ -98,6 +136,14 @@ namespace StormDesktop.Common
 		private readonly Predicate<T> _canExecute;
 		private bool _isExecuting = false;
 
+		public DelegateCommandAsync(Func<T, Task> executeAsync)
+		{
+			ArgumentNullException.ThrowIfNull(executeAsync);
+
+			_executeAsync = executeAsync;
+			_canExecute = (_) => true;
+		}
+
 		public DelegateCommandAsync(Func<T, Task> executeAsync, Predicate<T> canExecute)
 		{
 			ArgumentNullException.ThrowIfNull(executeAsync);
@@ -108,7 +154,11 @@ namespace StormDesktop.Common
 		}
 
 		public override async void Execute(object? parameter)
-			=> await ExecuteAsync((T)parameter!).ConfigureAwait(true);
+		{
+			ArgumentNullException.ThrowIfNull(parameter);
+
+			await ExecuteAsync((T)parameter).ConfigureAwait(true);
+		}
 
 		private async Task ExecuteAsync(T parameter)
 		{
@@ -122,6 +172,10 @@ namespace StormDesktop.Common
 		}
 
 		public override bool CanExecute(object? parameter)
-			=> !_isExecuting && _canExecute((T)parameter!);
+		{
+			ArgumentNullException.ThrowIfNull(parameter);
+
+			return !_isExecuting && _canExecute((T)parameter);
+		}
 	}
 }

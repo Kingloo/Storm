@@ -54,7 +54,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				_openPageCommand ??= new DelegateCommand<IStream>(OpenPage, (_) => true);
+				_openPageCommand ??= new DelegateCommand<IStream>(OpenPage);
 
 				return _openPageCommand;
 			}
@@ -65,7 +65,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				_openStreamCommand ??= new DelegateCommand<IStream>(OpenStream, (_) => true);
+				_openStreamCommand ??= new DelegateCommand<IStream>(OpenStream);
 
 				return _openStreamCommand;
 			}
@@ -76,7 +76,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				_openStreamsFileCommand ??= new DelegateCommand(OpenStreamsFile, (_) => true);
+				_openStreamsFileCommand ??= new DelegateCommand(OpenStreamsFile);
 
 				return _openStreamsFileCommand;
 			}
@@ -87,7 +87,7 @@ namespace StormDesktop.Gui
 		{
 			get
 			{
-				_exitCommand ??= new DelegateCommand<Window>(window => window.Close(), (_) => true);
+				_exitCommand ??= new DelegateCommand<Window>(static window => window.Close());
 
 				return _exitCommand;
 			}
