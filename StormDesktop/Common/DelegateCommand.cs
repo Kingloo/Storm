@@ -24,8 +24,11 @@ namespace StormDesktop.Common
 
 		public DelegateCommand(Action execute, Predicate<object?> canExecute)
 		{
-			_execute = execute ?? throw new ArgumentNullException(nameof(execute));
-			_canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
+			ArgumentNullException.ThrowIfNull(execute);
+			ArgumentNullException.ThrowIfNull(canExecute);
+
+			_execute = execute;
+			_canExecute = canExecute;
 		}
 
 		public override void Execute(object? parameter)
@@ -42,8 +45,11 @@ namespace StormDesktop.Common
 
 		public DelegateCommand(Action<T> execute, Predicate<T> canExecute)
 		{
-			_execute = execute ?? throw new ArgumentNullException(nameof(execute));
-			_canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
+			ArgumentNullException.ThrowIfNull(execute);
+			ArgumentNullException.ThrowIfNull(canExecute);
+
+			_execute = execute;
+			_canExecute = canExecute;
 		}
 
 		public override void Execute(object? parameter)
@@ -61,8 +67,11 @@ namespace StormDesktop.Common
 
 		public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object?> canExecute)
 		{
-			_executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
-			_canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
+			ArgumentNullException.ThrowIfNull(executeAsync);
+			ArgumentNullException.ThrowIfNull(canExecute);
+
+			_executeAsync = executeAsync;
+			_canExecute = canExecute;
 		}
 
 		public async override void Execute(object? parameter)
@@ -80,7 +89,7 @@ namespace StormDesktop.Common
 		}
 
 		public override bool CanExecute(object? parameter)
-			=> _isExecuting ? false : _canExecute(parameter);
+			=> !_isExecuting && _canExecute(parameter);
 	}
 
 	public class DelegateCommandAsync<T> : Command
@@ -91,8 +100,11 @@ namespace StormDesktop.Common
 
 		public DelegateCommandAsync(Func<T, Task> executeAsync, Predicate<T> canExecute)
 		{
-			_executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
-			_canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
+			ArgumentNullException.ThrowIfNull(executeAsync);
+			ArgumentNullException.ThrowIfNull(canExecute);
+
+			_executeAsync = executeAsync;
+			_canExecute = canExecute;
 		}
 
 		public override async void Execute(object? parameter)
@@ -110,6 +122,6 @@ namespace StormDesktop.Common
 		}
 
 		public override bool CanExecute(object? parameter)
-			=> _isExecuting ? false : _canExecute((T)parameter!);
+			=> !_isExecuting && _canExecute((T)parameter!);
 	}
 }
