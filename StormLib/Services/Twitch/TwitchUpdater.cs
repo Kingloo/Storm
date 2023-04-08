@@ -59,6 +59,8 @@ namespace StormLib.Services.Twitch
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
+			logger.LogDebug("updating {Count} {StreamPluralized}", streams.Count, streams.Count == 1 ? "stream" : "streams");
+
 			return UpdateManyAsync(streams, cancellationToken);
 		}
 

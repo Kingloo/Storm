@@ -44,6 +44,8 @@ namespace StormLib.Services.Mixlr
 				return Array.Empty<Result<MixlrStream>>();
 			}
 
+			logger.LogDebug("updating {Count} {StreamPluralized}", streams.Count, streams.Count == 1 ? "stream" : "streams");
+
 			if (streams.Count == 1)
 			{
 				Result<MixlrStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);

@@ -44,6 +44,8 @@ namespace StormLib.Services.YouTube
 				return Array.Empty<Result<YouTubeStream>>();
 			}
 
+			logger.LogDebug("updating {Count} {StreamPluralized}", streams.Count, streams.Count == 1 ? "stream" : "streams");
+
 			if (streams.Count == 1)
 			{
 				Result<YouTubeStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);

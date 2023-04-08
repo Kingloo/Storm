@@ -45,6 +45,8 @@ namespace StormLib.Services.Chaturbate
 				return Array.Empty<Result<ChaturbateStream>>();
 			}
 
+			logger.LogDebug("updating {Count} {StreamPluralized}", streams.Count, streams.Count == 1 ? "stream" : "streams");
+
 			if (streams.Count == 1)
 			{
 				Result<ChaturbateStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
