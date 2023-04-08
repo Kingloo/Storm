@@ -210,11 +210,6 @@ namespace StormLib.Services.Twitch
 			};
 		}
 
-		private bool IsUnwantedTopicId(TwitchTopicId topicId)
-		{
-			return twitchOptionsMonitor.CurrentValue.UnwantedTopicIds.Contains(topicId);
-		}
-
 		private async ValueTask<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
 		{
 			string requestBody = BuildRequestBody(streams);
