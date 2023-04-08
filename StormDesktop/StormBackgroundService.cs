@@ -67,7 +67,9 @@ namespace StormDesktop
 				{
 					await RunUpdate(streamTypeName, stoppingToken).ConfigureAwait(false);
 
-					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
+					TimeSpan updateInterval = TimeSpan.FromSeconds(optionsMonitor.CurrentValue.UpdateIntervalSeconds);
+
+					await Task.Delay(updateInterval, stoppingToken).ConfigureAwait(false);
 				}
 			}
 			finally

@@ -4,6 +4,6 @@ namespace StormLib.Interfaces
 {
 	public interface IUpdateIntervalOption
 	{
-		public TimeSpan UpdateInterval { get; }
+		public int UpdateIntervalSeconds { get; init; }
 	}
 }

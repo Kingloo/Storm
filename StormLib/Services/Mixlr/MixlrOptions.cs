@@ -5,7 +5,7 @@ namespace StormLib.Services.Mixlr
 {
 	public class MixlrOptions : IUpdateIntervalOption
 	{
-		public TimeSpan UpdateInterval { get; init; } = TimeSpan.FromMinutes(2d);
+		public int UpdateIntervalSeconds { get; init; } = Constants.DefaultUpdateIntervalSeconds;
 		public Uri? ApiUri { get; init; }
 
 		public MixlrOptions() { }
