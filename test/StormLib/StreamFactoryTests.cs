@@ -114,7 +114,7 @@ namespace StormTests.StormLib
 
 			if (stream is null)
 			{
-				throw new ArgumentNullException(nameof(stream));
+				throw new AssertionException("stream was null");
 			}
 
 			bool beginsWithHttps = stream.Link.AbsoluteUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
