@@ -41,8 +41,11 @@ namespace StormDesktop.Common
 
 		public void Start()
 		{
-			timer = new DispatcherTimer(DispatcherPriority.Background);
-			timer.Interval = span;
+			timer = new DispatcherTimer(DispatcherPriority.Background)
+			{
+				Interval = span
+			};
+			
 			timer.Tick += Timer_Tick;
 
 			timer.Start();

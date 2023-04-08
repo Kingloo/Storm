@@ -85,7 +85,7 @@ namespace StormLib.Extensions
 				".+?",
 				Regex.Escape(ending));
 
-			foreach (Match? m in Regex.Matches(text, pattern))
+			foreach (Match? m in Regex.Matches(text, pattern).Cast<Match?>())
 			{
 				if (m is not null)
 				{
