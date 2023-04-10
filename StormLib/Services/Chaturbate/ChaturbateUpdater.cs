@@ -75,7 +75,9 @@ namespace StormLib.Services.Chaturbate
 
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Chaturbate))
 			{
-				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, stream.Link, ConfigureRequest, cancellationToken).ConfigureAwait(false);
+				Uri channelRelativeUri = new Uri($"{stream.Name}", UriKind.Relative);
+
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, channelRelativeUri, ConfigureRequest, cancellationToken).ConfigureAwait(false);
 			}
 
 			if (statusCode != HttpStatusCode.OK)
