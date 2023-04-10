@@ -72,6 +72,7 @@ namespace StormDesktop
 					await Task.Delay(updateInterval, stoppingToken).ConfigureAwait(false);
 				}
 			}
+			//catch (Exception) { } // blunt way to stop BackgroundService from ever stopping
 			finally
 			{
 				if (!stoppingToken.IsCancellationRequested)
@@ -93,7 +94,7 @@ namespace StormDesktop
 			}
 			catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException innerEx)
 			{
-				logger.LogError(innerEx, "{Message}", ex.Message);
+				logger.LogError(innerEx, "Timeout exception while updating {StreamTypeName}: {Message}", streamTypeName, ex.Message);
 			}
 
 			foreach (Result<TStream> each in results)
