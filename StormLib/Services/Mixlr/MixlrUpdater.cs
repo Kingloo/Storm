@@ -126,15 +126,16 @@ namespace StormLib.Services.Mixlr
 
 			string? userName = (string?)userNameToken;
 
-			if (String.IsNullOrWhiteSpace(userName) == false && stream.DisplayName != userName)
-			{
-				stream.DisplayName = userName;
-			}
-
 			return new Result<MixlrStream>(stream, statusCode)
 			{
 				Action = (MixlrStream m) =>
 				{
+					if (String.IsNullOrWhiteSpace(userName) == false
+						&& String.Equals(userName, stream.DisplayName, StringComparison.Ordinal) == false)
+					{
+						m.DisplayName = userName;
+					}
+
 					m.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
 				}
 			};
