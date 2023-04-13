@@ -5,24 +5,23 @@
 	<DataTemplate DataType="{x:Type kick:KickStream}">
 		<Grid Style="{StaticResource gridStyle}">
 
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="100" />
-			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
 
-			<ContentPresenter Grid.Column="0"
+			<ContentPresenter Grid.Row="0"
 							  ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
 
-			<Label Grid.Column="1"
-				   VerticalAlignment="Bottom"
+			<Label Grid.Row="1"
 				   HorizontalContentAlignment="Right">
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
-						<Setter Property="Visibility" Value="Visible" />
+						<Setter Property="Visibility" Value="Collapsed" />
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding Path=ViewersCount}" Value="{x:Null}">
-								<Setter Property="Visibility" Value="Hidden" />
+							<DataTrigger Binding="{Binding Path=ViewersCount, Converter={StaticResource isNotNullConverter}}" Value="True">
+								<Setter Property="Visibility" Value="Visible" />
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>

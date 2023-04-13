@@ -15,7 +15,9 @@
 							   Problem="LightGray"
                                Unknown="MediumAquamarine" />
 
-    <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}" x:Key="gridStyle">
+	<converter:IsNotNullConverter x:Key="isNotNullConverter" />
+
+	<Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}" x:Key="gridStyle">
         <!-- paired with ItemsPanelTemplate VirtualizingStackPanel Margin -->
         <Setter Property="Margin" Value="0,7,0,0" />
         <Setter Property="Background" Value="{Binding Status, Converter={StaticResource statusConverter}}" />
@@ -54,13 +56,13 @@
 				</Image.Source>
 			</Image>
 
-			<Label Grid.Column="1">
+			<Label Grid.Column="0" Grid.ColumnSpan="2">
                 <Label.Style>
                     <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                         <Setter Property="FontSize" Value="17" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Status}" Value="Public">
-                                <Setter Property="FontSize" Value="24" />
+                                <Setter Property="FontSize" Value="20" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>

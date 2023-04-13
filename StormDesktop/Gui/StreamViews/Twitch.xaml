@@ -7,7 +7,7 @@
 
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="100" />
+				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
 			<Grid.RowDefinitions>
@@ -15,13 +15,50 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 			
-            <!--Grid.Row="0" Grid.ColumnSpan="2" this used to be on ContentPresenter, but I don't think it is needed -->
-            <ContentPresenter Grid.Column="0"
-							  Grid.Row="0"
+            <ContentPresenter Grid.Row="0"
+							  Grid.ColumnSpan="2"
 							  ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
 
-			<Label Grid.Column="1" Grid.Row="1"
+			<Label Grid.Row="1"
+				   Grid.Column="0"
+				   HorizontalContentAlignment="Left">
+				<Label.Style>
+					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding Path=Status}" Value="Public">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Label.Style>
+				<Label.Content>
+					<CheckBox> <!-- override CheckBox template and use IsChecked to toggle binding between game name and game id -->
+						<CheckBox.Style>
+							<Style TargetType="{x:Type CheckBox}">
+								<Style.Setters>
+									<Setter Property="Template">
+										<Setter.Value>
+											<ControlTemplate TargetType="{x:Type CheckBox}">
+												<TextBlock x:Name="gameNameOrId" Text="{Binding Game.Name.Name}" TextTrimming="CharacterEllipsis" />
+												<ControlTemplate.Triggers>
+													<Trigger Property="IsChecked" Value="True">
+														<Setter Property="Text" TargetName="gameNameOrId" Value="{Binding Path=Game.Id}" />
+													</Trigger>
+												</ControlTemplate.Triggers>
+											</ControlTemplate>
+										</Setter.Value>
+									</Setter>
+								</Style.Setters>
+							</Style>
+						</CheckBox.Style>
+					</CheckBox>
+				</Label.Content>
+			</Label>
+
+			<Label Grid.Row="1"
+				   Grid.Column="1"
 				   HorizontalContentAlignment="Right">
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
@@ -38,11 +75,13 @@
 				</Label.Content>
 			</Label>
 
-			<Label Grid.ColumnSpan="2" Grid.Row="1">
+			<Label Grid.Row="1"
+				   Grid.Column="1">
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
 						<Setter Property="HorizontalContentAlignment" Value="Right" />
 						<Setter Property="Visibility" Value="Collapsed" />
+						<Setter Property="Content" Value="{x:Null}" />
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding Path=Status}" Value="Banned">
 								<Setter Property="Visibility" Value="Visible" />
@@ -58,22 +97,7 @@
 				</Label.Style>
 			</Label>
 
-			<Label Grid.Row="1" Grid.ColumnSpan="2">
-				<Label.Style>
-					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
-						<Setter Property="HorizontalContentAlignment" Value="Left" />
-						<Setter Property="Visibility" Value="Collapsed" />
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding Path=Status}" Value="Public">
-								<Setter Property="Visibility" Value="Visible" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</Label.Style>
-				<Label.Content>
-					<TextBlock Text="{Binding Game.Name.Name}" TextTrimming="CharacterEllipsis" />
-				</Label.Content>
-			</Label>
+			
         </Grid>
     </DataTemplate>
 

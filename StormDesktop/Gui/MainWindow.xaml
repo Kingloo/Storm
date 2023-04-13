@@ -45,9 +45,10 @@
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="Status" Direction="Ascending" />
                 <scm:SortDescription PropertyName="DisplayName" Direction="Ascending" />
+				<scm:SortDescription PropertyName="ServiceName" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
-    </Window.Resources>
+	</Window.Resources>
 
     <ItemsControl ItemsSource="{Binding Source={StaticResource sortedStreams}}">
         <ItemsControl.Style>
