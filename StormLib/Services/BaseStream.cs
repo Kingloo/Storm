@@ -127,23 +127,23 @@ namespace StormLib.Services
 				return -1;
 			}
 
-			int compareNames = CompareNames(this, other);
+			int compareStatus = Status.CompareTo(other.Status);
 
-			return compareNames switch
+			if (compareStatus != 0)
 			{
-				0 => CompareServiceNames(this, other),
-				_ => compareNames
-			};
-		}
+				return compareStatus;
+			}
 
-		private static int CompareNames(IStream thisOne, IStream otherOne)
-		{
-			return String.Compare(thisOne.Name, otherOne.Name, StringComparison.Ordinal);
-		}
+			int compareNames = String.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
 
-		private static int CompareServiceNames(IStream thisOne, IStream otherOne)
-		{
-			return String.Compare(thisOne.ServiceName, otherOne.ServiceName, StringComparison.Ordinal);
+			if (compareNames != 0)
+			{
+				return compareNames;
+			}
+
+			int compareServiceNames = String.Compare(ServiceName, other.ServiceName, StringComparison.OrdinalIgnoreCase);
+
+			return compareServiceNames;
 		}
 
 		public static bool operator >(BaseStream lhs, BaseStream rhs)
