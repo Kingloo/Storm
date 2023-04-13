@@ -1,7 +1,5 @@
 namespace StormLib.Services.Twitch
 {
 	public record class TwitchDisplayName(string DisplayName);
-	public record class TwitchGameId(int Id);
-	public record class TwitchGameName(string Name);
-	public record class TwitchGame(TwitchGameId Id, TwitchGameName Name);
+	public record class TwitchGame(int Id, string Name);
 }

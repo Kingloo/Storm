@@ -133,20 +133,23 @@ namespace StormLib.Services.Twitch
 				}
 				else
 				{
-					string DisplayName = GetDisplayName(userData) ?? each.Name;
-					Status newStatus = GetStatus(userData);
-					int? newViewersCount = GetViewersCount(userData);
 					TwitchGame? newGame = GetGame(userData);
 
 					action = IsUnwantedGameId(newGame?.Id) switch
 					{
-						true => BlankTwitchStream,
+						true => (TwitchStream t) => // don't use BlankTwitchStream because we still want to update DisplayName
+						{
+							t.DisplayName = GetDisplayName(userData) ?? each.Name;
+							t.Status = Status.Offline;
+							t.ViewersCount = null;
+							t.Game = null;
+						},
 						false => (TwitchStream t) =>
 						{
 							t.DisplayName = GetDisplayName(userData) ?? each.Name;
 							t.Status = GetStatus(userData);
 							t.ViewersCount = GetViewersCount(userData);
-							t.Game = GetGame(userData);
+							t.Game = newGame;
 						}
 					};
 				}
@@ -188,26 +191,29 @@ namespace StormLib.Services.Twitch
 
 		private static TwitchGame? GetGame(JsonNode? userData)
 		{
-			int? gameIdValue = Int32.TryParse((string?)userData?["stream"]?["game"]?["id"], out int id) ? id : null;
-			string? gameNameValue = (string?)userData?["stream"]?["game"]?["displayName"];
+			int? gameId = Int32.TryParse((string?)userData?["stream"]?["game"]?["id"], out int id) ? id : null;
+			string? gameName = (string?)userData?["stream"]?["game"]?["displayName"];
 
-			if (gameIdValue is null || gameNameValue is null)
+			if (gameId is null || gameName is null)
 			{
 				return null;
 			}
 
-			return new TwitchGame(new TwitchGameId(gameIdValue.Value), new TwitchGameName(gameNameValue));
+			return new TwitchGame(gameId.Value, gameName);
 		}
 
-		private bool IsUnwantedGameId(TwitchGameId? gameId)
+		private bool IsUnwantedGameId(int? gameId)
 		{
 			// if game Id is null, we say it is not unwanted
 
-			return (gameId is null) switch
+			if (gameId is int id)
 			{
-				true => false,
-				false => twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(gameId),
-			};
+				return twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(id);
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		private async ValueTask<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)

@@ -41,7 +41,7 @@
 									<Setter Property="Template">
 										<Setter.Value>
 											<ControlTemplate TargetType="{x:Type CheckBox}">
-												<TextBlock x:Name="gameNameOrId" Text="{Binding Game.Name.Name}" TextTrimming="CharacterEllipsis" />
+												<TextBlock x:Name="gameNameOrId" Text="{Binding Game.Name}" TextTrimming="CharacterEllipsis" />
 												<ControlTemplate.Triggers>
 													<Trigger Property="IsChecked" Value="True">
 														<Setter Property="Text" TargetName="gameNameOrId" Value="{Binding Path=Game.Id}" />
