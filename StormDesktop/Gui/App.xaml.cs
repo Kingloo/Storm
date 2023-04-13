@@ -195,7 +195,7 @@ namespace StormDesktop.Gui
 				}
 
 				logger.LogError(toLog, "an unhandled exception occurred in WinGui ({FullName} from {Source})", toLog.GetType().FullName, toLog.Source);
-				logger.LogDebug("STackTrace of {FullName}{NewLine}{StackTrace}", toLog.GetType().FullName, Environment.NewLine, ex.StackTrace);
+				logger.LogDebug("StackTrace of {FullName}{NewLine}{StackTrace}", toLog.GetType().FullName, Environment.NewLine, ex.StackTrace);
 			}
 			else
 			{
