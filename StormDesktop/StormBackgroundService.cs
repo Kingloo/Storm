@@ -94,7 +94,7 @@ namespace StormDesktop
 			}
 			catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException innerEx)
 			{
-				logger.LogError(innerEx, "Timeout exception while updating {StreamTypeName}: {Message}", streamTypeName, ex.Message);
+				logger.LogError(innerEx, "Timeout exception while updating {StreamTypeName}: {Message}", streamTypeName, innerEx.Message);
 			}
 
 			foreach (Result<TStream> each in results)
