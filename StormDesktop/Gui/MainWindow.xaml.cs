@@ -42,7 +42,7 @@ namespace StormDesktop.Gui
 		{
 			logger.LogDebug("main window loaded");
 
-			viewModel.LoadStreamsCommand.Execute(null);
+			viewModel.LoadStreamsCommand.Execute();
 
 			viewModel.StartListeningToMessageQueue();
 		}
