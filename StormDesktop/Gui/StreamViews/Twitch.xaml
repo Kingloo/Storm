@@ -6,7 +6,7 @@
         <Grid Style="{StaticResource gridStyle}">
 
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" /> <!-- this lets it grow to inner-content size -->
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
@@ -96,8 +96,6 @@
 					</Style>
 				</Label.Style>
 			</Label>
-
-			
         </Grid>
     </DataTemplate>
 
