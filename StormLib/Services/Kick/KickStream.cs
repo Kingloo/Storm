@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using StormLib.Services;
 
 namespace StormLib.Services.Kick
 {
@@ -25,6 +24,13 @@ namespace StormLib.Services.Kick
 		public override bool HasStreamlinkSupport { get => false; }
 
 		public override string ServiceName { get => "Kick"; }
+
+		private string? sessionTitle = null;
+		public string? SessionTitle
+		{
+			get => sessionTitle;
+			set => SetProperty(ref sessionTitle, value, nameof(SessionTitle));
+		}
 
 		public KickStream(Uri uri)
 			: base(uri)

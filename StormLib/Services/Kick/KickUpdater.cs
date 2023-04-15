@@ -93,6 +93,7 @@ namespace StormLib.Services.Kick
 					{
 						k.Status = Status.Problem;
 						k.ViewersCount = null;
+						k.SessionTitle = null;
 					}
 				};
 			}
@@ -105,19 +106,24 @@ namespace StormLib.Services.Kick
 					{
 						k.Status = Status.Problem;
 						k.ViewersCount = null;
+						k.SessionTitle = null;
 					}
 				};
 			}
 
-			string? newDisplayName = json?["user"]?["username"] is JsonNode displayNameToken
-				? (string?)displayNameToken
-				: null;
+			string? newDisplayName = json?["user"]?["username"] is JsonNode displayNameToken ? (string?)displayNameToken : null;
 
 			bool? isPublic = (bool?)json?["livestream"]?["is_live"];
 
 			int? newViewersCount = isPublic.HasValue switch
 			{
 				true => json?["livestream"]?["viewer_count"] is JsonNode viewerCountToken ? (int?)viewerCountToken : null,
+				false => null
+			};
+
+			string? newSessionTitle = isPublic.HasValue switch
+			{
+				true => json?["livestream"]?["session_title"] is JsonNode sessionTitleToken ? (string?)sessionTitleToken : null,
 				false => null
 			};
 
@@ -139,6 +145,7 @@ namespace StormLib.Services.Kick
 
 					k.Status = newStatus;
 					k.ViewersCount = newViewersCount;
+					k.SessionTitle = newSessionTitle;
 				}
 			};
 		}

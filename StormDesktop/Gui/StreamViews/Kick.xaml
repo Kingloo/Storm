@@ -5,16 +5,41 @@
 	<DataTemplate DataType="{x:Type kick:KickStream}">
 		<Grid Style="{StaticResource gridStyle}">
 
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" /> <!-- this lets it grow to inner-content size -->
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
 			<Grid.RowDefinitions>
 				<RowDefinition Height="*" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 
 			<ContentPresenter Grid.Row="0"
+							  Grid.ColumnSpan="2"
 							  ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
 
 			<Label Grid.Row="1"
+				   Grid.Column="0"
+				   HorizontalContentAlignment="Left">
+				<Label.Style>
+					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding Path=SessionTitle, Converter={StaticResource isNotNullConverter}}" Value="True">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Label.Style>
+				<Label.Content>
+					<TextBlock Text="{Binding Path=SessionTitle}" />
+				</Label.Content>
+			</Label>
+
+			<Label Grid.Row="1"
+				   Grid.Column="1"
 				   HorizontalContentAlignment="Right">
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
