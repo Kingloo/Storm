@@ -115,24 +115,16 @@ namespace StormLib.Services.Kick
 
 			bool? isPublic = (bool?)json?["livestream"]?["is_live"];
 
-			int? newViewersCount = isPublic switch
+			int? newViewersCount = isPublic.HasValue switch
 			{
-				bool b => b switch
-				{
-					true => json?["livestream"]?["viewer_count"] is JsonNode viewerCountToken ? (int?)viewerCountToken : null,
-					false => null
-				},
-				null => null
+				true => json?["livestream"]?["viewer_count"] is JsonNode viewerCountToken ? (int?)viewerCountToken : null,
+				false => null
 			};
 
-			Status newStatus = isPublic switch
+			Status newStatus = isPublic.HasValue switch
 			{
-				bool b => b switch
-				{
-					true => Status.Public,
-					false => Status.Offline
-				},
-				_ => Status.Offline
+				true => isPublic.Value ? Status.Public : Status.Offline,
+				false => Status.Offline
 			};
 
 			return new Result<KickStream>(stream, statusCode)
