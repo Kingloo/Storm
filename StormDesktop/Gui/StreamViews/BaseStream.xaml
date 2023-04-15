@@ -62,7 +62,7 @@
                         <Setter Property="FontSize" Value="17" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Status}" Value="Public">
-                                <Setter Property="FontSize" Value="20" />
+                                <Setter Property="FontSize" Value="22" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>

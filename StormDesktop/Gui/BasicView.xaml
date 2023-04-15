@@ -26,7 +26,7 @@
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="FontSize" Value="19" />
+        <Setter Property="FontSize" Value="17" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
 
