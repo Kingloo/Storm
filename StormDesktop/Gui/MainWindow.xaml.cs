@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using Microsoft.Extensions.Logging;
 using StormDesktop.Interfaces;
+using StormLib.Interfaces;
+using StormLib.Services;
 
 namespace StormDesktop.Gui
 {
@@ -42,9 +47,41 @@ namespace StormDesktop.Gui
 		{
 			logger.LogDebug("main window loaded");
 
+			CreateAndBindItemsControlSource(streamsItemsControl);
+
 			viewModel.LoadStreamsCommand.Execute();
 
 			viewModel.StartListeningToMessageQueue();
+		}
+
+		private void CreateAndBindItemsControlSource(ItemsControl itemsControl)
+		{
+			Binding binding = new Binding
+			{
+				Mode = BindingMode.OneTime,
+				Source = CreateCollectionViewSource(viewModel.Streams)
+			};
+			
+			BindingOperations.SetBinding(itemsControl, ItemsControl.ItemsSourceProperty, binding);
+		}
+
+		private static CollectionViewSource CreateCollectionViewSource(IReadOnlyCollection<IStream> source)
+		{
+			CollectionViewSource cvs = new CollectionViewSource
+			{
+				IsLiveSortingRequested = true,
+				Source = source
+			};
+
+			ListCollectionView lcv = (ListCollectionView)cvs.View;
+			
+			lcv.LiveSortingProperties.Add(nameof(IStream.Status));
+			lcv.LiveSortingProperties.Add(nameof(IStream.DisplayName));
+			lcv.LiveSortingProperties.Add(nameof(IStream.ServiceName));
+
+			lcv.CustomSort = Comparer<IStream>.Create(BaseStream.Comparer);
+
+			return cvs;
 		}
 
 		private void MainWindow_LocationChanged(object sender, EventArgs e)

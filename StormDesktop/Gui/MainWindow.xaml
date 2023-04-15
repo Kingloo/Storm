@@ -38,19 +38,7 @@
                     Command="{Binding Path=LoadStreamsCommand, Mode=OneTime}" />
     </Window.InputBindings>
 
-    <Window.Resources>
-        <CollectionViewSource Source="{Binding Path=Streams, Mode=OneTime}"
-                              x:Key="sortedStreams"
-                              IsLiveSortingRequested="True">
-            <CollectionViewSource.SortDescriptions>
-                <scm:SortDescription PropertyName="Status" Direction="Ascending" />
-                <scm:SortDescription PropertyName="DisplayName" Direction="Ascending" />
-				<scm:SortDescription PropertyName="ServiceName" Direction="Ascending" />
-            </CollectionViewSource.SortDescriptions>
-        </CollectionViewSource>
-	</Window.Resources>
-
-    <ItemsControl ItemsSource="{Binding Source={StaticResource sortedStreams}}">
+	<ItemsControl x:Name="streamsItemsControl">
         <ItemsControl.Style>
             <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type ItemsControl}}">
                 <Setter Property="Template">

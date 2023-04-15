@@ -126,22 +126,30 @@ namespace StormLib.Services
 			{
 				return -1;
 			}
+			
+			return Comparer(this, other);
+		}
 
-			int compareStatus = Status.CompareTo(other.Status);
+		public static int Comparer(IStream x, IStream y)
+		{
+			ArgumentNullException.ThrowIfNull(x);
+			ArgumentNullException.ThrowIfNull(y);
+
+			int compareStatus = x.Status.CompareTo(y.Status);
 
 			if (compareStatus != 0)
 			{
 				return compareStatus;
 			}
 
-			int compareNames = String.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+			int compareNames = String.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
 
 			if (compareNames != 0)
 			{
 				return compareNames;
 			}
 
-			int compareServiceNames = String.Compare(ServiceName, other.ServiceName, StringComparison.OrdinalIgnoreCase);
+			int compareServiceNames = String.Compare(x.ServiceName, y.ServiceName, StringComparison.OrdinalIgnoreCase);
 
 			return compareServiceNames;
 		}
