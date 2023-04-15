@@ -12,7 +12,8 @@
         SourceInitialized="MainWindow_SourceInitialized"
         Loaded="MainWindow_Loaded"
         LocationChanged="MainWindow_LocationChanged"
-		Closing="MainWindow_Closing">
+		Closing="MainWindow_Closing"
+		Closed="MainWindow_Closed">
 
     <Window.Style>
         <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type Window}}">

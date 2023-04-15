@@ -96,6 +96,11 @@ namespace StormDesktop.Gui
 			viewModel.StopListeningToQueue();
 		}
 
+		private void MainWindow_Closed(object sender, EventArgs e)
+		{
+			logger.LogDebug("main window closed");
+		}
+
 		private void SetMaxHeight()
 		{
 			var currentMonitor = System.Windows.Forms.Screen.FromHandle(hWnd);
