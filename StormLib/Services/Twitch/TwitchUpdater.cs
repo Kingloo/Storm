@@ -191,7 +191,7 @@ namespace StormLib.Services.Twitch
 
 		private static TwitchGame? GetGame(JsonNode? userData)
 		{
-			int? gameId = Int32.TryParse((string?)userData?["stream"]?["game"]?["id"], out int id) ? id : null;
+			Int64? gameId = Int64.TryParse((string?)userData?["stream"]?["game"]?["id"], out Int64 id) ? id : null;
 			string? gameName = (string?)userData?["stream"]?["game"]?["displayName"];
 
 			if (gameId is null || gameName is null)
@@ -202,11 +202,11 @@ namespace StormLib.Services.Twitch
 			return new TwitchGame(gameId.Value, gameName);
 		}
 
-		private bool IsUnwantedGameId(int? gameId)
+		private bool IsUnwantedGameId(Int64? gameId)
 		{
 			// if game Id is null, we say it is not unwanted
 
-			if (gameId is int id)
+			if (gameId is Int64 id)
 			{
 				return twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(id);
 			}

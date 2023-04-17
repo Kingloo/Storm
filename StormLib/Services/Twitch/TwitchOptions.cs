@@ -10,7 +10,7 @@ namespace StormLib.Services.Twitch
 		public Uri? GraphQlApiUri { get; init; }
 		public IList<Header> Headers { get; init; } = new List<Header>();
 		public int MaxStreamsPerUpdate { get; init; } = 0;
-		public IList<int> UnwantedGameIds { get; init; } = new List<int>();
+		public IList<Int64> UnwantedGameIds { get; init; } = new List<Int64>();
 #pragma warning disable CA1056
 		public string EmbeddedPlayerUriFormat { get; init; } = string.Empty;
 #pragma warning restore CA1056
