@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using StormLib.Interfaces;
 using StormLib.Services;
@@ -45,14 +46,20 @@ namespace StormLib.Helpers
 				return false;
 			}
 
-			stream = uri.DnsSafeHost switch
+			stream = uri.DnsSafeHost.ToLower(CultureInfo.CurrentCulture) switch
 			{
 				"chaturbate.com" => new ChaturbateStream(uri),
+				"www.chaturbate.com" => new ChaturbateStream(uri),
 				"kick.com" => new KickStream(uri),
+				"www.kick.com" => new KickStream(uri),
 				"mixlr.com" => new MixlrStream(uri),
+				"www.mixlr.com" => new MixlrStream(uri),
 				"rumble.com" => new RumbleStream(uri),
+				"www.rumble.com" => new RumbleStream(uri),
 				"twitch.tv" => new TwitchStream(uri),
+				"www.twitch.tv" => new TwitchStream(uri),
 				"youtube.com" => new YouTubeStream(uri),
+				"www.youtube.com" => new YouTubeStream(uri),
 				_ => new UnsupportedStream(uri)
 			};
 
