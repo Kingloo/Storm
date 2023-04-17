@@ -3,10 +3,10 @@
                     xmlns:services="clr-namespace:StormLib.Services;assembly=StormLib">
 
     <DataTemplate DataType="{x:Type services:UnsupportedStream}">
-        <StackPanel Style="{StaticResource stackPanelStyle}">
+        <Grid Style="{StaticResource gridStyle}">
             <ContentPresenter ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
-        </StackPanel>
+        </Grid>
     </DataTemplate>
 
 </ResourceDictionary>
