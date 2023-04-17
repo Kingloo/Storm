@@ -6,8 +6,8 @@
         <Grid Style="{StaticResource gridStyle}">
 
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" /> <!-- this lets it grow to inner-content size -->
 				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
 
 			<Grid.RowDefinitions>
@@ -22,6 +22,7 @@
 
 			<Label Grid.Row="1"
 				   Grid.Column="0"
+				   HorizontalAlignment="Stretch"
 				   HorizontalContentAlignment="Left">
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
@@ -59,6 +60,7 @@
 
 			<Label Grid.Row="1"
 				   Grid.Column="1"
+				   HorizontalAlignment="Stretch"
 				   HorizontalContentAlignment="Right">
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">

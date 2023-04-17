@@ -19,7 +19,8 @@
 
 	<Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}" x:Key="gridStyle">
         <!-- paired with ItemsPanelTemplate VirtualizingStackPanel Margin -->
-        <Setter Property="Margin" Value="0,7,0,0" />
+        <Setter Property="Width" Value="Auto" />
+		<Setter Property="Margin" Value="0,7,0,0" />
         <Setter Property="Background" Value="{Binding Status, Converter={StaticResource statusConverter}}" />
     </Style>
 
