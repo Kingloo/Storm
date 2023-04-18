@@ -2,14 +2,14 @@ namespace StormLib
 {
 	public enum Status
 	{
-		None,
-		Unsupported,
 		Public,
 		Private,
-		Banned,
 		Rerun,
-		Offline,
+		Banned,
+		Unsupported,
 		Problem,
-		Unknown
+		Unknown,
+		Offline,
+		None
 	}
 }
