@@ -22,6 +22,7 @@
 
 			<Label Grid.Row="1"
 				   Grid.Column="0"
+				   Margin="0,0,5,0"
 				   HorizontalAlignment="Stretch"
 				   HorizontalContentAlignment="Left">
 				<Label.Style>
@@ -41,6 +42,7 @@
 
 			<Label Grid.Row="1"
 				   Grid.Column="1"
+				   Margin="5,0,0,0"
 				   HorizontalAlignment="Stretch"
 				   HorizontalContentAlignment="Right">
 				<Label.Style>
