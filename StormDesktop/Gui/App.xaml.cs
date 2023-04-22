@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
@@ -6,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 using FileLogger;
 using StormDesktop.Interfaces;
@@ -60,7 +60,11 @@ namespace StormDesktop.Gui
 		{
 			if (!context.HostingEnvironment.IsProduction())
 			{
-				Console.Out.WriteLine($"environment is {context.HostingEnvironment.EnvironmentName}");
+				string environmentMessage = $"environment is {context.HostingEnvironment.EnvironmentName}";
+
+				Console.Out.WriteLine(environmentMessage);
+				Console.Error.WriteLine(environmentMessage);
+				Debug.WriteLineIf(Debugger.IsAttached, environmentMessage);
 			}
 
 			const string permanent = "appsettings.json";
@@ -77,14 +81,7 @@ namespace StormDesktop.Gui
 			{
 				loggingBuilder.AddConfiguration(context.Configuration.GetSection("Logging"));
 
-				loggingBuilder.AddSimpleConsole(static (SimpleConsoleFormatterOptions options) =>
-				{
-					options.ColorBehavior = LoggerColorBehavior.Enabled;
-					options.IncludeScopes = true;
-					options.SingleLine = true;
-					options.TimestampFormat = "HH:mm:ss ";
-					options.UseUtcTimestamp = false;
-				});
+				loggingBuilder.AddDebug();
 
 				loggingBuilder.AddFileLogger();
 			});
