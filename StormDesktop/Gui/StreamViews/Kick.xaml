@@ -36,8 +36,11 @@
 					</Style>
 				</Label.Style>
 				<Label.Content>
-					<TextBlock Text="{Binding Path=SessionTitle}" />
+					<TextBlock Text="{Binding Path=SessionTitle}" TextTrimming="CharacterEllipsis" />
 				</Label.Content>
+				<Label.ToolTip>
+					<ToolTip Content="{Binding Path=SessionTitle}" />
+				</Label.ToolTip>
 			</Label>
 
 			<Label Grid.Row="1"

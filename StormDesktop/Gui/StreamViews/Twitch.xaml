@@ -57,6 +57,9 @@
 						</CheckBox.Style>
 					</CheckBox>
 				</Label.Content>
+				<Label.ToolTip>
+					<ToolTip Content="{Binding Path=Game.Name}" />
+				</Label.ToolTip>
 			</Label>
 
 			<Label Grid.Row="1"
