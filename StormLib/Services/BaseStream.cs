@@ -126,7 +126,7 @@ namespace StormLib.Services
 			{
 				return -1;
 			}
-			
+
 			return Comparer(this, other);
 		}
 

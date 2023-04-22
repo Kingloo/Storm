@@ -61,7 +61,7 @@ namespace StormDesktop.Gui
 				Mode = BindingMode.OneTime,
 				Source = CreateCollectionViewSource(viewModel.Streams)
 			};
-			
+
 			BindingOperations.SetBinding(itemsControl, ItemsControl.ItemsSourceProperty, binding);
 		}
 
@@ -74,7 +74,7 @@ namespace StormDesktop.Gui
 			};
 
 			ListCollectionView lcv = (ListCollectionView)cvs.View;
-			
+
 			lcv.LiveSortingProperties.Add(nameof(IStream.Status));
 			lcv.LiveSortingProperties.Add(nameof(IStream.DisplayName));
 			lcv.LiveSortingProperties.Add(nameof(IStream.ServiceName));
