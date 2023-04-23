@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib;
 using StormLib.Interfaces;
-using StormLib.Services.Kick;
 using static StormLib.Helpers.HttpStatusCodeHelpers;
 
 namespace StormDesktop
@@ -25,6 +24,7 @@ namespace StormDesktop
 		private readonly UpdaterMessageQueue updaterMessageQueue;
 
 		private bool isFirstRun = true;
+		private string serviceName = typeof(TStream).Name;
 
 		public StormBackgroundService(
 			ILogger<StormBackgroundService<TStream, TUpdater, TOptionsMonitor, TOptions>> logger,
@@ -65,7 +65,7 @@ namespace StormDesktop
 			{
 				while (!stoppingToken.IsCancellationRequested)
 				{
-					await RunUpdate(streamTypeName, stoppingToken).ConfigureAwait(false);
+					await RunUpdate(stoppingToken).ConfigureAwait(false);
 
 					TimeSpan updateInterval = TimeSpan.FromSeconds(optionsMonitor.CurrentValue.UpdateIntervalSeconds);
 
@@ -82,9 +82,19 @@ namespace StormDesktop
 			}
 		}
 
-		private async ValueTask RunUpdate(string streamTypeName, CancellationToken cancellationToken)
+		private async ValueTask RunUpdate(CancellationToken cancellationToken)
 		{
 			IReadOnlyList<TStream> streams = updaterMessageQueue.StreamSource.OfType<TStream>().ToList();
+
+			if (!streams.Any())
+			{
+				return;
+			}
+
+			if (String.Equals(serviceName, typeof(TStream).Name, StringComparison.Ordinal))
+			{
+				serviceName = streams[0].ServiceName;
+			}
 
 			IList<Result<TStream>> results = new List<Result<TStream>>();
 
@@ -94,7 +104,7 @@ namespace StormDesktop
 			}
 			catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException innerEx)
 			{
-				logger.LogError(innerEx, "Timeout exception while updating {StreamTypeName}: {Message}", streamTypeName, innerEx.Message);
+				logger.LogError(innerEx, "Timeout exception while updating {StreamTypeName}: {Message}", serviceName, innerEx.Message);
 			}
 
 			foreach (Result<TStream> each in results)
@@ -103,11 +113,7 @@ namespace StormDesktop
 
 				if (each.StatusCode != System.Net.HttpStatusCode.OK)
 				{
-					logger.LogWarning("updating {DisplayName} ({ServiceName}) was {StatusCode}", each.Stream.DisplayName, streamTypeName, FormatStatusCode(each.StatusCode));
-				}
-				else if (typeof(TStream) == typeof(KickStream))
-				{
-					logger.LogWarning("updating {DisplayName} ({ServiceName}) was {StatusCode}", each.Stream.DisplayName, streamTypeName, FormatStatusCode(each.StatusCode));
+					logger.LogWarning("updating {DisplayName} ({ServiceName}) was {StatusCode}", each.Stream.DisplayName, serviceName, FormatStatusCode(each.StatusCode));
 				}
 			}
 		}
