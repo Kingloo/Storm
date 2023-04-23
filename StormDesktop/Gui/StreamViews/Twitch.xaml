@@ -71,16 +71,19 @@
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource messageLabelStyle}">
 						<Setter Property="Visibility" Value="Collapsed" />
+						<Setter Property="Content" Value="{x:Null}" />
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding Path=ViewersCount, Converter={StaticResource isNotNullConverter}}" Value="True">
 								<Setter Property="Visibility" Value="Visible" />
+								<Setter Property="Content">
+									<Setter.Value>
+										<TextBlock Text="{Binding Path=ViewersCount, StringFormat='{}{0:#,#} viewers'}" />
+									</Setter.Value>
+								</Setter>
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>
 				</Label.Style>
-				<Label.Content>
-					<TextBlock Text="{Binding Path=ViewersCount, StringFormat='{}{0:#,#} viewers'}" />
-				</Label.Content>
 			</Label>
 
 			<Label Grid.Row="1"
