@@ -167,15 +167,13 @@ namespace StormDesktop.Gui
 
 		private void Application_Exit(object? sender, ExitEventArgs e)
 		{
-			logger.LogDebug("app exit started");
+			logger.LogInformation("app exited");
 
 			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
 
 			sink.StopSink();
 
 			host.StopAsync().GetAwaiter().GetResult();
-
-			logger.LogInformation("app exited");
 
 			host.Dispose();
 		}
