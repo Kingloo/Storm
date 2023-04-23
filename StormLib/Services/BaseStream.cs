@@ -142,7 +142,7 @@ namespace StormLib.Services
 				return compareStatus;
 			}
 
-			int compareNames = String.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+			int compareNames = String.Compare(x.DisplayName, y.DisplayName, StringComparison.OrdinalIgnoreCase);
 
 			if (compareNames != 0)
 			{
