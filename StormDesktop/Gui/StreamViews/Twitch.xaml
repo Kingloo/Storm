@@ -2,8 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:twitch="clr-namespace:StormLib.Services.Twitch;assembly=StormLib">
 
-    <DataTemplate DataType="{x:Type twitch:TwitchStream}">
-        <Grid Style="{StaticResource gridStyle}">
+	<DataTemplate DataType="{x:Type twitch:TwitchStream}">
+		<Grid Style="{StaticResource gridStyle}">
 
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
@@ -14,8 +14,8 @@
 				<RowDefinition Height="*" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			
-            <ContentPresenter Grid.Row="0"
+
+			<ContentPresenter Grid.Row="0"
 							  Grid.ColumnSpan="2"
 							  ContentTemplate="{StaticResource BaseStreamTemplate}"
                               Style="{StaticResource contentPresenterStyle}" />
@@ -36,7 +36,8 @@
 					</Style>
 				</Label.Style>
 				<Label.Content>
-					<CheckBox> <!-- override CheckBox template and use IsChecked to toggle binding between game name and game id -->
+					<CheckBox>
+						<!-- override CheckBox template and use IsChecked to toggle binding between game name and game id -->
 						<CheckBox.Style>
 							<Style TargetType="{x:Type CheckBox}">
 								<Style.Setters>
@@ -103,7 +104,6 @@
 					</Style>
 				</Label.Style>
 			</Label>
-        </Grid>
-    </DataTemplate>
-
+		</Grid>
+	</DataTemplate>
 </ResourceDictionary>
