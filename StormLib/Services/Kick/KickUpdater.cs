@@ -52,8 +52,6 @@ namespace StormLib.Services.Kick
 				return Array.Empty<Result<KickStream>>();
 			}
 
-			logger.LogDebug("updating {Count} {StreamPluralized}", streams.Count, streams.Count == 1 ? "stream" : "streams");
-
 			if (streams.Count == 1)
 			{
 				Result<KickStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);

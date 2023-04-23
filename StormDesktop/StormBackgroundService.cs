@@ -100,6 +100,12 @@ namespace StormDesktop
 
 			try
 			{
+				int streamCount = streams.Count;
+				string streamPluralized = streams.Count == 1 ? "stream" : "streams";
+				string streamNames = String.Join(',', streams.Select(s => s.DisplayName));
+
+				logger.LogDebug("updating {Count} {ServiceName} {StreamPluralized} ({StreamNames})", streamCount, serviceName, streamPluralized, streamNames);
+
 				results = await updater.UpdateAsync(streams, cancellationToken).ConfigureAwait(false);
 			}
 			catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException innerEx)

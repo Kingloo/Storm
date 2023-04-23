@@ -42,8 +42,6 @@ namespace StormLib.Services.Rumble
 				return Array.Empty<Result<RumbleStream>>();
 			}
 
-			logger.LogDebug("updating {Count} {StreamPluralized}", streams.Count, streams.Count == 1 ? "stream" : "streams");
-
 			if (streams.Count == 1)
 			{
 				Result<RumbleStream> singleResult = await UpdateOneAsync(streams[0], cancellationToken).ConfigureAwait(false);
