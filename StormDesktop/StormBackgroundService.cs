@@ -103,11 +103,11 @@ namespace StormDesktop
 
 				if (each.StatusCode != System.Net.HttpStatusCode.OK)
 				{
-					logger.LogWarning("updating {DisplayName} on {ServiceName} was {StatusCode}", each.Stream.DisplayName, streamTypeName, FormatStatusCode(each.StatusCode));
+					logger.LogWarning("updating {DisplayName} ({ServiceName}) was {StatusCode}", each.Stream.DisplayName, streamTypeName, FormatStatusCode(each.StatusCode));
 				}
 				else if (typeof(TStream) == typeof(KickStream))
 				{
-					logger.LogWarning("updating {DisplayName} on {ServiceName} was {StatusCode}", each.Stream.DisplayName, streamTypeName, FormatStatusCode(each.StatusCode));
+					logger.LogWarning("updating {DisplayName} ({ServiceName}) was {StatusCode}", each.Stream.DisplayName, streamTypeName, FormatStatusCode(each.StatusCode));
 				}
 			}
 		}
