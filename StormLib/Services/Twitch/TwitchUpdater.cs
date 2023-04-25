@@ -64,6 +64,25 @@ namespace StormLib.Services.Twitch
 
 		private async Task<IList<Result<TwitchStream>>> UpdateManyAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
 		{
+			List<Result<TwitchStream>> allResults = new List<Result<TwitchStream>>();
+
+			foreach (IEnumerable<TwitchStream> chunk in streams.Chunk(twitchOptionsMonitor.CurrentValue.MaxStreamsPerUpdate))
+			{
+				IList<Result<TwitchStream>> results = await UpdateChunkAsync(chunk, cancellationToken).ConfigureAwait(false);
+
+				allResults.AddRange(results);
+
+				if (streams.Count > twitchOptionsMonitor.CurrentValue.MaxStreamsPerUpdate) // add a little delay if there are multiple chunks
+				{
+					await Task.Delay(TimeSpan.FromSeconds(2d), cancellationToken).ConfigureAwait(false);
+				}
+			}
+
+			return allResults;
+		}
+
+		private async Task<IList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
+		{
 			(HttpStatusCode statusCode, string text) = await RequestGraphQlDataAsync(streams, cancellationToken).ConfigureAwait(false);
 
 			if (statusCode != HttpStatusCode.OK)
