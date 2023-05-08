@@ -15,12 +15,15 @@ namespace StormLib.Helpers
 		}
 
 		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri)
-			=> GetStringAsync(client, uri, null, CancellationToken.None);
+			=> GetStringAsyncInternal(client, uri, null, CancellationToken.None);
 
 		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
-			=> GetStringAsync(client, uri, null, cancellationToken);
+			=> GetStringAsyncInternal(client, uri, null, cancellationToken);
 
-		internal static async ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, Action<HttpRequestMessage>? configureRequestMessage, CancellationToken cancellationToken)
+		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, Action<HttpRequestMessage> configureRequestMessage, CancellationToken cancellationToken)
+			=> GetStringAsyncInternal(client, uri, configureRequestMessage, cancellationToken);
+
+		private static async ValueTask<(HttpStatusCode, string)> GetStringAsyncInternal(HttpClient client, Uri uri, Action<HttpRequestMessage>? configureRequestMessage, CancellationToken cancellationToken)
 		{
 			(HttpStatusCode, string) response = (HttpStatusCode.Unused, string.Empty);
 
