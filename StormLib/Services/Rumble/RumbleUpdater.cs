@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib.Interfaces;
+using static StormLib.Helpers.HttpStatusCodeHelpers;
 
 namespace StormLib.Services.Rumble
 {
@@ -77,6 +78,8 @@ namespace StormLib.Services.Rumble
 			}
 			else
 			{
+				logger.LogWarning("getting account page for {AccountName} on Rumble returned {StatusCode}, setting status to Offline", stream.DisplayName, FormatStatusCode(statusCode));
+
 				newStatus = Status.Offline;
 				newViewersCount = null;
 			}
