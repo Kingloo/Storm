@@ -59,8 +59,6 @@ namespace StormDesktop
 				isFirstRun = false;
 			}
 
-			string streamTypeName = typeof(TStream).Name;
-
 			try
 			{
 				while (!stoppingToken.IsCancellationRequested)
@@ -72,12 +70,15 @@ namespace StormDesktop
 					await Task.Delay(updateInterval, stoppingToken).ConfigureAwait(false);
 				}
 			}
-			//catch (Exception) { } // blunt way to stop BackgroundService from ever stopping
+			// catch (Exception ex)
+			// {
+			// 	logger.LogError(ex, "{ExceptionType}: {ExceptionMessage}", ex.InnerException?.GetType().FullName ?? "no inner ex", ex.Message);	
+			// }
 			finally
 			{
 				if (!stoppingToken.IsCancellationRequested)
 				{
-					logger.LogWarning("background service for {ServiceName} stopped unexpectedly", streamTypeName);
+					logger.LogCritical("background service for {ServiceName} stopped unexpectedly", serviceName);
 				}
 			}
 		}
