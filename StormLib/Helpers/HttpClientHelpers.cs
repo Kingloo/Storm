@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,7 +41,7 @@ namespace StormLib.Helpers
 			return response;
 		}
 
-		internal static async ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
+		private static async ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
 		{
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
 			string text = string.Empty;
@@ -53,6 +54,9 @@ namespace StormLib.Helpers
 
 				text = await responseMessage.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			}
+			catch (HttpRequestException httpException)
+				when (httpException.InnerException is SocketException socketException && socketException.ErrorCode == 11)
+			{ }
 			finally
 			{
 				if (responseMessage is not null)
