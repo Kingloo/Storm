@@ -70,10 +70,6 @@ namespace StormDesktop
 					await Task.Delay(updateInterval, stoppingToken).ConfigureAwait(false);
 				}
 			}
-			// catch (Exception ex)
-			// {
-			// 	logger.LogError(ex, "{ExceptionType}: {ExceptionMessage}", ex.InnerException?.GetType().FullName ?? "no inner ex", ex.Message);	
-			// }
 			finally
 			{
 				if (!stoppingToken.IsCancellationRequested)
