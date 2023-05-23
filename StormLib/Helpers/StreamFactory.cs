@@ -48,18 +48,12 @@ namespace StormLib.Helpers
 
 			stream = uri.DnsSafeHost.ToLower(CultureInfo.CurrentCulture) switch
 			{
-				"chaturbate.com" => new ChaturbateStream(uri),
-				"www.chaturbate.com" => new ChaturbateStream(uri),
-				"kick.com" => new KickStream(uri),
-				"www.kick.com" => new KickStream(uri),
-				"mixlr.com" => new MixlrStream(uri),
-				"www.mixlr.com" => new MixlrStream(uri),
-				"rumble.com" => new RumbleStream(uri),
-				"www.rumble.com" => new RumbleStream(uri),
-				"twitch.tv" => new TwitchStream(uri),
-				"www.twitch.tv" => new TwitchStream(uri),
-				"youtube.com" => new YouTubeStream(uri),
-				"www.youtube.com" => new YouTubeStream(uri),
+				"chaturbate.com" or "www.chaturbate.com" => new ChaturbateStream(uri),
+				"kick.com" or "www.kick.com" => new KickStream(uri),
+				"mixlr.com" or "www.mixlr.com" => new MixlrStream(uri),
+				"rumble.com" or "www.rumble.com" => new RumbleStream(uri),
+				"twitch.tv" or "www.twitch.tv" => new TwitchStream(uri),
+				"youtube.com" or "www.youtube.com" => new YouTubeStream(uri),
 				_ => new UnsupportedStream(uri)
 			};
 
