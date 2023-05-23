@@ -55,7 +55,7 @@ namespace StormLib.Helpers
 				text = await responseMessage.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			}
 			catch (HttpRequestException httpException)
-				when (httpException.InnerException is SocketException socketException && socketException.ErrorCode == 11)
+				when (httpException.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.TryAgain) // aka .ErrorCode 11
 			{ }
 			finally
 			{
