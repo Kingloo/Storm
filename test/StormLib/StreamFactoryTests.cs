@@ -29,7 +29,7 @@ namespace StormTests.StormLib
 		[Test]
 		public void TryCreate_ValidUri_ShouldReturnTrue()
 		{
-			bool actual = StreamFactory.TryCreate(validUri, out IStream _);
+			bool actual = StreamFactory.TryCreate(validUri, out IStream? _);
 
 			Assert.True(actual);
 		}
@@ -37,7 +37,7 @@ namespace StormTests.StormLib
 		[Test]
 		public void TryCreate_InvalidUri_ShouldReturnFalse()
 		{
-			bool actual = StreamFactory.TryCreate(invalidUri, out IStream _);
+			bool actual = StreamFactory.TryCreate(invalidUri, out IStream? _);
 
 			Assert.False(actual);
 		}
@@ -62,7 +62,7 @@ namespace StormTests.StormLib
 		[TestCase(oddTwitchAccount)]
 		public void TryCreate_ValidAccountName_ShouldReturnTrue(string accountUri)
 		{
-			bool b = StreamFactory.TryCreate(accountUri, out IStream _);
+			bool b = StreamFactory.TryCreate(accountUri, out IStream? _);
 
 			Assert.True(b);
 		}
