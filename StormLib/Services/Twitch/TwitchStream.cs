@@ -24,7 +24,7 @@ namespace StormLib.Services.Twitch
 			}
 		}
 
-		public override bool HasStreamlinkSupport { get => false; }
+		public override bool HasStreamlinkSupport { get => true; }
 
 		public override string ServiceName { get => "Twitch"; }
 
