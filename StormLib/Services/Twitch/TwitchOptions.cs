@@ -11,9 +11,6 @@ namespace StormLib.Services.Twitch
 		public IList<Header> Headers { get; init; } = new List<Header>();
 		public int MaxStreamsPerUpdate { get; init; } = 0;
 		public IList<Int64> UnwantedGameIds { get; init; } = new List<Int64>();
-#pragma warning disable CA1056
-		public string EmbeddedPlayerUriFormat { get; init; } = string.Empty;
-#pragma warning restore CA1056
 
 		public TwitchOptions() { }
 	}

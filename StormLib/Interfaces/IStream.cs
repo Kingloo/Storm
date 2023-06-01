@@ -12,5 +12,7 @@ namespace StormLib.Interfaces
 		Uri Icon { get; }
 		bool HasStreamlinkSupport { get; }
 		string ServiceName { get; }
+
+		Uri GetBrowserLink();
 	}
 }

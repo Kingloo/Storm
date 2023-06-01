@@ -43,15 +43,6 @@ namespace StormLib.Services.Twitch
 			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
-		public Uri GetEmbeddedPlayerUriForStream(TwitchStream stream)
-		{
-			ArgumentNullException.ThrowIfNull(stream);
-
-			string format = twitchOptionsMonitor.CurrentValue.EmbeddedPlayerUriFormat;
-
-			return new Uri(string.Format(CultureInfo.InvariantCulture, format, stream.Name), UriKind.Absolute);
-		}
-
 		public Task<IList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
 

@@ -326,7 +326,7 @@ namespace StormDesktop.Gui
 
 		private static bool OpenWithBrowser(IStream stream)
 		{
-			return SystemLaunch.Uri(stream.Link);
+			return SystemLaunch.Uri(stream.GetBrowserLink());
 		}
 
 		private void OpenPage(IStream stream)

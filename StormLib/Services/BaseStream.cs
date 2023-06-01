@@ -52,6 +52,11 @@ namespace StormLib.Services
 		public abstract bool HasStreamlinkSupport { get; }
 		public abstract string ServiceName { get; }
 
+		public virtual Uri GetBrowserLink()
+		{
+			return Link;
+		}
+
 		protected BaseStream(Uri uri)
 		{
 			ArgumentNullException.ThrowIfNull(uri);
