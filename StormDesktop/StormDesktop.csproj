@@ -11,6 +11,7 @@
 		<StartupObject>StormDesktop.Program</StartupObject>
 		<Copyright>© Kingloo 2023</Copyright>
 		<RepositoryUrl>https://github.com/Kingloo/Storm</RepositoryUrl>
+		<RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<ItemGroup>
