@@ -4,6 +4,7 @@
 |---|---:|
 | Jackbox Party Packs | 493174 |
 | Among Us | 510218 |
+| The Legend of Zelda: Tears of the Kingdom | 512998 |
 
 # Other
 
