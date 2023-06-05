@@ -134,9 +134,9 @@ namespace StormLib.Services.Twitch
 						// Twitch's GraphQl API does not distinguish between does-not-exist, banned or closed so we default to Banned for all possibilities
 						// don't blank or reset DisplayName: this allows it to persist while the programme is open
 
-						t.Status = Status.Banned;
 						t.ViewersCount = null;
 						t.Game = null;
+						t.Status = Status.Banned;
 					};
 				}
 				else
@@ -148,16 +148,16 @@ namespace StormLib.Services.Twitch
 						true => (TwitchStream t) => // don't use BlankTwitchStream because we still want to update DisplayName
 						{
 							t.DisplayName = GetDisplayName(userData) ?? each.Name;
-							t.Status = Status.Offline;
 							t.ViewersCount = null;
 							t.Game = null;
+							t.Status = Status.Offline;
 						},
 						false => (TwitchStream t) =>
 						{
 							t.DisplayName = GetDisplayName(userData) ?? each.Name;
-							t.Status = GetStatus(userData);
 							t.ViewersCount = GetViewersCount(userData);
 							t.Game = newGame;
+							t.Status = GetStatus(userData);
 						}
 					};
 				}
@@ -261,11 +261,11 @@ namespace StormLib.Services.Twitch
 
 			IList<string> queries = new List<string>();
 
+			const string beginning = "{ \"query\": \"query Query($login: String) { user (login: $login) { login displayName description primaryColorHex roles { isAffiliate isPartner } profileImageURL(width: 70) offlineImageURL freeformTags { id name } stream { createdAt viewersCount isEncrypted previewImageURL(width: 1280, height: 720) type isMature language game { id name displayName } } } }\", \"variables\":{\"login\":\"";
+			const string ending = "\"} }";
+
 			foreach (IStream stream in streams)
 			{
-				const string beginning = "{ \"query\": \"query Query($login: String) { user (login: $login) { login displayName description primaryColorHex roles { isAffiliate isPartner } profileImageURL(width: 70) offlineImageURL freeformTags { id name } stream { createdAt viewersCount isEncrypted previewImageURL(width: 1280, height: 720) type isMature language game { id name displayName } } } }\", \"variables\":{\"login\":\"";
-				const string ending = "\"} }";
-
 				sb.Append(beginning);
 				sb.Append(stream.Name);
 				sb.Append(ending);
