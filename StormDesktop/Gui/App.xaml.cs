@@ -152,13 +152,14 @@ namespace StormDesktop.Gui
 			host.Start();
 
 			IHostApplicationLifetime appLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-			appLifetime.ApplicationStopping.Register(Shutdown);
 
 			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
 
 			sink.StartSink();
 
 			MainWindow = host.Services.GetRequiredService<MainWindow>();
+
+			appLifetime.ApplicationStopping.Register(MainWindow.Close);
 
 			MainWindow.Show();
 
