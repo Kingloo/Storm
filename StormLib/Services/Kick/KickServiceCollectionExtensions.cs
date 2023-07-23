@@ -63,7 +63,6 @@ namespace StormLib.Services.Kick
 				SslOptions = new SslClientAuthenticationOptions
 				{
 					AllowRenegotiation = false,
-					ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
 #pragma warning disable CA5398
 					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
 #pragma warning restore CA5398
