@@ -53,7 +53,7 @@ namespace StormDesktop.Gui
 
 		private static void ConfigureHostOptions(HostOptions hostOptions)
 		{
-			hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+			hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
 		}
 
 		private static void ConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder configurationBuilder)
@@ -167,7 +167,14 @@ namespace StormDesktop.Gui
 
 		private void Application_Exit(object? sender, ExitEventArgs e)
 		{
-			logger.LogInformation("app exited");
+			if (e.ApplicationExitCode == 0)
+			{
+				logger.LogInformation("exited");
+			}
+			else
+			{
+				logger.LogWarning("exited (exit code {ExitCode})", e.ApplicationExitCode);
+			}
 
 			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
 
