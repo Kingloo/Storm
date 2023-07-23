@@ -55,6 +55,7 @@ namespace StormLib.Helpers
 				text = await responseMessage.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			}
 			catch (HttpRequestException) { }
+			catch (SocketException) { }
 			finally
 			{
 				if (responseMessage is not null)
