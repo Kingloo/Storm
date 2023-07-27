@@ -18,26 +18,23 @@ namespace StormDesktop
 		where TOptionsMonitor : IOptionsMonitor<TOptions>
 		where TOptions : IUpdateIntervalOption
 	{
-		private readonly ILogger<StormBackgroundService<TStream, TUpdater, TOptionsMonitor, TOptions>> logger;
+		private readonly ILogger logger;
 		private readonly TUpdater updater;
 		private readonly TOptionsMonitor optionsMonitor;
 		private readonly UpdaterMessageQueue updaterMessageQueue;
 
-		private bool isFirstRun = true;
-		private string serviceName = typeof(TStream).Name;
-
 		public StormBackgroundService(
-			ILogger<StormBackgroundService<TStream, TUpdater, TOptionsMonitor, TOptions>> logger,
+			ILoggerFactory loggerFactory,
 			TUpdater updater,
 			TOptionsMonitor optionsMonitor,
 			UpdaterMessageQueue updaterMessageQueue)
 		{
-			ArgumentNullException.ThrowIfNull(logger);
+			ArgumentNullException.ThrowIfNull(loggerFactory);
 			ArgumentNullException.ThrowIfNull(updater);
 			ArgumentNullException.ThrowIfNull(optionsMonitor);
 			ArgumentNullException.ThrowIfNull(updaterMessageQueue);
 
-			this.logger = logger;
+			this.logger = loggerFactory.CreateLogger($"StormDesktop.Services.{typeof(TStream).Name}");
 			this.updater = updater;
 			this.optionsMonitor = optionsMonitor;
 			this.updaterMessageQueue = updaterMessageQueue;
@@ -45,24 +42,30 @@ namespace StormDesktop
 
 		public override Task StartAsync(CancellationToken cancellationToken)
 		{
-			logger.LogDebug("started background service for {StreamName}", typeof(TStream).Name);
+			logger.LogDebug("starting");
 
 			return base.StartAsync(cancellationToken);
 		}
 
+		public override Task StopAsync(CancellationToken cancellationToken)
+		{
+			logger.LogDebug("stopping");
+
+			return base.StopAsync(cancellationToken);
+		}
+
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			if (isFirstRun)
-			{
-				await Task.Delay(TimeSpan.FromSeconds(2.5d), stoppingToken).ConfigureAwait(false);
+			logger.LogInformation("started");
 
-				isFirstRun = false;
-			}
+			await Task.Delay(TimeSpan.FromSeconds(2.5d), stoppingToken).ConfigureAwait(false);
 
 			try
 			{
-				while (!stoppingToken.IsCancellationRequested)
+				while (true)
 				{
+					stoppingToken.ThrowIfCancellationRequested();
+
 					await RunUpdate(stoppingToken).ConfigureAwait(false);
 
 					TimeSpan updateInterval = TimeSpan.FromSeconds(optionsMonitor.CurrentValue.UpdateIntervalSeconds);
@@ -72,9 +75,13 @@ namespace StormDesktop
 			}
 			finally
 			{
-				if (!stoppingToken.IsCancellationRequested)
+				if (stoppingToken.IsCancellationRequested)
 				{
-					logger.LogCritical("background service for {ServiceName} stopped unexpectedly", serviceName);
+					logger.LogDebug("stopped (cancelled)");
+				}
+				else
+				{
+					logger.LogCritical("stopped unexpectedly");
 				}
 			}
 		}
@@ -88,26 +95,21 @@ namespace StormDesktop
 				return;
 			}
 
-			if (String.Equals(serviceName, typeof(TStream).Name, StringComparison.Ordinal))
-			{
-				serviceName = streams[0].ServiceName;
-			}
-
 			IList<Result<TStream>> results = new List<Result<TStream>>();
 
 			try
 			{
 				int streamCount = streams.Count;
-				string streamPluralized = streams.Count == 1 ? "stream" : "streams";
-				string streamNames = String.Join(',', streams.Select(s => s.DisplayName));
-
-				logger.LogDebug("updating {Count} {ServiceName} {StreamPluralized} ({StreamNames})", streamCount, serviceName, streamPluralized, streamNames);
+				string accountPluralized = streams.Count == 1 ? "account" : "accounts";
+				string streamNames = String.Join(',', streams.Select(static s => s.DisplayName));
 
 				results = await updater.UpdateAsync(streams, cancellationToken).ConfigureAwait(false);
+
+				logger.LogDebug("updated {Count} {StreamPluralized} ({StreamNames})", streamCount, accountPluralized, streamNames);
 			}
 			catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException innerEx)
 			{
-				logger.LogError(innerEx, "Timeout exception while updating {StreamTypeName}: {Message}", serviceName, innerEx.Message);
+				logger.LogError(innerEx, "Timeout exception while updating: '{Message}'", innerEx.Message);
 			}
 
 			foreach (Result<TStream> each in results)
@@ -116,7 +118,7 @@ namespace StormDesktop
 
 				if (each.StatusCode != System.Net.HttpStatusCode.OK)
 				{
-					logger.LogWarning("updating {DisplayName} ({ServiceName}) was {StatusCode}", each.Stream.DisplayName, serviceName, FormatStatusCode(each.StatusCode));
+					logger.LogWarning("updating {DisplayName} was {StatusCode}", each.Stream.DisplayName, FormatStatusCode(each.StatusCode));
 				}
 			}
 		}
