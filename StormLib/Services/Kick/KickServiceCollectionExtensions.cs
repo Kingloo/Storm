@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
@@ -48,6 +47,7 @@ namespace StormLib.Services.Kick
 
 		private static void ConfigureHttpClient(HttpClient client)
 		{
+			client.DefaultRequestVersion = HttpVersion.Version20;
 			client.Timeout = TimeSpan.FromSeconds(60d);
 		}
 
@@ -55,15 +55,14 @@ namespace StormLib.Services.Kick
 		{
 			return new SocketsHttpHandler
 			{
-				AllowAutoRedirect = true,
+				AllowAutoRedirect = false,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
 				CookieContainer = new CookieContainer(),
-				MaxAutomaticRedirections = 2,
 				MaxConnectionsPerServer = 1,
 				SslOptions = new SslClientAuthenticationOptions
 				{
 					AllowRenegotiation = false,
-#pragma warning disable CA5398
+#pragma warning disable CA5398 // I want to hardcode this
 					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
 #pragma warning restore CA5398
 					EncryptionPolicy = EncryptionPolicy.RequireEncryption
