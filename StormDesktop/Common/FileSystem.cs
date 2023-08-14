@@ -10,7 +10,7 @@ namespace StormDesktop.Common
 	public static class FileSystem
 	{
 		private const char defaultCommentChar = '#';
-		private static readonly Encoding defaultEncoding = Encoding.UTF8;
+		private static readonly Encoding defaultEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
 		public static void EnsureDirectoryExists(string? folder)
 		{
