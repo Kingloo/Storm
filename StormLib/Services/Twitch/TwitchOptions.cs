@@ -6,7 +6,7 @@ namespace StormLib.Services.Twitch
 {
 	public class TwitchOptions : IUpdateIntervalOption
 	{
-		public int UpdateIntervalSeconds { get; init; } = Constants.DefaultUpdateIntervalSeconds;
+		public TimeSpan UpdateInterval { get; init; } = TimeSpan.Zero;
 		public Uri? GraphQlApiUri { get; init; }
 		public IList<Header> Headers { get; init; } = new List<Header>();
 		public int MaxStreamsPerUpdate { get; init; } = 0;

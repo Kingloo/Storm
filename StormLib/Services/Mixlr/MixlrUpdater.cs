@@ -32,10 +32,10 @@ namespace StormLib.Services.Mixlr
 			this.mixlrOptionsMonitor = mixlrOptionsMonitor;
 		}
 
-		public Task<IList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams)
+		public Task<IReadOnlyList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
 
-		public async Task<IList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams, CancellationToken cancellationToken)
+		public async Task<IReadOnlyList<Result<MixlrStream>>> UpdateAsync(IReadOnlyList<MixlrStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
@@ -72,7 +72,7 @@ namespace StormLib.Services.Mixlr
 			{
 				return new Result<MixlrStream>(stream, statusCode)
 				{
-					Action = (MixlrStream m) =>
+					Action = static (MixlrStream m) =>
 					{
 						m.Status = Status.Problem;
 						m.ViewersCount = null;
@@ -84,7 +84,7 @@ namespace StormLib.Services.Mixlr
 			{
 				return new Result<MixlrStream>(stream, statusCode)
 				{
-					Action = (MixlrStream m) =>
+					Action = static (MixlrStream m) =>
 					{
 						m.Status = Status.Problem;
 						m.ViewersCount = null;
@@ -100,7 +100,7 @@ namespace StormLib.Services.Mixlr
 			{
 				return new Result<MixlrStream>(stream, statusCode)
 				{
-					Action = (MixlrStream m) =>
+					Action = static (MixlrStream m) =>
 					{
 						m.Status = Status.Problem;
 						m.ViewersCount = null;
@@ -113,7 +113,7 @@ namespace StormLib.Services.Mixlr
 			{
 				return new Result<MixlrStream>(stream, statusCode)
 				{
-					Action = (MixlrStream m) =>
+					Action = static (MixlrStream m) =>
 					{
 						m.Status = Status.Problem;
 						m.ViewersCount = null;

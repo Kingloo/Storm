@@ -31,10 +31,10 @@ namespace StormLib.Services.Rumble
 			this.rumbleOptionsMonitor = rumbleOptionsMonitor;
 		}
 
-		public Task<IList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams)
+		public Task<IReadOnlyList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
 
-		public async Task<IList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams, CancellationToken cancellationToken)
+		public async Task<IReadOnlyList<Result<RumbleStream>>> UpdateAsync(IReadOnlyList<RumbleStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib;
 using StormLib.Interfaces;
+using StormLib.Services.Kick;
 using static StormLib.Helpers.HttpStatusCodeHelpers;
 
 namespace StormDesktop
@@ -68,9 +69,7 @@ namespace StormDesktop
 
 					await RunUpdate(stoppingToken).ConfigureAwait(false);
 
-					TimeSpan updateInterval = TimeSpan.FromSeconds(optionsMonitor.CurrentValue.UpdateIntervalSeconds);
-
-					await Task.Delay(updateInterval, stoppingToken).ConfigureAwait(false);
+					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
 				}
 			}
 			finally
@@ -95,7 +94,7 @@ namespace StormDesktop
 				return;
 			}
 
-			IList<Result<TStream>> results = new List<Result<TStream>>();
+			IReadOnlyList<Result<TStream>> results = new List<Result<TStream>>();
 
 			try
 			{
@@ -118,7 +117,14 @@ namespace StormDesktop
 
 				if (each.StatusCode != System.Net.HttpStatusCode.OK)
 				{
-					logger.LogWarning("updating {DisplayName} was {StatusCode}", each.Stream.DisplayName, FormatStatusCode(each.StatusCode));
+					if (streams[0] is KickStream)
+					{
+						continue;
+					}
+					else
+					{
+						logger.LogWarning("updating {DisplayName} was {StatusCode}", each.Stream.DisplayName, FormatStatusCode(each.StatusCode));
+					}
 				}
 			}
 		}

@@ -33,10 +33,10 @@ namespace StormLib.Services.Chaturbate
 			this.httpClientFactory = httpClientFactory;
 		}
 
-		public Task<IList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams)
+		public Task<IReadOnlyList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
 
-		public async Task<IList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams, CancellationToken cancellationToken)
+		public async Task<IReadOnlyList<Result<ChaturbateStream>>> UpdateAsync(IReadOnlyList<ChaturbateStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
@@ -82,7 +82,7 @@ namespace StormLib.Services.Chaturbate
 			{
 				return new Result<ChaturbateStream>(stream, statusCode)
 				{
-					Action = (ChaturbateStream c) =>
+					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Problem;
 						c.ViewersCount = null;
@@ -94,7 +94,7 @@ namespace StormLib.Services.Chaturbate
 			{
 				return new Result<ChaturbateStream>(stream, statusCode)
 				{
-					Action = (ChaturbateStream c) =>
+					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Banned;
 						c.ViewersCount = null;
@@ -108,7 +108,7 @@ namespace StormLib.Services.Chaturbate
 			{
 				return new Result<ChaturbateStream>(stream, statusCode)
 				{
-					Action = (ChaturbateStream c) =>
+					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Problem;
 						c.ViewersCount = null;
@@ -121,7 +121,7 @@ namespace StormLib.Services.Chaturbate
 			{
 				return new Result<ChaturbateStream>(stream, statusCode)
 				{
-					Action = (ChaturbateStream c) =>
+					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Problem;
 						c.ViewersCount = null;

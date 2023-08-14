@@ -6,7 +6,7 @@ namespace StormLib.Services.Kick
 {
 	public class KickOptions : IUpdateIntervalOption
 	{
-		public int UpdateIntervalSeconds { get; init; } = Constants.DefaultUpdateIntervalSeconds;
+		public TimeSpan UpdateInterval { get; init; } = TimeSpan.Zero;
 		public Uri? ApiUri { get; init; }
 		public IList<Header> Headers { get; init; } = new List<Header>();
 

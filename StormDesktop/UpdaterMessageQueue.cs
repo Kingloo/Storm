@@ -52,7 +52,7 @@ namespace StormDesktop
 
 			IUpdater<TStream> updater = serviceProvider.GetRequiredService<IUpdater<TStream>>();
 
-			IList<Result<TStream>> results = await updater.UpdateAsync(streams, cancellationToken).ConfigureAwait(false);
+			IReadOnlyList<Result<TStream>> results = await updater.UpdateAsync(streams, cancellationToken).ConfigureAwait(false);
 
 			foreach (Result<TStream> result in results)
 			{

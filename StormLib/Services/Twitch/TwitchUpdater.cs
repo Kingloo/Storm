@@ -43,23 +43,23 @@ namespace StormLib.Services.Twitch
 			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
-		public Task<IList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams)
+		public Task<IReadOnlyList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
 
-		public Task<IList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
+		public Task<IReadOnlyList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
 			return UpdateManyAsync(streams, cancellationToken);
 		}
 
-		private async Task<IList<Result<TwitchStream>>> UpdateManyAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
+		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateManyAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
 		{
 			List<Result<TwitchStream>> allResults = new List<Result<TwitchStream>>();
 
 			foreach (IEnumerable<TwitchStream> chunk in streams.Chunk(twitchOptionsMonitor.CurrentValue.MaxStreamsPerUpdate))
 			{
-				IList<Result<TwitchStream>> results = await UpdateChunkAsync(chunk, cancellationToken).ConfigureAwait(false);
+				IReadOnlyList<Result<TwitchStream>> results = await UpdateChunkAsync(chunk, cancellationToken).ConfigureAwait(false);
 
 				allResults.AddRange(results);
 
@@ -72,7 +72,7 @@ namespace StormLib.Services.Twitch
 			return allResults;
 		}
 
-		private async Task<IList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
+		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
 		{
 			(HttpStatusCode statusCode, string text) = await RequestGraphQlDataAsync(streams, cancellationToken).ConfigureAwait(false);
 
@@ -103,7 +103,7 @@ namespace StormLib.Services.Twitch
 				throw new System.Text.Json.JsonException("Twitch data format has changed: JsonNode is not an array");
 			}
 
-			IList<Result<TwitchStream>> results = new List<Result<TwitchStream>>();
+			List<Result<TwitchStream>> results = new List<Result<TwitchStream>>();
 
 			foreach (TwitchStream each in streams)
 			{
@@ -129,7 +129,7 @@ namespace StormLib.Services.Twitch
 
 				if (userData is null)
 				{
-					action = (TwitchStream t) =>
+					action = static (TwitchStream t) =>
 					{
 						// Twitch's GraphQl API does not distinguish between does-not-exist, banned or closed so we default to Banned for all possibilities
 						// don't blank or reset DisplayName: this allows it to persist while the programme is open
@@ -167,7 +167,7 @@ namespace StormLib.Services.Twitch
 				results.Add(result);
 			}
 
-			return results;
+			return results.AsReadOnly();
 		}
 
 		private static void BlankTwitchStream(TwitchStream twitchStream)

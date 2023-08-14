@@ -5,7 +5,7 @@ namespace StormLib.Services.Rumble
 {
 	public class RumbleOptions : IUpdateIntervalOption
 	{
-		public int UpdateIntervalSeconds { get; init; } = Constants.DefaultUpdateIntervalSeconds;
+		public TimeSpan UpdateInterval { get; init; } = TimeSpan.Zero;
 		public string LiveMarker { get; init; } = string.Empty;
 
 		public RumbleOptions() { }

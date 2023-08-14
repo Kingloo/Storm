@@ -32,10 +32,10 @@ namespace StormLib.Services.YouTube
 			this.youTubeOptionsMonitor = youTubeOptionsMonitor;
 		}
 
-		public Task<IList<Result<YouTubeStream>>> UpdateAsync(IReadOnlyList<YouTubeStream> streams)
+		public Task<IReadOnlyList<Result<YouTubeStream>>> UpdateAsync(IReadOnlyList<YouTubeStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
 
-		public async Task<IList<Result<YouTubeStream>>> UpdateAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
+		public async Task<IReadOnlyList<Result<YouTubeStream>>> UpdateAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
@@ -72,10 +72,10 @@ namespace StormLib.Services.YouTube
 			{
 				return new Result<YouTubeStream>(stream, statusCode)
 				{
-					Action = (YouTubeStream y) =>
+					Action = static (YouTubeStream y) =>
 					{
-						stream.Status = Status.Problem;
-						stream.ViewersCount = null;
+						y.Status = Status.Problem;
+						y.ViewersCount = null;
 					}
 				};
 			}
@@ -120,11 +120,9 @@ namespace StormLib.Services.YouTube
 
 		private static Status SetStatus(string text, YouTubeOptions youTubeOptions)
 		{
-			return text.Contains(youTubeOptions.LiveMarker, StringComparison.OrdinalIgnoreCase) switch
-			{
-				true => Status.Public,
-				false => Status.Offline
-			};
+			return text.Contains(youTubeOptions.LiveMarker, StringComparison.OrdinalIgnoreCase)
+				? Status.Public
+				: Status.Offline;
 		}
 
 		private static int? SetViewers(string text)

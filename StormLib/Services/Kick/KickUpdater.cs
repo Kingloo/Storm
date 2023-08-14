@@ -40,10 +40,10 @@ namespace StormLib.Services.Kick
 			this.stormOptionsMonitor = stormOptionsMonitor;
 		}
 
-		public Task<IList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams)
+		public Task<IReadOnlyList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams)
 			=> UpdateAsync(streams, CancellationToken.None);
 
-		public async Task<IList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams, CancellationToken cancellationToken)
+		public async Task<IReadOnlyList<Result<KickStream>>> UpdateAsync(IReadOnlyList<KickStream> streams, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
@@ -87,7 +87,7 @@ namespace StormLib.Services.Kick
 			{
 				return new Result<KickStream>(stream, statusCode)
 				{
-					Action = (KickStream k) =>
+					Action = static (KickStream k) =>
 					{
 						k.Status = Status.Problem;
 						k.ViewersCount = null;
@@ -100,7 +100,7 @@ namespace StormLib.Services.Kick
 			{
 				return new Result<KickStream>(stream, statusCode)
 				{
-					Action = (KickStream k) =>
+					Action = static (KickStream k) =>
 					{
 						k.Status = Status.Problem;
 						k.ViewersCount = null;
