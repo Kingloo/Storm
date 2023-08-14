@@ -38,6 +38,7 @@ namespace StormDesktop.Gui
 		{
 			return new HostBuilder()
 				.ConfigureHostConfiguration(ConfigureHostConfiguration)
+				.ConfigureLogging(ConfigureLogging)
 				.ConfigureHostOptions(ConfigureHostOptions)
 				.ConfigureAppConfiguration(ConfigureAppConfiguration)
 				.ConfigureServices(ConfigureServices)
@@ -51,9 +52,22 @@ namespace StormDesktop.Gui
 				.AddEnvironmentVariables();
 		}
 
+		private static void ConfigureLogging(HostBuilderContext context, ILoggingBuilder loggingBuilder)
+		{
+			loggingBuilder.AddConfiguration(context.Configuration.GetSection("Logging"));
+
+			if (Debugger.IsAttached)
+			{
+				loggingBuilder.AddDebug();
+			}
+
+			loggingBuilder.AddFileLogger();
+		}
+
 		private static void ConfigureHostOptions(HostOptions hostOptions)
 		{
 			hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
+			hostOptions.ShutdownTimeout = TimeSpan.FromSeconds(5d);
 		}
 
 		private static void ConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder configurationBuilder)
@@ -77,15 +91,6 @@ namespace StormDesktop.Gui
 
 		private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 		{
-			services.AddLogging((ILoggingBuilder loggingBuilder) =>
-			{
-				loggingBuilder.AddConfiguration(context.Configuration.GetSection("Logging"));
-
-				loggingBuilder.AddDebug();
-
-				loggingBuilder.AddFileLogger();
-			});
-
 			services.AddSingleton<IFileLoggerSink, FileLoggerSink>();
 
 			services.Configure<StormOptions>(context.Configuration.GetSection("Storm"));
