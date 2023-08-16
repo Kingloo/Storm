@@ -106,9 +106,9 @@ namespace StormDesktop
 
 				logger.LogDebug("updated {Count} {StreamPluralized} ({StreamNames})", streamCount, accountPluralized, streamNames);
 			}
-			catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException innerEx)
+			catch (TaskCanceledException ex)
 			{
-				logger.LogError(innerEx, "Timeout exception while updating: '{Message}'", innerEx.Message);
+				logger.LogError(ex, "update cancelled: '{InnerExceptionType}': '{InnerExceptionMessage}'", nameof(ex.InnerException), ex.InnerException?.Message ?? "inner exception null");
 			}
 
 			foreach (Result<TStream> each in results)
