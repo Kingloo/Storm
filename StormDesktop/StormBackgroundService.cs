@@ -106,9 +106,9 @@ namespace StormDesktop
 
 				logger.LogDebug("updated {Count} {StreamPluralized} ({StreamNames})", streamCount, accountPluralized, streamNames);
 			}
-			catch (TaskCanceledException ex)
+			catch (TaskCanceledException ex) when (ex.InnerException is not null)
 			{
-				logger.LogError(ex, "update cancelled: '{InnerExceptionType}': '{InnerExceptionMessage}'", nameof(ex.InnerException), ex.InnerException?.Message ?? "inner exception null");
+				logger.LogError(ex, "update cancelled ('{InnerExceptionType}': '{InnerExceptionMessage}')", ex.InnerException.GetType().FullName, ex.InnerException.Message);
 			}
 
 			foreach (Result<TStream> each in results)
@@ -117,7 +117,7 @@ namespace StormDesktop
 
 				if (each.StatusCode != System.Net.HttpStatusCode.OK)
 				{
-					if (streams[0] is KickStream)
+					if (streams[0] is KickStream) // Kick is access-restricted behind CloudFlare and takes some time to get passed that
 					{
 						continue;
 					}
