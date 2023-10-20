@@ -108,7 +108,7 @@ namespace StormDesktop
 			}
 			catch (TaskCanceledException ex) when (ex.InnerException is not null)
 			{
-				logger.LogError(ex, "update cancelled ('{InnerExceptionType}': '{InnerExceptionMessage}')", ex.InnerException.GetType().FullName, ex.InnerException.Message);
+				logger.LogDebug(ex, "update cancelled ('{InnerExceptionType}': '{InnerExceptionMessage}')", ex.InnerException.GetType().FullName, ex.InnerException.Message);
 			}
 
 			foreach (Result<TStream> each in results)
