@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using StormLib;
 using StormLib.Interfaces;
 using StormLib.Services.Kick;
+using static StormLib.Common.ExceptionFilterUtility;
 using static StormLib.Helpers.HttpStatusCodeHelpers;
 
 namespace StormDesktop
@@ -109,6 +110,10 @@ namespace StormDesktop
 			catch (TaskCanceledException ex) when (ex.InnerException is not null)
 			{
 				logger.LogDebug(ex, "update cancelled ('{InnerExceptionType}': '{InnerExceptionMessage}')", ex.InnerException.GetType().FullName, ex.InnerException.Message);
+			}
+			catch (Exception ex) when (False(() => logger.LogError(ex, "run update threw: '{ExceptionType}', '{ExceptionMessage}'", ex.GetType().Name, ex.Message)))
+			{
+				throw;
 			}
 
 			foreach (Result<TStream> each in results)
