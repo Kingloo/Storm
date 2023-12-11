@@ -94,6 +94,8 @@ namespace StormDesktop.Common
 
 		private static void Display(Notification notification)
 		{
+			ArgumentNullException.ThrowIfNull(notification);
+
 			notification.Show();
 
 			System.Media.SystemSounds.Hand.Play();
@@ -183,10 +185,7 @@ namespace StormDesktop.Common
 
 			private static Grid BuildGrid(int numRows)
 			{
-				if (numRows < 1)
-				{
-					throw new ArgumentOutOfRangeException(nameof(numRows));
-				}
+				ArgumentOutOfRangeException.ThrowIfLessThan<int>(numRows, 1);
 
 				Grid grid = new Grid
 				{
@@ -205,7 +204,6 @@ namespace StormDesktop.Common
 				return grid;
 			}
 
-			[System.Diagnostics.DebuggerStepThrough]
 			private static Style BuildGridStyle()
 			{
 				Style style = new Style(typeof(Grid));
@@ -223,7 +221,6 @@ namespace StormDesktop.Common
 				return style;
 			}
 
-			[System.Diagnostics.DebuggerStepThrough]
 			private static Label BuildLabel(Style labelStyle, string text, FontStyle fontStyle)
 			{
 				return new Label
@@ -238,7 +235,6 @@ namespace StormDesktop.Common
 				};
 			}
 
-			[System.Diagnostics.DebuggerStepThrough]
 			private static Style BuildTitleLabelStyle()
 			{
 				Style style = new Style(typeof(Label));
@@ -257,7 +253,6 @@ namespace StormDesktop.Common
 				return style;
 			}
 
-			[System.Diagnostics.DebuggerStepThrough]
 			private static Style BuildDescriptionLabelStyle()
 			{
 				Style style = new Style(typeof(Label));

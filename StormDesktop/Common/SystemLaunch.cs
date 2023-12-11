@@ -18,10 +18,7 @@ namespace StormDesktop.Common
 
 		public static bool Uri(Uri uri)
 		{
-			if (uri is null)
-			{
-				throw new ArgumentNullException(nameof(uri));
-			}
+			ArgumentNullException.ThrowIfNull(uri);
 
 			return uri.IsAbsoluteUri && Launch(uri.AbsoluteUri);
 		}
@@ -43,10 +40,7 @@ namespace StormDesktop.Common
 
 		public static bool Launch(ProcessStartInfo pInfo)
 		{
-			if (pInfo is null)
-			{
-				throw new ArgumentNullException(nameof(pInfo));
-			}
+			ArgumentNullException.ThrowIfNull(pInfo);
 
 			return LaunchInternal(pInfo);
 		}

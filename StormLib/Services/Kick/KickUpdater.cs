@@ -150,7 +150,7 @@ namespace StormLib.Services.Kick
 
 		private Task<Result<KickStream>[]> UpdateManyAsync(IReadOnlyList<KickStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result<KickStream>>> updateTasks = new List<Task<Result<KickStream>>>();
+			List<Task<Result<KickStream>>> updateTasks = new List<Task<Result<KickStream>>>();
 
 			foreach (KickStream each in streams)
 			{

@@ -72,7 +72,7 @@ namespace StormLib.Helpers
 				return Array.Empty<IStream>();
 			}
 
-			IList<IStream> streams = new List<IStream>();
+			List<IStream> streams = new List<IStream>();
 
 			foreach (string line in lines.Where(line => !line.StartsWith(commentCharacter)))
 			{

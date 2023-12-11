@@ -51,7 +51,7 @@ namespace StormLib.Services.Kick
 			client.Timeout = TimeSpan.FromSeconds(60d);
 		}
 
-		private static HttpMessageHandler ConfigurePrimaryHttpMessageHandler(IServiceProvider _)
+		private static SocketsHttpHandler ConfigurePrimaryHttpMessageHandler(IServiceProvider _)
 		{
 			return new SocketsHttpHandler
 			{

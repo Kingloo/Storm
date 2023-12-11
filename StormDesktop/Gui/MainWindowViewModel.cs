@@ -222,7 +222,7 @@ namespace StormDesktop.Gui
 		public async Task LoadStreamsAsync(CancellationToken cancellationToken)
 		{
 			IReadOnlyList<string> lines = await FileSystem
-				.LoadLinesFromFileAsync(stormOptionsMonitor.CurrentValue.StreamsFilePath)
+				.LoadLinesFromFileAsync(stormOptionsMonitor.CurrentValue.StreamsFilePath, cancellationToken)
 				.ConfigureAwait(true);
 
 			if (!lines.Any())

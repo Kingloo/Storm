@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace StormLib.Exceptions
 {
@@ -13,10 +12,6 @@ namespace StormLib.Exceptions
 
 		public TwitchException(string? message, Exception? innerException)
 			: base(message, innerException)
-		{ }
-
-		protected TwitchException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
 		{ }
 	}
 }

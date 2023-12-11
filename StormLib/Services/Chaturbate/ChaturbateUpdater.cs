@@ -165,7 +165,7 @@ namespace StormLib.Services.Chaturbate
 			// Chaturbate doesn't like it if you hit them too often,
 			// connections time out for minutes without connecting
 
-			IList<Result<ChaturbateStream>> updateResults = new List<Result<ChaturbateStream>>();
+			List<Result<ChaturbateStream>> updateResults = new List<Result<ChaturbateStream>>();
 
 			foreach (ChaturbateStream stream in streams)
 			{

@@ -10,6 +10,9 @@ insert_final_newline = true
 # IDE0090: Use 'new(...)'
 csharp_style_implicit_object_creation_when_type_is_apparent = false
 
+# IDE0290: primary constructors
+dotnet_diagnostic.IDE0290.severity = none
+
 # CA!711: was complaing about StreamBase derived classes being called e.g. TwitchStream
 dotnet_diagnostic.CA1711.severity = none
 

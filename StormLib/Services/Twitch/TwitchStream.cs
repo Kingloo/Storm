@@ -1,12 +1,14 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace StormLib.Services.Twitch
 {
 	public class TwitchStream : BaseStream
 	{
-		private const string embeddedUriFormat = "https://player.twitch.tv/?branding=false&channel={0}&parent=twitch.tv&showInfo=false";
+		private static readonly CompositeFormat embeddedUriFormat
+			= CompositeFormat.Parse("https://player.twitch.tv/?branding=false&channel={0}&parent=twitch.tv&showInfo=false");
 
 		private Uri? _icon = null;
 		public override Uri Icon

@@ -16,24 +16,17 @@ namespace StormDesktop.Common
 		public bool IsRunning => timer?.IsEnabled ?? false;
 
 		public TimeSpan TimeLeft => IsRunning
-			? ((created + (timer?.Interval ?? TimeSpan.Zero)) - DateTime.Now)
+			? (created + (timer?.Interval ?? TimeSpan.Zero) - DateTime.Now)
 			: TimeSpan.Zero;
 
 		public DispatcherCountdownTimer(TimeSpan span, Action tick)
 		{
-			if (span.Ticks < (10_000 * 1000))
-			{
-				// there are 10_000 ticks in 1 millisecond
-				// therefore there are 10_000 * 1000 ticks in 1 second
-				// 10_000 * 1000 = 10_000_000
+			// there are 10_000 ticks in 1 millisecond
+			// therefore there are 10_000 * 1000 ticks in 1 second
+			// 10_000 * 1000 = 10_000_000
 
-				throw new ArgumentOutOfRangeException(nameof(span), "span.Ticks cannot be less than 1 second");
-			}
-
-			if (tick is null)
-			{
-				throw new ArgumentNullException(nameof(tick));
-			}
+			ArgumentOutOfRangeException.ThrowIfLessThan<Int64>(span.Ticks, 10_000 * 1000);
+			ArgumentNullException.ThrowIfNull(tick);
 
 			this.tick = tick;
 			this.span = span;

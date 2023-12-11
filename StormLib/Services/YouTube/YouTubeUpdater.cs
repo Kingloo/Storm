@@ -93,7 +93,7 @@ namespace StormLib.Services.YouTube
 
 		private Task<Result<YouTubeStream>[]> UpdateManyAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result<YouTubeStream>>> updateTasks = new List<Task<Result<YouTubeStream>>>();
+			List<Task<Result<YouTubeStream>>> updateTasks = new List<Task<Result<YouTubeStream>>>();
 
 			foreach (YouTubeStream each in streams)
 			{

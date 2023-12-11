@@ -141,7 +141,7 @@ namespace StormLib.Services.Mixlr
 
 		private Task<Result<MixlrStream>[]> UpdateManyAsync(IReadOnlyList<MixlrStream> streams, CancellationToken cancellationToken)
 		{
-			IList<Task<Result<MixlrStream>>> updateTasks = new List<Task<Result<MixlrStream>>>();
+			List<Task<Result<MixlrStream>>> updateTasks = new List<Task<Result<MixlrStream>>>();
 
 			foreach (MixlrStream each in streams)
 			{

@@ -259,7 +259,7 @@ namespace StormLib.Services.Twitch
 		{
 			StringBuilder sb = new StringBuilder();
 
-			IList<string> queries = new List<string>();
+			List<string> queries = new List<string>();
 
 			const string beginning = "{ \"query\": \"query Query($login: String) { user (login: $login) { login displayName description primaryColorHex roles { isAffiliate isPartner } profileImageURL(width: 70) offlineImageURL freeformTags { id name } stream { createdAt viewersCount isEncrypted previewImageURL(width: 1280, height: 720) type isMature language game { id name displayName } } } }\", \"variables\":{\"login\":\"";
 			const string ending = "\"} }";

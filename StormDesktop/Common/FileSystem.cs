@@ -10,50 +10,58 @@ namespace StormDesktop.Common
 	public static class FileSystem
 	{
 		private const char defaultCommentChar = '#';
-		private static readonly Encoding defaultEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
 		public static void EnsureDirectoryExists(string? folder)
 		{
-			ArgumentNullException.ThrowIfNull(folder);
+			if (String.IsNullOrWhiteSpace(folder))
+			{
+				throw new ArgumentNullException(nameof(folder));
+			}
 
 			if (!Directory.Exists(folder))
 			{
 				Directory.CreateDirectory(folder);
+
+				if (!Directory.Exists(folder))
+				{
+					throw new DirectoryNotFoundException($"{folder} could not be created");
+				}
 			}
 		}
 
 		public static void EnsureFileExists(string path)
 		{
+			if (String.IsNullOrWhiteSpace(path))
+			{
+				throw new ArgumentNullException(nameof(path));
+			}
+
 			if (!File.Exists(path))
 			{
-				EnsureDirectoryExists(Path.GetDirectoryName(path));
+				EnsureDirectoryExists(new FileInfo(path).DirectoryName);
 
 				using (File.Create(path)) { }
+
+				if (!File.Exists(path))
+				{
+					throw new FileNotFoundException($"file could not be created ({path})", path);
+				}
 			}
 		}
 
 		[System.Diagnostics.DebuggerStepThrough]
-		public static ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path)
-			=> LoadLinesFromFileAsync(path, defaultCommentChar, defaultEncoding, CancellationToken.None);
+		public static ValueTask<string[]> LoadLinesFromFileAsync(string path)
+			=> LoadLinesFromFileAsync(path, defaultCommentChar, Encoding.UTF8, CancellationToken.None);
 
 		[System.Diagnostics.DebuggerStepThrough]
-		public static ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path, char comment)
-			=> LoadLinesFromFileAsync(path, comment, defaultEncoding, CancellationToken.None);
+		public static ValueTask<string[]> LoadLinesFromFileAsync(string path, CancellationToken cancellationToken)
+			=> LoadLinesFromFileAsync(path, defaultCommentChar, Encoding.UTF8, cancellationToken);
 
-		[System.Diagnostics.DebuggerStepThrough]
-		public static ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path, Encoding encoding)
-			=> LoadLinesFromFileAsync(path, defaultCommentChar, encoding, CancellationToken.None);
-
-		public static async ValueTask<IReadOnlyList<string>> LoadLinesFromFileAsync(string path, char commentChar, Encoding encoding, CancellationToken cancellationToken)
+		public static async ValueTask<string[]> LoadLinesFromFileAsync(string path, char comment, Encoding encoding, CancellationToken token)
 		{
-			if (char.IsWhiteSpace(commentChar))
-			{
-				throw new ArgumentException("comment char cannot be whitespace", nameof(commentChar));
-			}
-
 			List<string> lines = new List<string>();
 
-			FileStream fsAsync = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None, bufferSize: 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+			FileStream fsAsync = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
 			try
 			{
@@ -61,15 +69,22 @@ namespace StormDesktop.Common
 
 				string? line = string.Empty;
 
-				while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
+				while (!String.IsNullOrEmpty(line = await sr.ReadLineAsync(token).ConfigureAwait(false)))
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					bool shouldAddLine = line.Length switch
+					if (token.IsCancellationRequested)
 					{
-						0 => true,
-						_ => line[0] != commentChar
-					};
+						break;
+					}
+
+					bool shouldAddLine = true;
+
+					if (!Char.IsWhiteSpace(comment))
+					{
+						if (line[0] == comment)
+						{
+							shouldAddLine = false;
+						}
+					}
 
 					if (shouldAddLine)
 					{
@@ -82,22 +97,27 @@ namespace StormDesktop.Common
 				await fsAsync.DisposeAsync().ConfigureAwait(false);
 			}
 
-			return lines.AsReadOnly();
+			return lines.ToArray();
 		}
 
 		[System.Diagnostics.DebuggerStepThrough]
 		public static ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode)
-			=> WriteLinesToFileAsync(lines, path, mode, defaultEncoding, CancellationToken.None);
+			=> WriteLinesToFileAsync(lines, path, mode, Encoding.UTF8, CancellationToken.None);
 
 		[System.Diagnostics.DebuggerStepThrough]
-		public static ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding)
-			=> WriteLinesToFileAsync(lines, path, mode, encoding, CancellationToken.None);
+		public static ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, CancellationToken cancellationToken)
+			=> WriteLinesToFileAsync(lines, path, mode, Encoding.UTF8, cancellationToken);
 
-		public static async ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding, CancellationToken cancellationToken)
+		public static async ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding, CancellationToken token)
 		{
-			ArgumentNullException.ThrowIfNull(lines);
+			ArgumentNullException.ThrowIfNull(lines, nameof(lines));
 
-			FileStream fsAsync = new FileStream(path, mode, FileAccess.Write, FileShare.None, bufferSize: 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+			if (lines.Length == 0)
+			{
+				return;
+			}
+
+			FileStream fsAsync = new FileStream(path, mode, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
 			try
 			{
@@ -105,10 +125,15 @@ namespace StormDesktop.Common
 
 				foreach (string line in lines)
 				{
-					await sw.WriteLineAsync(line.AsMemory(), cancellationToken).ConfigureAwait(false);
+					if (token.IsCancellationRequested)
+					{
+						break;
+					}
+
+					await sw.WriteLineAsync(line).ConfigureAwait(false);
 				}
 
-				await sw.FlushAsync().ConfigureAwait(false);
+				await sw.FlushAsync(CancellationToken.None).ConfigureAwait(false);
 			}
 			finally
 			{
