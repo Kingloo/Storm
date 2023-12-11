@@ -81,6 +81,8 @@ namespace StormDesktop.Gui
 				Debug.WriteLineIf(Debugger.IsAttached, environmentMessage);
 			}
 
+			configurationBuilder.SetBasePath(AppContext.BaseDirectory);
+
 			const string permanent = "appsettings.json";
 			string environment = $"appsettings.{context.HostingEnvironment.EnvironmentName}.json";
 
@@ -152,7 +154,7 @@ namespace StormDesktop.Gui
 
 		private void Application_Startup(object sender, StartupEventArgs e)
 		{
-			logger.LogDebug("app startup started");
+			logger.LogDebug("startup started");
 
 			host.Start();
 
@@ -164,11 +166,15 @@ namespace StormDesktop.Gui
 
 			MainWindow = host.Services.GetRequiredService<MainWindow>();
 
-			appLifetime.ApplicationStopping.Register(MainWindow.Close);
+			appLifetime.ApplicationStopping.Register(() =>
+			{
+				MainWindow?.Close();
+			},
+			useSynchronizationContext: true);
 
 			MainWindow.Show();
 
-			logger.LogInformation("app started");
+			logger.LogInformation("started");
 		}
 
 		private void Application_Exit(object? sender, ExitEventArgs e)
