@@ -6,6 +6,7 @@ namespace StormLib
 {
 	public class Result<TStream> where TStream : notnull, IStream
 	{
+		public DateTimeOffset Finished { get; }
 		public TStream Stream { get; init; }
 		public Action<TStream> Action { get; init; } = (_) => { };
 		public HttpStatusCode? StatusCode { get; init; } = null;
@@ -22,6 +23,8 @@ namespace StormLib
 
 			Stream = stream;
 			Action = action;
+
+			Finished = DateTimeOffset.UtcNow;
 		}
 	}
 }
