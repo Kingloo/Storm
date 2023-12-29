@@ -4,24 +4,23 @@ using StormLib.Interfaces;
 
 namespace StormLib
 {
-	public class Result<TStream> where TStream : IStream
+	public class Result<TStream> where TStream : notnull, IStream
 	{
 		public TStream Stream { get; init; }
 		public Action<TStream> Action { get; init; } = (_) => { };
-		public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.Unused;
+		public HttpStatusCode? StatusCode { get; init; } = null;
 		public string Message { get; init; } = string.Empty;
 
-		public Result(TStream stream, HttpStatusCode statusCode)
-			: this(stream, statusCode, (_) => { })
+		public Result(TStream stream)
+			: this(stream, (_) => { })
 		{ }
 
-		public Result(TStream stream, HttpStatusCode statusCode, Action<TStream> action)
+		public Result(TStream stream, Action<TStream> action)
 		{
 			ArgumentNullException.ThrowIfNull(stream);
 			ArgumentNullException.ThrowIfNull(action);
 
 			Stream = stream;
-			StatusCode = statusCode;
 			Action = action;
 		}
 	}

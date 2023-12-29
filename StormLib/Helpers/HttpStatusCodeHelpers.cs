@@ -4,9 +4,11 @@ namespace StormLib.Helpers
 {
 	public static class HttpStatusCodeHelpers
 	{
-		public static string FormatStatusCode(HttpStatusCode statusCode)
+		public static string FormatStatusCode(HttpStatusCode? statusCode)
 		{
-			return $"{(int)statusCode} ({statusCode})";
+			return (statusCode is not null)
+				? $"{(int)statusCode} {statusCode}"
+				: "null";
 		}
 	}
 }

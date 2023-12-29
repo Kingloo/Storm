@@ -84,13 +84,14 @@ namespace StormLib.Services.Rumble
 				newViewersCount = null;
 			}
 
-			return new Result<RumbleStream>(stream, statusCode)
+			return new Result<RumbleStream>(stream)
 			{
 				Action = (RumbleStream r) =>
 				{
 					r.Status = newStatus;
 					r.ViewersCount = newViewersCount;
-				}
+				},
+				StatusCode = statusCode
 			};
 		}
 

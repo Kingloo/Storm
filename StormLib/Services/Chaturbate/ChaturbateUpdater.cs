@@ -80,25 +80,27 @@ namespace StormLib.Services.Chaturbate
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				return new Result<ChaturbateStream>(stream, statusCode)
+				return new Result<ChaturbateStream>(stream)
 				{
 					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Problem;
 						c.ViewersCount = null;
-					}
+					},
+					StatusCode = statusCode
 				};
 			}
 
 			if (text.Contains(bannedMarker, StringComparison.OrdinalIgnoreCase))
 			{
-				return new Result<ChaturbateStream>(stream, statusCode)
+				return new Result<ChaturbateStream>(stream)
 				{
 					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Banned;
 						c.ViewersCount = null;
-					}
+					},
+					StatusCode = statusCode
 				};
 			}
 
@@ -106,27 +108,29 @@ namespace StormLib.Services.Chaturbate
 
 			if (roomStatusIndex < 0)
 			{
-				return new Result<ChaturbateStream>(stream, statusCode)
+				return new Result<ChaturbateStream>(stream)
 				{
 					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Problem;
 						c.ViewersCount = null;
 					},
-					Message = $"text did not contain room status: '{roomStatus}'"
+					Message = $"text did not contain room status: '{roomStatus}'",
+					StatusCode = statusCode
 				};
 			}
 
 			if (text.Length < roomStatusIndex + 100)
 			{
-				return new Result<ChaturbateStream>(stream, statusCode)
+				return new Result<ChaturbateStream>(stream)
 				{
 					Action = static (ChaturbateStream c) =>
 					{
 						c.Status = Status.Problem;
 						c.ViewersCount = null;
 					},
-					Message = $"there was not 100 characters after room status index, there were actually {text.Length - roomStatusIndex} characters"
+					Message = $"there was not 100 characters after room status index, there were actually {text.Length - roomStatusIndex} characters",
+					StatusCode = statusCode
 				};
 			}
 
@@ -150,13 +154,14 @@ namespace StormLib.Services.Chaturbate
 				newStatus = Status.Unknown;
 			}
 
-			return new Result<ChaturbateStream>(stream, statusCode)
+			return new Result<ChaturbateStream>(stream)
 			{
 				Action = (ChaturbateStream c) =>
 				{
 					c.Status = newStatus;
 					c.ViewersCount = newViewersCount;
-				}
+				},
+				StatusCode = statusCode
 			};
 		}
 
@@ -165,7 +170,7 @@ namespace StormLib.Services.Chaturbate
 			// Chaturbate doesn't like it if you hit them too often,
 			// connections time out for minutes without connecting
 
-			List<Result<ChaturbateStream>> updateResults = new List<Result<ChaturbateStream>>();
+			List<Result<ChaturbateStream>> updateResults = new List<Result<ChaturbateStream>>(capacity: streams.Count);
 
 			foreach (ChaturbateStream stream in streams)
 			{
@@ -179,19 +184,22 @@ namespace StormLib.Services.Chaturbate
 				{
 					logger.LogError(ex, "{Message}", ex.Message);
 
-					result = new Result<ChaturbateStream>(stream, HttpStatusCode.RequestTimeout)
+					result = new Result<ChaturbateStream>(stream)
 					{
 						Action = (ChaturbateStream c) =>
 						{
 							c.Status = Status.Problem;
 							c.ViewersCount = null;
-						}
+						},
+						StatusCode = HttpStatusCode.RequestTimeout
 					};
 				}
 
 				updateResults.Add(result);
 
-				await Task.Delay(TimeSpan.FromSeconds(10d), cancellationToken).ConfigureAwait(false);
+				int randomisedUpdateDelaySeconds = System.Security.Cryptography.RandomNumberGenerator.GetInt32(5, 15);
+
+				await Task.Delay(TimeSpan.FromSeconds(randomisedUpdateDelaySeconds), cancellationToken).ConfigureAwait(false);
 			}
 
 			return updateResults.ToArray();

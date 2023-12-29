@@ -70,24 +70,26 @@ namespace StormLib.Services.YouTube
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				return new Result<YouTubeStream>(stream, statusCode)
+				return new Result<YouTubeStream>(stream)
 				{
 					Action = static (YouTubeStream y) =>
 					{
 						y.Status = Status.Problem;
 						y.ViewersCount = null;
-					}
+					},
+					StatusCode = statusCode
 				};
 			}
 
-			return new Result<YouTubeStream>(stream, statusCode)
+			return new Result<YouTubeStream>(stream)
 			{
 				Action = (YouTubeStream y) =>
 				{
 					y.DisplayName = SetDisplayName(text, stream.Name);
 					y.Status = SetStatus(text, youTubeOptionsMonitor.CurrentValue);
 					y.ViewersCount = SetViewers(text);
-				}
+				},
+				StatusCode = statusCode
 			};
 		}
 

@@ -78,10 +78,11 @@ namespace StormLib.Services.Twitch
 			if (statusCode != HttpStatusCode.OK)
 			{
 				return streams
-					.Select(s => new Result<TwitchStream>(s, statusCode)
+					.Select(s => new Result<TwitchStream>(s)
 					{
 						Action = BlankTwitchStream,
-						Message = "status code was not OK"
+						Message = "status code was not OK",
+						StatusCode = statusCode
 					})
 					.ToList();
 			}
@@ -89,10 +90,11 @@ namespace StormLib.Services.Twitch
 			if (!JsonHelpers.TryParse(text, out JsonNode? json))
 			{
 				return streams
-					.Select(s => new Result<TwitchStream>(s, statusCode)
+					.Select(s => new Result<TwitchStream>(s)
 					{
 						Action = BlankTwitchStream,
-						Message = "JSON parsing failed"
+						Message = "JSON parsing failed",
+						StatusCode = statusCode
 					})
 					.ToList();
 			}
@@ -161,7 +163,10 @@ namespace StormLib.Services.Twitch
 					};
 				}
 
-				Result<TwitchStream> result = new Result<TwitchStream>(each, statusCode, action);
+				Result<TwitchStream> result = new Result<TwitchStream>(each, action)
+				{
+					StatusCode = statusCode
+				};
 
 				results.Add(result);
 			}

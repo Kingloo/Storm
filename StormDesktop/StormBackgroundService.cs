@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib;
 using StormLib.Interfaces;
+using StormLib.Services;
 using StormLib.Services.Kick;
 using static StormLib.Common.ExceptionFilterUtility;
 using static StormLib.Helpers.HttpStatusCodeHelpers;
@@ -60,7 +61,7 @@ namespace StormDesktop
 		{
 			logger.LogInformation("started");
 
-			await Task.Delay(TimeSpan.FromSeconds(2.5d), stoppingToken).ConfigureAwait(false);
+			await Task.Delay(TimeSpan.FromSeconds(1.5d), stoppingToken).ConfigureAwait(false);
 
 			try
 			{
@@ -95,7 +96,7 @@ namespace StormDesktop
 				return;
 			}
 
-			IReadOnlyList<Result<TStream>> results = new List<Result<TStream>>();
+			IReadOnlyList<Result<TStream>> results = new List<Result<TStream>>(capacity: streams.Count);
 
 			try
 			{
@@ -107,23 +108,41 @@ namespace StormDesktop
 
 				logger.LogDebug("updated {Count} {StreamPluralized} ({StreamNames})", streamCount, accountPluralized, streamNames);
 			}
-			catch (TaskCanceledException ex) when (ex.InnerException is not null)
+			catch (OperationCanceledException ex)
 			{
-				logger.LogDebug(ex, "update cancelled ('{InnerExceptionType}': '{InnerExceptionMessage}')", ex.InnerException.GetType().FullName, ex.InnerException.Message);
+				logger.LogDebug(ex, "update cancelled");
 			}
 			catch (Exception ex) when (False(() => logger.LogError(ex, "run update threw: '{ExceptionType}', '{ExceptionMessage}'", ex.GetType().Name, ex.Message)))
 			{
 				throw;
 			}
 
-			foreach (Result<TStream> each in results)
+			switch (updater.UpdaterType)
+			{
+				case UpdaterType.One:
+					HandleUpdaterTypeOne(results);
+					break;
+				case UpdaterType.Many:
+					HandleUpdaterTypeMany(results);
+					break;
+				default:
+					logger.LogCritical("updater type was {UpdaterType}", updater.UpdaterType);
+					break;
+			}
+		}
+
+		private void HandleUpdaterTypeOne(IReadOnlyList<Result<TStream>> results)
+		{
+			foreach (var each in results)
 			{
 				updaterMessageQueue.ResultsQueue.Enqueue(each);
 
 				if (each.StatusCode != System.Net.HttpStatusCode.OK)
 				{
-					if (streams[0] is KickStream) // Kick is access-restricted behind CloudFlare and takes some time to get passed that
+					if (results[0].Stream is KickStream)
 					{
+						// Kick is access-restricted behind CloudFlare and takes some time to get passed that
+
 						continue;
 					}
 					else
@@ -131,6 +150,21 @@ namespace StormDesktop
 						logger.LogWarning("updating {DisplayName} was {StatusCode}", each.Stream.DisplayName, FormatStatusCode(each.StatusCode));
 					}
 				}
+			}
+		}
+		
+		private void HandleUpdaterTypeMany(IReadOnlyList<Result<TStream>> results)
+		{
+			foreach (var each in results)
+			{
+				updaterMessageQueue.ResultsQueue.Enqueue(each);
+			}
+
+			var first = results[0];
+
+			if (first.StatusCode != System.Net.HttpStatusCode.OK)
+			{
+				logger.LogWarning("update was {StatusCode}", FormatStatusCode(first.StatusCode));
 			}
 		}
 	}

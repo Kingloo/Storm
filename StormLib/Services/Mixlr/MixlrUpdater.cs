@@ -70,26 +70,28 @@ namespace StormLib.Services.Mixlr
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				return new Result<MixlrStream>(stream, statusCode)
-				{
-					Action = static (MixlrStream m) =>
-					{
-						m.Status = Status.Problem;
-						m.ViewersCount = null;
-					}
-				};
-			}
-
-			if (!JsonHelpers.TryParse(text, out JsonNode? json))
-			{
-				return new Result<MixlrStream>(stream, statusCode)
+				return new Result<MixlrStream>(stream)
 				{
 					Action = static (MixlrStream m) =>
 					{
 						m.Status = Status.Problem;
 						m.ViewersCount = null;
 					},
-					Message = "JSON parsing failed"
+					StatusCode = statusCode
+				};
+			}
+
+			if (!JsonHelpers.TryParse(text, out JsonNode? json))
+			{
+				return new Result<MixlrStream>(stream)
+				{
+					Action = static (MixlrStream m) =>
+					{
+						m.Status = Status.Problem;
+						m.ViewersCount = null;
+					},
+					Message = "JSON parsing failed",
+					StatusCode = statusCode
 				};
 			}
 
@@ -98,33 +100,35 @@ namespace StormLib.Services.Mixlr
 
 			if (userNameToken is null)
 			{
-				return new Result<MixlrStream>(stream, statusCode)
+				return new Result<MixlrStream>(stream)
 				{
 					Action = static (MixlrStream m) =>
 					{
 						m.Status = Status.Problem;
 						m.ViewersCount = null;
 					},
-					Message = "token did not exist: 'username'"
+					Message = "token did not exist: 'username'",
+					StatusCode = statusCode
 				};
 			}
 
 			if (isLiveToken is null)
 			{
-				return new Result<MixlrStream>(stream, statusCode)
+				return new Result<MixlrStream>(stream)
 				{
 					Action = static (MixlrStream m) =>
 					{
 						m.Status = Status.Problem;
 						m.ViewersCount = null;
 					},
-					Message = "token did not exist: 'is_live'"
+					Message = "token did not exist: 'is_live'",
+					StatusCode = statusCode
 				};
 			}
 
 			string? userName = (string?)userNameToken;
 
-			return new Result<MixlrStream>(stream, statusCode)
+			return new Result<MixlrStream>(stream)
 			{
 				Action = (MixlrStream m) =>
 				{
@@ -135,7 +139,8 @@ namespace StormLib.Services.Mixlr
 					}
 
 					m.Status = (bool)isLiveToken ? Status.Public : Status.Offline;
-				}
+				},
+				StatusCode = statusCode
 			};
 		}
 

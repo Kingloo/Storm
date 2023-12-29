@@ -85,27 +85,29 @@ namespace StormLib.Services.Kick
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				return new Result<KickStream>(stream, statusCode)
+				return new Result<KickStream>(stream)
 				{
 					Action = static (KickStream k) =>
 					{
 						k.Status = Status.Problem;
 						k.ViewersCount = null;
 						k.SessionTitle = null;
-					}
+					},
+					StatusCode = statusCode
 				};
 			}
 
 			if (!JsonHelpers.TryParse(text, out JsonNode? json))
 			{
-				return new Result<KickStream>(stream, statusCode)
+				return new Result<KickStream>(stream)
 				{
 					Action = static (KickStream k) =>
 					{
 						k.Status = Status.Problem;
 						k.ViewersCount = null;
 						k.SessionTitle = null;
-					}
+					},
+					StatusCode = statusCode
 				};
 			}
 
@@ -131,7 +133,7 @@ namespace StormLib.Services.Kick
 				false => Status.Offline
 			};
 
-			return new Result<KickStream>(stream, statusCode)
+			return new Result<KickStream>(stream)
 			{
 				Action = (KickStream k) =>
 				{
@@ -144,7 +146,8 @@ namespace StormLib.Services.Kick
 					k.Status = newStatus;
 					k.ViewersCount = newViewersCount;
 					k.SessionTitle = newSessionTitle;
-				}
+				},
+				StatusCode = statusCode
 			};
 		}
 

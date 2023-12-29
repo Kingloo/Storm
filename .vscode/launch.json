@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "StormDesktop (WPF)",
+            "name": "StormDesktop (WPF) (dev)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -10,6 +10,20 @@
             "args": [],
 			"env": {
 				"Environment": "Development"
+			},
+            "cwd": "${workspaceFolder}/StormDesktop",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "StormDesktop (WPF) (prod)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/StormDesktop/bin/Debug/net8.0-windows/Storm.dll",
+            "args": [],
+			"env": {
+				"Environment": "Production"
 			},
             "cwd": "${workspaceFolder}/StormDesktop",
             "console": "internalConsole",
