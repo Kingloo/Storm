@@ -41,7 +41,7 @@ namespace StormDesktop
 			StreamSource = streamSource;
 		}
 
-		public async Task UpdateAsync<TStream>(IReadOnlyList<TStream> streams, CancellationToken cancellationToken) where TStream : IStream
+		public async Task UpdateAsync<TStream>(IReadOnlyList<TStream> streams, CancellationToken cancellationToken) where TStream : notnull, IStream
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
