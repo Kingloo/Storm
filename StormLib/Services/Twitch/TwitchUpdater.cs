@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -44,26 +43,26 @@ namespace StormLib.Services.Twitch
 		}
 
 		public Task<IReadOnlyList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams)
-			=> UpdateAsync(streams, CancellationToken.None);
+			=> UpdateManyAsync(streams, CancellationToken.None);
 
 		public Task<IReadOnlyList<Result<TwitchStream>>> UpdateAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
-		{
-			ArgumentNullException.ThrowIfNull(streams);
-
-			return UpdateManyAsync(streams, cancellationToken);
-		}
+			=> UpdateManyAsync(streams, cancellationToken);
 
 		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateManyAsync(IReadOnlyList<TwitchStream> streams, CancellationToken cancellationToken)
 		{
-			List<Result<TwitchStream>> allResults = new List<Result<TwitchStream>>();
+			ArgumentNullException.ThrowIfNull(streams);
 
-			foreach (IEnumerable<TwitchStream> chunk in streams.Chunk(twitchOptionsMonitor.CurrentValue.MaxStreamsPerUpdate))
+			TwitchOptions currentTwitchOptions = twitchOptionsMonitor.CurrentValue;
+
+			List<Result<TwitchStream>> allResults = new List<Result<TwitchStream>>(capacity: streams.Count);
+
+			foreach (IEnumerable<TwitchStream> chunk in streams.Chunk(currentTwitchOptions.MaxStreamsPerUpdate))
 			{
 				IReadOnlyList<Result<TwitchStream>> results = await UpdateChunkAsync(chunk, cancellationToken).ConfigureAwait(false);
 
 				allResults.AddRange(results);
 
-				if (streams.Count > twitchOptionsMonitor.CurrentValue.MaxStreamsPerUpdate) // add a little delay if there are multiple chunks
+				if (streams.Count > currentTwitchOptions.MaxStreamsPerUpdate) // add a little delay if there are multiple chunks
 				{
 					await Task.Delay(TimeSpan.FromSeconds(2d), cancellationToken).ConfigureAwait(false);
 				}
