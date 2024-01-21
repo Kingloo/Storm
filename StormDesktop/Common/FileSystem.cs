@@ -10,6 +10,7 @@ namespace StormDesktop.Common
 	public static class FileSystem
 	{
 		private const char defaultCommentChar = '#';
+		private static readonly Encoding defaultEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
 		public static void EnsureDirectoryExists(string? folder)
 		{
@@ -51,11 +52,11 @@ namespace StormDesktop.Common
 
 		[System.Diagnostics.DebuggerStepThrough]
 		public static ValueTask<string[]> LoadLinesFromFileAsync(string path)
-			=> LoadLinesFromFileAsync(path, defaultCommentChar, Encoding.UTF8, CancellationToken.None);
+			=> LoadLinesFromFileAsync(path, defaultCommentChar, defaultEncoding, CancellationToken.None);
 
 		[System.Diagnostics.DebuggerStepThrough]
 		public static ValueTask<string[]> LoadLinesFromFileAsync(string path, CancellationToken cancellationToken)
-			=> LoadLinesFromFileAsync(path, defaultCommentChar, Encoding.UTF8, cancellationToken);
+			=> LoadLinesFromFileAsync(path, defaultCommentChar, defaultEncoding, cancellationToken);
 
 		public static async ValueTask<string[]> LoadLinesFromFileAsync(string path, char comment, Encoding encoding, CancellationToken token)
 		{
@@ -102,11 +103,11 @@ namespace StormDesktop.Common
 
 		[System.Diagnostics.DebuggerStepThrough]
 		public static ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode)
-			=> WriteLinesToFileAsync(lines, path, mode, Encoding.UTF8, CancellationToken.None);
+			=> WriteLinesToFileAsync(lines, path, mode, defaultEncoding, CancellationToken.None);
 
 		[System.Diagnostics.DebuggerStepThrough]
 		public static ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, CancellationToken cancellationToken)
-			=> WriteLinesToFileAsync(lines, path, mode, Encoding.UTF8, cancellationToken);
+			=> WriteLinesToFileAsync(lines, path, mode, defaultEncoding, cancellationToken);
 
 		public static async ValueTask WriteLinesToFileAsync(string[] lines, string path, FileMode mode, Encoding encoding, CancellationToken token)
 		{
