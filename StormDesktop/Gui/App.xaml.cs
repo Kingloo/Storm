@@ -67,6 +67,8 @@ namespace StormDesktop.Gui
 		private static void ConfigureHostOptions(HostOptions hostOptions)
 		{
 			hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
+			hostOptions.ServicesStartConcurrently = true;
+			hostOptions.ServicesStopConcurrently = true;
 			hostOptions.ShutdownTimeout = TimeSpan.FromSeconds(5d);
 		}
 
