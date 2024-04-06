@@ -56,16 +56,20 @@ namespace StormLib.Services.Twitch
 
 			List<Result<TwitchStream>> allResults = new List<Result<TwitchStream>>(capacity: streams.Count);
 
+			int chunkCount = 1;
+
 			foreach (IEnumerable<TwitchStream> chunk in streams.Chunk(currentTwitchOptions.MaxStreamsPerUpdate))
 			{
 				IReadOnlyList<Result<TwitchStream>> results = await UpdateChunkAsync(chunk, cancellationToken).ConfigureAwait(false);
 
 				allResults.AddRange(results);
 
-				if (streams.Count > currentTwitchOptions.MaxStreamsPerUpdate) // add a little delay if there are multiple chunks
+				if (chunkCount * currentTwitchOptions.MaxStreamsPerUpdate < streams.Count) // add a short delay if there are more chunks to come
 				{
-					await Task.Delay(TimeSpan.FromSeconds(2d), cancellationToken).ConfigureAwait(false);
+					await Task.Delay(TimeSpan.FromMilliseconds(500d), cancellationToken).ConfigureAwait(false);
 				}
+
+				chunkCount++;
 			}
 
 			return allResults;
