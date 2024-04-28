@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,26 +27,26 @@ namespace StormDesktop.Common
 
 		private static DispatcherTimer? queuePullTimer = null;
 
+		public static void Send(string title)
+			=> SendInternal(title, string.Empty, null);
 
+		public static void Send(string title, string description)
+			=> SendInternal(title, description, null);
 
-		public static void Send(string title) => Send(title, string.Empty, () => { });
-
-		public static void Send(string title, string description) => Send(title, description, () => { });
-
-		public static void Send(string title, Action action) => Send(title, string.Empty, action);
+		public static void Send(string title, Action action)
+			=> SendInternal(title, string.Empty, action);
 
 		public static void Send(string title, string description, Action action)
+			=> SendInternal(title, description, action);
+
+		private static void SendInternal(string title, string description, Action? action)
 		{
 			InitTimer();
 
 			Notification notification = new Notification(title, description, action);
 
-			notification.Closed += (s, e) => canShowNotification = true;
-
 			notificationQueue.Enqueue(notification);
 		}
-
-
 
 		private static void InitTimer()
 		{
@@ -101,13 +102,11 @@ namespace StormDesktop.Common
 			System.Media.SystemSounds.Hand.Play();
 		}
 
-
-
 		private sealed class Notification : Window
 		{
 			private readonly DispatcherCountdownTimer closeTimer;
 
-			internal Notification(string title, string description, Action action)
+			internal Notification(string title, string description, Action? action)
 			{
 				Style = BuildWindowStyle(action);
 
@@ -130,24 +129,44 @@ namespace StormDesktop.Common
 				AddChild(grid);
 
 #if DEBUG
-				double interval = 4d;
+				TimeSpan interval = TimeSpan.FromSeconds(4d);
 #else
-                double interval = 15d;
+				TimeSpan interval = TimeSpan.FromSeconds(15d);
 #endif
 
-				closeTimer = new DispatcherCountdownTimer(TimeSpan.FromSeconds(interval), Close);
+				closeTimer = new DispatcherCountdownTimer(interval, Close);
 
-				Loaded += (s, e) => closeTimer.Start();
-				Closing += (s, e) => closeTimer.Stop();
+				Loaded += OnNotificationLoaded;
+				Closing += OnNotificationClosing;
+				Closed += OnNotificationClosed;
 			}
 
-			private static Style BuildWindowStyle(Action action)
+			private void OnNotificationLoaded(object? sender, RoutedEventArgs e)
+			{
+				closeTimer.Start();
+			}
+
+			private void OnNotificationClosing(object? sender, CancelEventArgs e)
+			{
+				closeTimer.Stop();
+			}
+
+			private void OnNotificationClosed(object? sender, EventArgs e)
+			{
+				canShowNotification = true;
+
+				Loaded -= OnNotificationLoaded;
+				Closing -= OnNotificationClosing;
+				Closed -= OnNotificationClosed;
+			}
+
+			private static Style BuildWindowStyle(Action? action)
 			{
 				Style style = new Style(typeof(Notification));
 
 				if (action != null)
 				{
-					var handler = new MouseButtonEventHandler((s, e) => action());
+					MouseButtonEventHandler handler = new MouseButtonEventHandler((s, e) => action());
 					var leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
 
 					style.Setters.Add(leftMouseDoubleClick);
