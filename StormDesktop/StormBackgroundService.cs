@@ -59,7 +59,7 @@ namespace StormDesktop
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			logger.LogInformation("started");
+			logger.LogDebug("started");
 
 			await Task.Delay(TimeSpan.FromSeconds(1.5d), stoppingToken).ConfigureAwait(false);
 
@@ -152,7 +152,7 @@ namespace StormDesktop
 				}
 			}
 		}
-		
+
 		private void HandleUpdaterTypeMany(IReadOnlyList<Result<TStream>> results)
 		{
 			foreach (var each in results)
