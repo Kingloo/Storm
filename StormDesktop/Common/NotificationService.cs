@@ -167,7 +167,7 @@ namespace StormDesktop.Common
 				if (action != null)
 				{
 					MouseButtonEventHandler handler = new MouseButtonEventHandler((s, e) => action());
-					var leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
+					EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
 
 					style.Setters.Add(leftMouseDoubleClick);
 				}
