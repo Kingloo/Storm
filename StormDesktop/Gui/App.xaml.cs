@@ -166,7 +166,10 @@ namespace StormDesktop.Gui
 
 			sink.StartSink();
 
-			MainWindow = host.Services.GetRequiredService<MainWindow>();
+			using (host.Services.CreateScope())
+			{
+				MainWindow = host.Services.GetRequiredService<MainWindow>();
+			}
 
 			appLifetime.ApplicationStopping.Register(() =>
 			{
