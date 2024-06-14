@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<PlatformTarget>x64</PlatformTarget>
-		<Copyright>© Kingloo 2023</Copyright>
+		<Copyright>© Kingloo 2024</Copyright>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>all</AnalysisMode>
