@@ -156,7 +156,8 @@ namespace StormLib.Services.Twitch
 							t.ViewersCount = null;
 							t.Game = null;
 							t.Status = Status.Offline;
-						},
+						}
+						,
 						false => (TwitchStream t) =>
 						{
 							t.DisplayName = GetDisplayName(userData) ?? each.Name;
