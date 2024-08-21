@@ -63,6 +63,8 @@ namespace StormDesktop
 
 			await Task.Delay(TimeSpan.FromSeconds(1.5d), stoppingToken).ConfigureAwait(false);
 
+			Type? exceptionType = null;
+
 			try
 			{
 				while (true)
@@ -74,6 +76,12 @@ namespace StormDesktop
 					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
 				}
 			}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception ex)
+			{
+				exceptionType = ex.GetType();
+			}
+#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				if (stoppingToken.IsCancellationRequested)
@@ -82,7 +90,14 @@ namespace StormDesktop
 				}
 				else
 				{
-					logger.LogCritical("stopped unexpectedly");
+					if (exceptionType is not null)
+					{
+						logger.LogCritical("stopped unexpectedly ({ExceptionType})", exceptionType.Name);
+					}
+					else
+					{
+						logger.LogCritical("stopped unexpectedly");
+					}
 				}
 			}
 		}
