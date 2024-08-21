@@ -223,14 +223,11 @@ namespace StormLib.Services.Twitch
 		{
 			// if game Id is null, we say it is not unwanted
 
-			if (gameId is Int64 id)
+			return gameId switch
 			{
-				return twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(id);
-			}
-			else
-			{
-				return false;
-			}
+				Int64 id => twitchOptionsMonitor.CurrentValue.UnwantedGameIds.Contains(id),
+				_ => false
+			};
 		}
 
 		private async ValueTask<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
