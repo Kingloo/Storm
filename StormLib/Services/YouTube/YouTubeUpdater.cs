@@ -141,14 +141,9 @@ namespace StormLib.Services.YouTube
 
 			string viewersTextDigitsOnly = GetOnlyDigits(viewersText);
 
-			if (Int32.TryParse(viewersTextDigitsOnly, out int result))
-			{
-				return result;
-			}
-			else
-			{
-				return null;
-			}
+			return Int32.TryParse(viewersTextDigitsOnly, out int result)
+				? result
+				: null;
 		}
 
 		private static string GetOnlyDigits(string text)
