@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -63,7 +64,7 @@ namespace StormDesktop
 
 			await Task.Delay(TimeSpan.FromSeconds(1.5d), stoppingToken).ConfigureAwait(false);
 
-			Type? exceptionType = null;
+			ExceptionDispatchInfo? edi = null;
 
 			try
 			{
@@ -79,7 +80,7 @@ namespace StormDesktop
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
-				exceptionType = ex.GetType();
+				edi = ExceptionDispatchInfo.Capture(ex);
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
 			finally
@@ -90,13 +91,17 @@ namespace StormDesktop
 				}
 				else
 				{
-					if (exceptionType is not null)
+					if (edi is not null)
 					{
-						logger.LogCritical("stopped unexpectedly ({ExceptionType})", exceptionType.Name);
+						logger.LogCritical(
+							edi.SourceException,
+							"stopped unexpectedly: ({Type}: {Message})",
+							edi.SourceException.GetType(),
+							edi.SourceException.Message);
 					}
 					else
 					{
-						logger.LogCritical("stopped unexpectedly");
+						logger.LogCritical("stopped unexpectedly (no exception)");
 					}
 				}
 			}
