@@ -112,7 +112,7 @@ namespace StormDesktop.Common
 		public async void Execute()
 			=> await ExecuteAsync().ConfigureAwait(true);
 
-		public async override void Execute(object? parameter)
+		public override async void Execute(object? parameter)
 			=> await ExecuteAsync().ConfigureAwait(true);
 
 		private async Task ExecuteAsync()

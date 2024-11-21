@@ -35,7 +35,7 @@ namespace StormLib.Extensions
 		{
 			ArgumentNullException.ThrowIfNull(value, nameof(value));
 
-			var scoic = StringComparison.OrdinalIgnoreCase;
+			StringComparison scoic = StringComparison.OrdinalIgnoreCase;
 
 			return value
 				.Replace(carriageReturnNewLine, space, scoic)
@@ -51,7 +51,7 @@ namespace StormLib.Extensions
 				throw new ArgumentNullException(nameof(self));
 			}
 
-			var sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 
 			foreach (char c in self)
 			{

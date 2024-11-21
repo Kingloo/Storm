@@ -29,18 +29,18 @@ namespace StormLib.Services.Kick
 
 		private static KickUpdater CreateKickUpdater(IServiceProvider serviceProvider)
 		{
-			var logger = serviceProvider.GetRequiredService<ILogger<KickUpdater>>();
+			ILogger<KickUpdater> logger = serviceProvider.GetRequiredService<ILogger<KickUpdater>>();
 
 #pragma warning disable CA2000 // see HttpClient->ctor disposeHandler is true
-			var handler = ConfigurePrimaryHttpMessageHandler(serviceProvider);
+			SocketsHttpHandler handler = ConfigurePrimaryHttpMessageHandler(serviceProvider);
 #pragma warning restore CA2000
 
-			var httpClient = new HttpClient(handler, disposeHandler: true);
+			HttpClient httpClient = new HttpClient(handler, disposeHandler: true);
 
 			ConfigureHttpClient(httpClient);
 
-			var kickOptionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<KickOptions>>();
-			var stormOptionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<StormOptions>>();
+			IOptionsMonitor<KickOptions> kickOptionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<KickOptions>>();
+			IOptionsMonitor<StormOptions> stormOptionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<StormOptions>>();
 
 			return new KickUpdater(logger, httpClient, kickOptionsMonitor, stormOptionsMonitor);
 		}

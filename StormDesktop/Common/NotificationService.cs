@@ -13,7 +13,7 @@ namespace StormDesktop.Common
 	{
 		private static bool canShowNotification = true;
 
-		private readonly static Queue<Notification> notificationQueue = new Queue<Notification>();
+		private static readonly Queue<Notification> notificationQueue = new Queue<Notification>();
 
 		/// <summary>
 		/// How many times the timer ticked but found nothing in the queue to work on.

@@ -63,16 +63,14 @@ namespace StormDesktop.Common
 
 		public override string ToString()
 		{
-			var sb = new StringBuilder();
+			CultureInfo cc = CultureInfo.CurrentCulture;
 
-			var cc = CultureInfo.CurrentCulture;
-
-			sb.AppendLine(GetType().FullName);
-			sb.AppendLine(string.Format(cc, "Created at: {0}", created.ToString(cc)));
-			sb.AppendLine(IsRunning ? "Is Running: true" : "Is Running: false");
-			sb.AppendLine(string.Format(cc, "Time left: {0}", TimeLeft.ToString()));
-
-			return sb.ToString();
+			return new StringBuilder()
+				.AppendLine(GetType().FullName)
+				.AppendLine(string.Format(cc, "Created at: {0}", created.ToString(cc)))
+				.AppendLine(IsRunning ? "Is Running: true" : "Is Running: false")
+				.AppendLine(string.Format(cc, "Time left: {0}", TimeLeft.ToString()))
+				.ToString();
 		}
 	}
 }

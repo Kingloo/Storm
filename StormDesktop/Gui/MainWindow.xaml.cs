@@ -103,7 +103,7 @@ namespace StormDesktop.Gui
 
 		private void SetMaxHeight()
 		{
-			var currentMonitor = System.Windows.Forms.Screen.FromHandle(hWnd);
+			System.Windows.Forms.Screen currentMonitor = System.Windows.Forms.Screen.FromHandle(hWnd);
 
 			double height = currentMonitor?.WorkingArea.Bottom ?? SystemParameters.WorkArea.Bottom;
 			double leeway = 100d;

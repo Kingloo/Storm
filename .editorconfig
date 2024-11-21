@@ -10,8 +10,8 @@ insert_final_newline = true
 # IDE0090: Use 'new(...)'
 csharp_style_implicit_object_creation_when_type_is_apparent = false
 
-# IDE0290: primary constructors
-dotnet_diagnostic.IDE0290.severity = none
+# types can made internal
+dotnet_diagnostic.CA1515.severity = none
 
 # CA!711: was complaing about StreamBase derived classes being called e.g. TwitchStream
 dotnet_diagnostic.CA1711.severity = none
@@ -21,3 +21,37 @@ dotnet_diagnostic.CA1805.severity = none
 
 # CA1848: LoggerMessage
 dotnet_diagnostic.CA1848.severity = none
+
+# wants me to <GenerateDocumentationFile>
+dotnet_diagnostic.IDE0005.severity = none
+
+# use block body for method
+dotnet_diagnostic.IDE0022.severity = none
+
+# use expression body for property
+dotnet_diagnostic.IDE0025.severity = none
+
+# if statement can be simplified - 45 and 46 are about this
+dotnet_diagnostic.IDE0045.severity = none
+dotnet_diagnostic.IDE0046.severity = none
+
+# expression value is never used
+dotnet_diagnostic.IDE0058.severity = none
+
+# use block body for local function
+dotnet_diagnostic.IDE0061.severity = none
+
+# populate switch case - complains even if you have a default case or a '_'
+dotnet_diagnostic.IDE0072.severity = none
+
+# remove redundant equality
+dotnet_diagnostic.IDE0100.severity = none
+
+# use primary constructor
+dotnet_diagnostic.IDE0290.severity = none
+
+# collection initialization can be simplified
+dotnet_diagnostic.IDE0028.severity = none
+dotnet_diagnostic.IDE0300.severity = none
+dotnet_diagnostic.IDE0301.severity = none
+dotnet_diagnostic.IDE0305.severity = none

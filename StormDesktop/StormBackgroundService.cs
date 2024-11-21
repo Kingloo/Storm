@@ -109,9 +109,9 @@ namespace StormDesktop
 
 		private async ValueTask RunUpdate(CancellationToken cancellationToken)
 		{
-			IReadOnlyList<TStream> streams = updaterMessageQueue.StreamSource.OfType<TStream>().ToList();
+			List<TStream> streams = updaterMessageQueue.StreamSource.OfType<TStream>().ToList();
 
-			if (!streams.Any())
+			if (streams.Count == 0)
 			{
 				return;
 			}
@@ -145,6 +145,8 @@ namespace StormDesktop
 				case UpdaterType.Many:
 					HandleUpdaterTypeMany(results);
 					break;
+				case UpdaterType.None:
+				case UpdaterType.Unknown:
 				default:
 					logger.LogCritical("updater type was {UpdaterType}", updater.UpdaterType);
 					break;
@@ -153,7 +155,7 @@ namespace StormDesktop
 
 		private void HandleUpdaterTypeOne(IReadOnlyList<Result<TStream>> results)
 		{
-			foreach (var each in results)
+			foreach (Result<TStream> each in results)
 			{
 				updaterMessageQueue.ResultsQueue.Enqueue(each);
 
@@ -175,12 +177,12 @@ namespace StormDesktop
 
 		private void HandleUpdaterTypeMany(IReadOnlyList<Result<TStream>> results)
 		{
-			foreach (var each in results)
+			foreach (Result<TStream> each in results)
 			{
 				updaterMessageQueue.ResultsQueue.Enqueue(each);
 			}
 
-			var first = results[0];
+			Result<TStream> first = results[0];
 
 			if (first.StatusCode != System.Net.HttpStatusCode.OK)
 			{

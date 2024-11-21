@@ -4,6 +4,7 @@ namespace StormLib.Helpers
 {
 	public static class JsonHelpers
 	{
+#pragma warning disable IDE0055 // complains about formatting
 /*
 		public static bool TryParse(string text, [NotNullWhen(true)] out Newtonsoft.Json.Linq.JObject? json)
 		{
@@ -21,6 +22,7 @@ namespace StormLib.Helpers
 			}
 		}
 */
+#pragma warning restore IDE0055
 
 		public static bool TryParse(string text, [NotNullWhen(true)] out System.Text.Json.Nodes.JsonNode? json)
 		{

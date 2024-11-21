@@ -250,7 +250,7 @@ namespace StormDesktop.Gui
 
 		private void RemoveOld(IEnumerable<IStream> loadedStreams)
 		{
-			var toRemove = Streams
+			List<IStream> toRemove = Streams
 				.Where(s => !loadedStreams.Contains(s))
 				.ToList();
 
@@ -276,7 +276,7 @@ namespace StormDesktop.Gui
 
 		private async Task UpdateAsync(IStream stream)
 		{
-			var updateTask = stream switch
+			Task updateTask = stream switch
 			{
 				ChaturbateStream c => updaterMessageQueue.UpdateAsync(new[] { c }, CancellationToken.None),
 				KickStream k => updaterMessageQueue.UpdateAsync(new[] { k }, CancellationToken.None),
