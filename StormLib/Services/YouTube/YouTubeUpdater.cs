@@ -58,6 +58,8 @@ namespace StormLib.Services.YouTube
 
 		private async Task<Result<YouTubeStream>> UpdateOneAsync(YouTubeStream stream, CancellationToken cancellationToken)
 		{
+			logger.LogDebug("update '{}'", stream.DisplayName);
+
 			Uri uri = new Uri($"{stream.Link.AbsoluteUri}?ucbcb=1", UriKind.Absolute);
 
 			HttpStatusCode statusCode = HttpStatusCode.Unused;

@@ -175,7 +175,7 @@ namespace StormDesktop.Common
 #if DEBUG
 				style.Setters.Add(new Setter(BackgroundProperty, Brushes.DarkGoldenrod));
 #else
-                style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
+				style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
 #endif
 				style.Setters.Add(new Setter(ForegroundProperty, Brushes.Transparent));
 

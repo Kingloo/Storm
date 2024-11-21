@@ -58,6 +58,8 @@ namespace StormLib.Services.Mixlr
 
 		private async Task<Result<MixlrStream>> UpdateOneAsync(MixlrStream stream, CancellationToken cancellationToken)
 		{
+			logger.LogDebug("update '{}'", stream.DisplayName);
+
 			Uri uri = new Uri($"{mixlrOptionsMonitor.CurrentValue.ApiUri}/users/{stream.Name}", UriKind.Absolute);
 
 			HttpStatusCode statusCode = HttpStatusCode.Unused;

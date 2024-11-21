@@ -52,6 +52,8 @@ namespace StormLib.Services.Twitch
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
+			logger.LogDebug("update {Count} {PluralizedAccount}", streams.Count, streams.Count == 1 ? "account" : "accounts");
+
 			TwitchOptions currentTwitchOptions = twitchOptionsMonitor.CurrentValue;
 
 			List<Result<TwitchStream>> allResults = new List<Result<TwitchStream>>(capacity: streams.Count);

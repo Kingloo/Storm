@@ -66,6 +66,8 @@ namespace StormLib.Services.Kick
 
 		private async Task<Result<KickStream>> UpdateOneAsync(KickStream stream, CancellationToken cancellationToken)
 		{
+			logger.LogDebug("update '{}'", stream.DisplayName);
+
 			Uri apiEndpointForStream = new Uri($"{kickOptionsMonitor.CurrentValue.ApiUri}/channels/{stream.Name}", UriKind.Absolute);
 
 			void ConfigureRequest(HttpRequestMessage requestMessage)

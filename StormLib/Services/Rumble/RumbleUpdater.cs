@@ -97,7 +97,7 @@ namespace StormLib.Services.Rumble
 
 		private Task<Result<RumbleStream>[]> UpdateManyAsync(IReadOnlyList<RumbleStream> streams, CancellationToken cancellationToken)
 		{
-			var updateTasks = new List<Task<Result<RumbleStream>>>();
+			List<Task<Result<RumbleStream>>> updateTasks = new List<Task<Result<RumbleStream>>>();
 
 			foreach (RumbleStream each in streams)
 			{
