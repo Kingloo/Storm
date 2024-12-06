@@ -98,10 +98,6 @@ namespace StormDesktop
 								edi.SourceException.GetType(),
 								edi.SourceException.Message);
 						}
-						else
-						{
-							logger.LogCritical("stopped unexpectedly (no exception)");
-						}
 					}
 				}
 			}
