@@ -66,9 +66,9 @@ namespace StormDesktop
 
 			ExceptionDispatchInfo? edi = null;
 
-			try
+			while (true)
 			{
-				while (true)
+				try
 				{
 					stoppingToken.ThrowIfCancellationRequested();
 
@@ -76,32 +76,32 @@ namespace StormDesktop
 
 					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
 				}
-			}
 #pragma warning disable CA1031 // Do not catch general exception types
-			catch (Exception ex)
-			{
-				edi = ExceptionDispatchInfo.Capture(ex);
-			}
-#pragma warning restore CA1031 // Do not catch general exception types
-			finally
-			{
-				if (stoppingToken.IsCancellationRequested)
+				catch (Exception ex)
 				{
-					logger.LogDebug("stopped (cancelled)");
+					edi = ExceptionDispatchInfo.Capture(ex);
 				}
-				else
+#pragma warning restore CA1031
+				finally
 				{
-					if (edi is not null)
+					if (stoppingToken.IsCancellationRequested)
 					{
-						logger.LogCritical(
-							edi.SourceException,
-							"stopped unexpectedly: ({Type}: {Message})",
-							edi.SourceException.GetType(),
-							edi.SourceException.Message);
+						logger.LogDebug("stopped (cancelled)");
 					}
 					else
 					{
-						logger.LogCritical("stopped unexpectedly (no exception)");
+						if (edi is not null)
+						{
+							logger.LogCritical(
+								edi.SourceException,
+								"stopped unexpectedly: ({Type}: {Message})",
+								edi.SourceException.GetType(),
+								edi.SourceException.Message);
+						}
+						else
+						{
+							logger.LogCritical("stopped unexpectedly (no exception)");
+						}
 					}
 				}
 			}
@@ -155,6 +155,11 @@ namespace StormDesktop
 
 		private void HandleUpdaterTypeOne(IReadOnlyList<Result<TStream>> results)
 		{
+			if (results.Count == 0)
+			{
+				return;
+			}
+
 			foreach (Result<TStream> each in results)
 			{
 				updaterMessageQueue.ResultsQueue.Enqueue(each);
