@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
@@ -169,30 +170,17 @@ namespace StormDesktop.Gui
 			using (host.Services.CreateScope())
 			{
 				MainWindow = host.Services.GetRequiredService<MainWindow>();
-			}
 
-			appLifetime.ApplicationStopped.Register(() =>
-			{
-				MainWindow?.Close();
-			},
-			useSynchronizationContext: true);
+				MainWindow.Closed += MainWindow_Closed;
+			}
 
 			MainWindow.Show();
 
 			logger.LogInformation("started");
 		}
 
-		private void Application_Exit(object? sender, ExitEventArgs e)
+		private void MainWindow_Closed(object? sender, EventArgs e)
 		{
-			if (e.ApplicationExitCode == 0)
-			{
-				logger.LogInformation("exited");
-			}
-			else
-			{
-				logger.LogWarning("exited (exit code {ExitCode})", e.ApplicationExitCode);
-			}
-
 			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
 
 			sink.StopSink();
