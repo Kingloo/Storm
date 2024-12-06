@@ -181,6 +181,8 @@ namespace StormDesktop.Gui
 
 		private void MainWindow_Closed(object? sender, EventArgs e)
 		{
+			logger.LogInformation("exited");
+
 			IFileLoggerSink sink = host.Services.GetRequiredService<IFileLoggerSink>();
 
 			sink.StopSink();
