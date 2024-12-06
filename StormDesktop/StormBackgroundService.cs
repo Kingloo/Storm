@@ -68,10 +68,10 @@ namespace StormDesktop
 
 			while (true)
 			{
+				stoppingToken.ThrowIfCancellationRequested();
+
 				try
 				{
-					stoppingToken.ThrowIfCancellationRequested();
-
 					await RunUpdate(stoppingToken).ConfigureAwait(false);
 
 					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
