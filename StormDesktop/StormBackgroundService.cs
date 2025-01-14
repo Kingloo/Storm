@@ -97,6 +97,8 @@ namespace StormDesktop
 								"stopped unexpectedly: ({Type}: {Message})",
 								edi.SourceException.GetType(),
 								edi.SourceException.Message);
+
+							edi = null;
 						}
 					}
 				}
@@ -178,6 +180,11 @@ namespace StormDesktop
 
 		private void HandleUpdaterTypeMany(IReadOnlyList<Result<TStream>> results)
 		{
+			if (results.Count == 0)
+			{
+				return;
+			}
+
 			foreach (Result<TStream> each in results)
 			{
 				updaterMessageQueue.ResultsQueue.Enqueue(each);
