@@ -8,8 +8,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="nunit" Version="3.13.*" />
-		<PackageReference Include="NUnit3TestAdapter" Version="4.4.*" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.*" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.6.*" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.*" />
 	</ItemGroup>
 
 	<ItemGroup>
