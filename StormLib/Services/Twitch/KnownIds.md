@@ -5,6 +5,7 @@
 | Among Us | 510218 |
 | Jackbox Party Packs | 493174 |
 | Legend of Zelda: Tears of the Kingdom | 512998 |
+| inZOI | 286759738 |
 | The Legend of Zelda: Echoes of Widsom | 1290989747 |
 | SpiderMan 2 (2023) | 1967084783 |
 
