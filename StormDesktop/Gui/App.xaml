@@ -1,6 +1,7 @@
-﻿<Application x:Class="StormDesktop.Gui.App"
+<Application x:Class="StormDesktop.Gui.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="clr-namespace:StormDesktop.Gui.StreamViews"
              ShutdownMode="OnMainWindowClose"
              Startup="Application_Startup"
              DispatcherUnhandledException="Application_DispatcherUnhandledException">
@@ -10,10 +11,10 @@
                 <ResourceDictionary Source="BasicView.xaml" />
                 <ResourceDictionary Source="StreamViews\BaseStream.xaml" />
                 <ResourceDictionary Source="StreamViews\Chaturbate.xaml" />
-				<ResourceDictionary Source="StreamViews\Kick.xaml" />
+                <ResourceDictionary Source="StreamViews\Kick.xaml" />
                 <ResourceDictionary Source="StreamViews\Mixlr.xaml" />
-				<ResourceDictionary Source="StreamViews\Rumble.xaml" />
-                <ResourceDictionary Source="StreamViews\Twitch.xaml" />
+                <ResourceDictionary Source="StreamViews\Rumble.xaml" />
+                <res:Twitch />
                 <ResourceDictionary Source="StreamViews\Unsupported.xaml" />
                 <ResourceDictionary Source="StreamViews\YouTube.xaml" />
             </ResourceDictionary.MergedDictionaries>

@@ -69,7 +69,7 @@ namespace StormLib.Services.Chaturbate
 			{
 				requestMessage.Headers.Host = stream.Link.DnsSafeHost;
 				requestMessage.Headers.Referrer = stream.Link;
-			};
+			}
 
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Chaturbate))
 			{

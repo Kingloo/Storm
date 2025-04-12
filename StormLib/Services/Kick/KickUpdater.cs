@@ -78,7 +78,7 @@ namespace StormLib.Services.Kick
 
 				AddHeaders(kickOptionsMonitor.CurrentValue.Headers, requestMessage);
 				AddHeaders(stormOptionsMonitor.CurrentValue.CommonHeaders, requestMessage);
-			};
+			}
 
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
 			string text = string.Empty;
