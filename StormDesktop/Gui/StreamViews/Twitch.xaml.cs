@@ -11,7 +11,9 @@ using System.Windows.Input;
 
 namespace StormDesktop.Gui.StreamViews
 {
+#pragma warning disable CA1010 // Generic interface should also be implemented
 	public partial class Twitch : ResourceDictionary
+#pragma warning restore CA1010 // Generic interface should also be implemented
 	{
 		public Twitch()
 		{
