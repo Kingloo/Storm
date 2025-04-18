@@ -8,6 +8,7 @@
 | inZOI | 286759738 |
 | The Legend of Zelda: Echoes of Widsom | 1290989747 |
 | R.E.P.O. | 1294658629 |
+| Schedule 1 | 1584836809 |
 | SpiderMan 2 (2023) | 1967084783 |
 
 # Other
