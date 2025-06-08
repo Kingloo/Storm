@@ -17,7 +17,6 @@ namespace StormDesktop.Interfaces
 		void StartListeningToMessageQueue();
 		void StopListeningToQueue();
 
-		DelegateCommandAsync<IStream> UpdateCommand { get; }
 		DelegateCommandAsync LoadStreamsCommand { get; }
 		DelegateCommand<IStream> OpenPageCommand { get; }
 		DelegateCommand<IStream> OpenStreamCommand { get; }

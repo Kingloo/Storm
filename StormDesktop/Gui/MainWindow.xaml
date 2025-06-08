@@ -31,8 +31,6 @@
         <KeyBinding Key="Esc"
                     Command="{Binding Path=ExitCommand, Mode=OneTime}"
                     CommandParameter="{Binding ElementName=ThisMainWindow}" />
-        <KeyBinding Key="F5"
-                    Command="{Binding Path=UpdateCommand, Mode=OneTime}" />
         <KeyBinding Key="F11"
                     Command="{Binding Path=OpenStreamsFileCommand, Mode=OneTime}" />
         <KeyBinding Key="F12"

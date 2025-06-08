@@ -27,17 +27,6 @@ namespace StormDesktop.Gui
 {
 	public class MainWindowViewModel : BindableBase, IMainWindowViewModel, IDisposable
 	{
-		private DelegateCommandAsync<IStream>? _updateCommand;
-		public DelegateCommandAsync<IStream> UpdateCommand
-		{
-			get
-			{
-				_updateCommand ??= new DelegateCommandAsync<IStream>(UpdateAsync, CanExecuteAsync);
-
-				return _updateCommand;
-			}
-		}
-
 		private DelegateCommandAsync? _loadStreamsCommand;
 		public DelegateCommandAsync LoadStreamsCommand
 		{
@@ -97,7 +86,6 @@ namespace StormDesktop.Gui
 
 		public void TriggerCanExecuteChanged()
 		{
-			UpdateCommand.RaiseCanExecuteChanged();
 			LoadStreamsCommand.RaiseCanExecuteChanged();
 			OpenPageCommand.RaiseCanExecuteChanged();
 			OpenStreamCommand.RaiseCanExecuteChanged();
@@ -158,16 +146,20 @@ namespace StormDesktop.Gui
 			while (listenToMessageQueueCts is not null
 				&& listenToMessageQueueCts.IsCancellationRequested == false)
 			{
-				IList<IStream> notLiveBeforeUpdate = Streams.Where(s => s.Status != Status.Public).ToList();
+				List<IStream> notLiveBeforeUpdate = Streams
+					.Where(static s => s.Status != Status.Public)
+					.ToList();
 
 				while (updaterMessageQueue.ResultsQueue.TryDequeue(out object? result))
 				{
 					PerformResultAction(result);
 				}
 
-				IEnumerable<IStream> liveAfterUpdate = Streams.Where(s => s.Status == Status.Public);
+				IEnumerable<IStream> liveAfterUpdate = Streams.Where(static s => s.Status == Status.Public);
 
-				IList<IStream> toSendNotificationsFor = notLiveBeforeUpdate.Intersect(liveAfterUpdate).ToList();
+				List<IStream> toSendNotificationsFor = notLiveBeforeUpdate
+					.Intersect(liveAfterUpdate)
+					.ToList();
 
 				SendNotifications(toSendNotificationsFor);
 
@@ -272,22 +264,6 @@ namespace StormDesktop.Gui
 					() => NotificationService.Send(title, description, notify),
 					DispatcherPriority.ApplicationIdle);
 			}
-		}
-
-		private async Task UpdateAsync(IStream stream)
-		{
-			Task updateTask = stream switch
-			{
-				ChaturbateStream c => updaterMessageQueue.UpdateAsync(new[] { c }, CancellationToken.None),
-				KickStream k => updaterMessageQueue.UpdateAsync(new[] { k }, CancellationToken.None),
-				MixlrStream m => updaterMessageQueue.UpdateAsync(new[] { m }, CancellationToken.None),
-				RumbleStream r => updaterMessageQueue.UpdateAsync(new[] { r }, CancellationToken.None),
-				TwitchStream t => updaterMessageQueue.UpdateAsync(new[] { t }, CancellationToken.None),
-				YouTubeStream y => updaterMessageQueue.UpdateAsync(new[] { y }, CancellationToken.None),
-				_ => throw new InvalidCastException($"bad stream type: '{stream.GetType().Name}'")
-			};
-
-			await updateTask.ConfigureAwait(false);
 		}
 
 		private void OpenStream(IStream stream)
