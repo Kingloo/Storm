@@ -232,7 +232,7 @@ namespace StormLib.Services.Twitch
 			};
 		}
 
-		private async ValueTask<(HttpStatusCode, string)> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
+		private async ValueTask<HttpResponse> RequestGraphQlDataAsync(IEnumerable<IStream> streams, CancellationToken cancellationToken)
 		{
 			string requestBody = BuildRequestBody(streams);
 
@@ -248,14 +248,10 @@ namespace StormLib.Services.Twitch
 
 			if (twitchOptionsMonitor.CurrentValue.GraphQlApiUri is Uri apiUri)
 			{
-				(HttpStatusCode, string) result = (HttpStatusCode.Unused, string.Empty);
-
 				using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Twitch))
 				{
-					result = await HttpClientHelpers.GetStringAsync(client, apiUri, ConfigureRequest, cancellationToken).ConfigureAwait(false);
+					return await HttpClientHelpers.GetStringAsync(client, apiUri, ConfigureRequest, cancellationToken).ConfigureAwait(false);
 				}
-
-				return result;
 			}
 			else
 			{

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace StormLib.Helpers
 {
+	internal sealed record HttpResponse(HttpStatusCode StatusCode, string Response);
+
 	internal static class HttpClientHelpers
 	{
 		internal static void ConfigureDefaultHttpClient(HttpClient client)
@@ -15,33 +17,31 @@ namespace StormLib.Helpers
 			client.Timeout = TimeSpan.FromSeconds(60d);
 		}
 
-		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri)
+		internal static ValueTask<HttpResponse> GetStringAsync(HttpClient client, Uri uri)
 			=> GetStringAsyncInternal(client, uri, null, CancellationToken.None);
 
-		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
+		internal static ValueTask<HttpResponse> GetStringAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
 			=> GetStringAsyncInternal(client, uri, null, cancellationToken);
 
-		internal static ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, Uri uri, Action<HttpRequestMessage> configureRequestMessage, CancellationToken cancellationToken)
+		internal static ValueTask<HttpResponse> GetStringAsync(HttpClient client, Uri uri, Action<HttpRequestMessage> configureRequestMessage, CancellationToken cancellationToken)
 			=> GetStringAsyncInternal(client, uri, configureRequestMessage, cancellationToken);
 
-		private static async ValueTask<(HttpStatusCode, string)> GetStringAsyncInternal(HttpClient client, Uri uri, Action<HttpRequestMessage>? configureRequestMessage, CancellationToken cancellationToken)
+		private static async ValueTask<HttpResponse> GetStringAsyncInternal(HttpClient client, Uri uri, Action<HttpRequestMessage>? configureRequestMessage, CancellationToken cancellationToken)
 		{
-			(HttpStatusCode, string) response = (HttpStatusCode.Unused, string.Empty);
+			HttpResponse response;
 
-			using (HttpRequestMessage requestMessage = new HttpRequestMessage
+			using HttpRequestMessage requestMessage = new HttpRequestMessage
 			{
 				RequestUri = uri
-			})
-			{
-				configureRequestMessage?.Invoke(requestMessage);
+			};
+			configureRequestMessage?.Invoke(requestMessage);
 
-				response = await GetStringAsync(client, requestMessage, cancellationToken).ConfigureAwait(false);
-			}
+			response = await GetStringAsync(client, requestMessage, cancellationToken).ConfigureAwait(false);
 
-			return response;
+			return response with { Response = WebUtility.HtmlDecode(response.Response) };
 		}
 
-		private static async ValueTask<(HttpStatusCode, string)> GetStringAsync(HttpClient client, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
+		private static async ValueTask<HttpResponse> GetStringAsync(HttpClient client, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
 		{
 			HttpStatusCode statusCode = HttpStatusCode.Unused;
 			string text = string.Empty;
@@ -67,7 +67,7 @@ namespace StormLib.Helpers
 				}
 			}
 
-			return (statusCode, text);
+			return new HttpResponse(statusCode, text);
 		}
 	}
 }
