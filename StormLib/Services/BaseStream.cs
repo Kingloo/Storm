@@ -243,19 +243,17 @@ namespace StormLib.Services
 
 		public override string ToString()
 		{
-			StringBuilder sb = new StringBuilder();
-
-			sb.AppendLine(base.ToString());
-			sb.AppendLine(CultureInfo.CurrentCulture, $"link: {Link.AbsoluteUri}");
-			sb.AppendLine(CultureInfo.CurrentCulture, $"status: {Status}");
-			sb.AppendLine(CultureInfo.CurrentCulture, $"name: {Name}");
-			sb.AppendLine(CultureInfo.CurrentCulture, $"display name: {DisplayName}");
-			sb.AppendLine(CultureInfo.CurrentCulture, $"viewers: {ViewersCount}");
-			sb.AppendLine(CultureInfo.CurrentCulture, $"icon path: {Icon.AbsoluteUri}");
-			sb.AppendLine(CultureInfo.CurrentCulture, $"has streamlink support: {HasStreamlinkSupport}");
-			sb.AppendLine(CultureInfo.CurrentCulture, $"service name: {ServiceName}");
-
-			return sb.ToString();
+			return new StringBuilder()
+				.AppendLine(base.ToString())
+				.AppendLine(CultureInfo.CurrentCulture, $"link: {Link.AbsoluteUri}")
+				.AppendLine(CultureInfo.CurrentCulture, $"status: {Status}")
+				.AppendLine(CultureInfo.CurrentCulture, $"name: {Name}")
+				.AppendLine(CultureInfo.CurrentCulture, $"display name: {DisplayName}")
+				.AppendLine(CultureInfo.CurrentCulture, $"viewers: {ViewersCount}")
+				.AppendLine(CultureInfo.CurrentCulture, $"icon path: {Icon.AbsoluteUri}")
+				.AppendLine(CultureInfo.CurrentCulture, $"has streamlink support: {HasStreamlinkSupport}")
+				.AppendLine(CultureInfo.CurrentCulture, $"service name: {ServiceName}")
+				.ToString();
 		}
 	}
 }
