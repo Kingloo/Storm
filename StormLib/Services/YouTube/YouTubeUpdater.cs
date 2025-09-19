@@ -87,9 +87,16 @@ namespace StormLib.Services.YouTube
 			{
 				Action = (YouTubeStream y) =>
 				{
-					y.DisplayName = SetDisplayName(text, stream.Name);
-					y.Status = SetStatus(text, youTubeOptionsMonitor.CurrentValue);
-					y.ViewersCount = SetViewers(text);
+					int? viewers = GetViewers(text);
+					Status status = GetStatus(text, youTubeOptionsMonitor.CurrentValue);
+
+					y.DisplayName = GetDisplayName(text, stream.Name);
+
+					y.Status = (status == Status.Offline && viewers.HasValue)
+						? Status.LiveSoon
+						: status;
+
+					y.ViewersCount = viewers;
 				},
 				StatusCode = statusCode
 			};
@@ -109,7 +116,7 @@ namespace StormLib.Services.YouTube
 			return Task.WhenAll(updateTasks);
 		}
 
-		private static string SetDisplayName(string text, string fallback)
+		private static string GetDisplayName(string text, string fallback)
 		{
 			// "twitter:title" content="Eris In Progress">
 			// "twitter:title" content="
@@ -122,14 +129,14 @@ namespace StormLib.Services.YouTube
 			return text.FindBetween(beginning, ending).FirstOrDefault() ?? fallback;
 		}
 
-		private static Status SetStatus(string text, YouTubeOptions youTubeOptions)
+		private static Status GetStatus(string text, YouTubeOptions youTubeOptions)
 		{
 			return text.Contains(youTubeOptions.LiveMarker, StringComparison.OrdinalIgnoreCase)
 				? Status.Public
 				: Status.Offline;
 		}
 
-		private static int? SetViewers(string text)
+		private static int? GetViewers(string text)
 		{
 			const string beginning = "viewCountText\":{\"runs\":[{\"text\":\"";
 			const string ending = "\"}";

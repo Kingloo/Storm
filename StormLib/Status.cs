@@ -4,6 +4,7 @@ namespace StormLib
 	{
 		Public,
 		Private,
+		LiveSoon,
 		Rerun,
 		Banned,
 		Unsupported,

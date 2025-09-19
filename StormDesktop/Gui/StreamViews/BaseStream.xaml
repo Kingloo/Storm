@@ -4,23 +4,24 @@
                     xmlns:converter="clr-namespace:StormDesktop.Converters"
                     xmlns:stormLibServices="clr-namespace:StormLib.Services;assembly=StormLib">
 
-	<converter:StatusConverter x:Key="statusConverter"
+    <converter:StatusConverter x:Key="statusConverter"
                                None="White"
                                Public="LightGreen"
                                Private="Orange"
+                               LiveSoon="Yellow"
                                Rerun="LightBlue"
                                Offline="#FF4040"
                                Banned="Magenta"
-                               Unsupported="Yellow"
-							   Problem="LightGray"
+                               Unsupported="Pink"
+                               Problem="LightGray"
                                Unknown="MediumAquamarine" />
 
-	<converter:IsNotNullConverter x:Key="isNotNullConverter" />
+    <converter:IsNotNullConverter x:Key="isNotNullConverter" />
 
-	<Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}" x:Key="gridStyle">
+    <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type Grid}}" x:Key="gridStyle">
         <!-- paired with ItemsPanelTemplate VirtualizingStackPanel Margin -->
         <Setter Property="Width" Value="Auto" />
-		<Setter Property="Margin" Value="0,7,0,0" />
+        <Setter Property="Margin" Value="0,7,0,0" />
         <Setter Property="Background" Value="{Binding Status, Converter={StaticResource statusConverter}}" />
     </Style>
 
@@ -36,6 +37,10 @@
 
     <DataTemplate DataType="{x:Type stormLibServices:BaseStream}" x:Key="BaseStreamTemplate">
         <Grid>
+            <Grid.ToolTip>
+                <TextBlock Text="{Binding Path=Status}" />
+            </Grid.ToolTip>
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50" />
                 <ColumnDefinition Width="*" />
@@ -50,19 +55,22 @@
                               CommandParameter="{Binding}" />
             </Grid.InputBindings>
 
-			<Image Grid.Column="0"
-				   Margin="5,0,0,0">
-				<Image.Source>
-					<BitmapImage UriSource="{Binding Path=Icon, Mode=OneTime, TargetNullValue='Icons\DefaultIcon.ico'}" />
-				</Image.Source>
-			</Image>
+            <Image Grid.Column="0"
+                   Margin="5,0,0,0">
+                <Image.Source>
+                    <BitmapImage UriSource="{Binding Path=Icon, Mode=OneTime, TargetNullValue='Icons\DefaultIcon.ico'}" />
+                </Image.Source>
+            </Image>
 
-			<Label Grid.Column="0" Grid.ColumnSpan="2">
+            <Label Grid.Column="0" Grid.ColumnSpan="2">
                 <Label.Style>
                     <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                         <Setter Property="FontSize" Value="17" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Status}" Value="Public">
+                                <Setter Property="FontSize" Value="22" />	
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="LiveSoon">
                                 <Setter Property="FontSize" Value="22" />
                             </DataTrigger>
                         </Style.Triggers>

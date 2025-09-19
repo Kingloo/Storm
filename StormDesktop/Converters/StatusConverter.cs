@@ -14,6 +14,7 @@ namespace StormDesktop.Converters
 		public Brush Unsupported { get; set; } = Brushes.Transparent;
 		public Brush Public { get; set; } = Brushes.Transparent;
 		public Brush Private { get; set; } = Brushes.Transparent;
+		public Brush LiveSoon { get; set; } = Brushes.Transparent;
 		public Brush Banned { get; set; } = Brushes.Transparent;
 		public Brush Rerun { get; set; } = Brushes.Transparent;
 		public Brush Offline { get; set; } = Brushes.Transparent;
@@ -30,6 +31,7 @@ namespace StormDesktop.Converters
 					Status.Unsupported => Unsupported,
 					Status.Public => Public,
 					Status.Private => Private,
+					Status.LiveSoon => LiveSoon,
 					Status.Banned => Banned,
 					Status.Rerun => Rerun,
 					Status.Offline => Offline,
