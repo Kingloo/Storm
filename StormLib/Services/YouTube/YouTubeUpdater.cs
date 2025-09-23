@@ -102,18 +102,43 @@ namespace StormLib.Services.YouTube
 			};
 		}
 
-		private Task<Result<YouTubeStream>[]> UpdateManyAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
+		private async Task<IReadOnlyList<Result<YouTubeStream>>> UpdateManyAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
 		{
-			List<Task<Result<YouTubeStream>>> updateTasks = new List<Task<Result<YouTubeStream>>>();
+			List<Result<YouTubeStream>> results = new List<Result<YouTubeStream>>(capacity: streams.Count);
 
-			foreach (YouTubeStream each in streams)
+			for (int i = 0; i < streams.Count; i++)
 			{
-				Task<Result<YouTubeStream>> updateTask = Task.Run(() => UpdateOneAsync(each, cancellationToken));
+				YouTubeStream stream = streams[i];
 
-				updateTasks.Add(updateTask);
+				Result<YouTubeStream> result = await UpdateOneAsync(stream, cancellationToken).ConfigureAwait(false);
+
+				results.Add(result);
+
+				if (i < streams.Count - 1)
+				{
+					TimeSpan delay = GetManyUpdateDelay(streams.Count);
+
+					logger.LogTrace("waiting for {Time} ms to update '{Stream}'", delay.TotalMilliseconds, streams[i + 1].Name);
+
+					await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+				}
 			}
 
-			return Task.WhenAll(updateTasks);
+			return results.AsReadOnly();
+		}
+
+		private static TimeSpan GetManyUpdateDelay(int totalToUpdate)
+		{
+			(int minimum, int maximum) = totalToUpdate switch
+			{
+				<= 5 => (100, 500),
+				<= 10 => (500, 1000),
+				> 10 => (1000, 2000)
+			};
+
+			int delayMilliseconds = System.Security.Cryptography.RandomNumberGenerator.GetInt32(minimum, maximum);
+
+			return TimeSpan.FromMilliseconds(delayMilliseconds);
 		}
 
 		private static string GetDisplayName(string text, string fallback)
