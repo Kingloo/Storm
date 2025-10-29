@@ -38,7 +38,7 @@ namespace StormLib.Services.Rumble
 		{
 			ArgumentNullException.ThrowIfNull(streams);
 
-			if (!streams.Any())
+			if (streams.Count == 0)
 			{
 				return Array.Empty<Result<RumbleStream>>();
 			}
@@ -49,10 +49,8 @@ namespace StormLib.Services.Rumble
 
 				return new[] { singleResult };
 			}
-			else
-			{
-				return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
-			}
+			
+			return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 		}
 
 		private async Task<Result<RumbleStream>> UpdateOneAsync(RumbleStream stream, CancellationToken cancellationToken)
