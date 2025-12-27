@@ -4,11 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormLib.Extensions;
+using StormLib.Helpers;
 using StormLib.Interfaces;
 
 namespace StormLib.Services.YouTube
@@ -85,19 +88,72 @@ namespace StormLib.Services.YouTube
 			{
 				Action = (YouTubeStream y) =>
 				{
-					int? viewers = GetViewers(text);
-					Status status = GetStatus(text, youTubeOptionsMonitor.CurrentValue);
+					JsonNode? json = GetJson(text);
+					JsonArray? tabs = (JsonArray?)json?["contents"]?["twoColumnBrowseResultsRenderer"]?["tabs"];
+					JsonNode? firstTabWithContent = (JsonNode?)tabs?.FirstOrDefault(each => each?["tabRenderer"]?["content"] is JsonNode withContent && withContent.GetValueKind() == JsonValueKind.Object);
+					JsonArray? tabContents = (JsonArray?)firstTabWithContent?["tabRenderer"]?["content"]?["richGridRenderer"]?["contents"];
 
-					y.DisplayName = GetDisplayName(text, stream.Name);
+					List<JsonNode?> allUpcoming = tabContents
+						?.Where(each => each?["richItemRenderer"]?["content"]?["videoRenderer"]?["upcomingEventData"] is JsonNode eachNode && eachNode.GetValueKind() == JsonValueKind.Object)
+						.ToList()
+						?? new List<JsonNode?>(capacity: 0);
 
-					y.Status = (status == Status.Offline && viewers.HasValue)
-						? Status.LiveSoon
-						: status;
+					JsonNode? live = tabContents?.SingleOrDefault((JsonNode? each) =>
+					{
+						JsonNode? videoRenderer = each?["richItemRenderer"]?["content"]?["videoRenderer"];
+						JsonArray? thumbnailOverlays = (JsonArray?)videoRenderer?["thumbnailOverlays"];
 
-					y.ViewersCount = viewers;
+						JsonNode? iconTypeNode = thumbnailOverlays
+							?.FirstOrDefault(each => each?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"] is JsonNode iconType && iconType.GetValueKind() == JsonValueKind.String);
+
+						return String.Equals((string?)iconTypeNode?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"], "LIVE", StringComparison.OrdinalIgnoreCase);
+					});
+
+					y.DisplayName = GetDisplayName(json) ?? stream.Link.AbsoluteUri;
+
+					y.Status = (live is not null) switch
+					{
+						true => Status.Public,
+						false => (allUpcoming is not null && allUpcoming.Count > 0) ? Status.LiveSoon : Status.Offline
+					};
+
+					y.ViewersCount = live is not null
+						? GetViewers(live)
+						: GetViewers(allUpcoming?.LastOrDefault());
 				},
 				StatusCode = statusCode
 			};
+		}
+
+		private static JsonNode? GetJson(string text)
+		{
+			const string beginning = "var ytInitialData = ";
+			const string ending = ";</script>";
+
+			string rawJson = text.FindBetween(beginning, ending).FirstOrDefault() ?? string.Empty;
+
+			return JsonHelpers.TryParse(rawJson, out JsonNode? jsonNode) ? jsonNode : null;
+		}
+
+		private static string? GetDisplayName(JsonNode? json)
+		{
+			return (string?)json?["header"]?["pageHeaderRenderer"]?["pageTitle"];
+		}
+
+		private static int? GetViewers(JsonNode? node)
+		{
+			JsonArray? runs = (JsonArray?)node?["richItemRenderer"]?["content"]?["videoRenderer"]?["viewCountText"]?["runs"];
+			
+			string? number = (string?)runs?.FirstOrDefault()?["text"];
+			
+			if (number is null)
+			{
+				return null;
+			}
+			
+			string onlyDigits = GetOnlyDigits(number);
+			
+			return int.TryParse(onlyDigits, out int viewers) ? viewers : null;
 		}
 
 		private async Task<IReadOnlyList<Result<YouTubeStream>>> UpdateManyAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
@@ -137,45 +193,6 @@ namespace StormLib.Services.YouTube
 			int delayMilliseconds = System.Security.Cryptography.RandomNumberGenerator.GetInt32(minimum, maximum);
 
 			return TimeSpan.FromMilliseconds(delayMilliseconds);
-		}
-
-		private static string GetDisplayName(string text, string fallback)
-		{
-			// "twitter:title" content="Eris In Progress">
-			// "twitter:title" content="
-			// ">
-			// Eris In Progress
-
-			const string beginning = "\"twitter:title\" content=\"";
-			const string ending = "\">";
-
-			return text.FindBetween(beginning, ending).FirstOrDefault() ?? fallback;
-		}
-
-		private static Status GetStatus(string text, YouTubeOptions youTubeOptions)
-		{
-			return text.Contains(youTubeOptions.LiveMarker, StringComparison.OrdinalIgnoreCase)
-				? Status.Public
-				: Status.Offline;
-		}
-
-		private static int? GetViewers(string text)
-		{
-			const string beginning = "viewCountText\":{\"runs\":[{\"text\":\"";
-			const string ending = "\"}";
-
-			string? viewersText = text.FindBetween(beginning, ending).FirstOrDefault();
-
-			if (viewersText is null)
-			{
-				return null;
-			}
-
-			string viewersTextDigitsOnly = GetOnlyDigits(viewersText);
-
-			return Int32.TryParse(viewersTextDigitsOnly, out int result)
-				? result
-				: null;
 		}
 
 		private static string GetOnlyDigits(string text)
