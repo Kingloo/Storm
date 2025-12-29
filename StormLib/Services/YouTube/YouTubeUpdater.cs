@@ -57,6 +57,31 @@ namespace StormLib.Services.YouTube
 			return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 		}
 
+		private async Task<IReadOnlyList<Result<YouTubeStream>>> UpdateManyAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
+		{
+			List<Result<YouTubeStream>> results = new List<Result<YouTubeStream>>(capacity: streams.Count);
+
+			for (int i = 0; i < streams.Count; i++)
+			{
+				YouTubeStream stream = streams[i];
+
+				Result<YouTubeStream> result = await UpdateOneAsync(stream, cancellationToken).ConfigureAwait(false);
+
+				results.Add(result);
+
+				if (i < streams.Count - 1)
+				{
+					TimeSpan delay = GetManyUpdateDelay(streams.Count);
+
+					logger.LogTrace("waiting for {Time} ms to update '{Stream}'", delay.TotalMilliseconds, streams[i + 1].Name);
+
+					await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+				}
+			}
+
+			return results.AsReadOnly();
+		}
+
 		private async Task<Result<YouTubeStream>> UpdateOneAsync(YouTubeStream stream, CancellationToken cancellationToken)
 		{
 			logger.LogDebug("update '{DisplayName}'", stream.DisplayName);
@@ -89,37 +114,21 @@ namespace StormLib.Services.YouTube
 				Action = (YouTubeStream y) =>
 				{
 					JsonNode? json = GetJson(text);
-					JsonArray? tabs = (JsonArray?)json?["contents"]?["twoColumnBrowseResultsRenderer"]?["tabs"];
-					JsonNode? firstTabWithContent = (JsonNode?)tabs?.FirstOrDefault(each => each?["tabRenderer"]?["content"] is JsonNode withContent && withContent.GetValueKind() == JsonValueKind.Object);
-					JsonArray? tabContents = (JsonArray?)firstTabWithContent?["tabRenderer"]?["content"]?["richGridRenderer"]?["contents"];
-
-					List<JsonNode?> allUpcoming = tabContents
-						?.Where(each => each?["richItemRenderer"]?["content"]?["videoRenderer"]?["upcomingEventData"] is JsonNode eachNode && eachNode.GetValueKind() == JsonValueKind.Object)
-						.ToList()
-						?? new List<JsonNode?>(capacity: 0);
-
-					JsonNode? live = tabContents?.SingleOrDefault((JsonNode? each) =>
-					{
-						JsonNode? videoRenderer = each?["richItemRenderer"]?["content"]?["videoRenderer"];
-						JsonArray? thumbnailOverlays = (JsonArray?)videoRenderer?["thumbnailOverlays"];
-
-						JsonNode? iconTypeNode = thumbnailOverlays
-							?.FirstOrDefault(each => each?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"] is JsonNode iconType && iconType.GetValueKind() == JsonValueKind.String);
-
-						return String.Equals((string?)iconTypeNode?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"], "LIVE", StringComparison.OrdinalIgnoreCase);
-					});
+					JsonArray? tabContents = ExtractTabContents(json);
+					List<JsonNode?> upcomingNodes = GetUpcomingNodes(tabContents);
+					JsonNode? liveNode = GetLiveNode(tabContents);
 
 					y.DisplayName = GetDisplayName(json) ?? stream.Link.AbsoluteUri;
 
-					y.Status = (live is not null) switch
+					y.Status = (liveNode is not null) switch
 					{
 						true => Status.Public,
-						false => (allUpcoming is not null && allUpcoming.Count > 0) ? Status.LiveSoon : Status.Offline
+						false => (upcomingNodes is not null && upcomingNodes.Count > 0) ? Status.LiveSoon : Status.Offline
 					};
 
-					y.ViewersCount = live is not null
-						? GetViewers(live)
-						: GetViewers(allUpcoming?.LastOrDefault());
+					y.ViewersCount = liveNode is not null
+						? GetViewers(liveNode)
+						: GetViewers(upcomingNodes?.LastOrDefault());
 				},
 				StatusCode = statusCode
 			};
@@ -133,6 +142,36 @@ namespace StormLib.Services.YouTube
 			string rawJson = text.FindBetween(beginning, ending).FirstOrDefault() ?? string.Empty;
 
 			return JsonHelpers.TryParse(rawJson, out JsonNode? jsonNode) ? jsonNode : null;
+		}
+
+		private static JsonArray? ExtractTabContents(JsonNode? json)
+		{
+			JsonArray? tabs = (JsonArray?)json?["contents"]?["twoColumnBrowseResultsRenderer"]?["tabs"];
+			JsonNode? firstTabWithContent = tabs?.FirstOrDefault(each => each?["tabRenderer"]?["content"] is JsonNode withContent && withContent.GetValueKind() == JsonValueKind.Object);
+			return (JsonArray?)firstTabWithContent?["tabRenderer"]?["content"]?["richGridRenderer"]?["contents"];
+		}
+
+		private static List<JsonNode?> GetUpcomingNodes(JsonArray? tabContents)
+		{
+			return tabContents
+				?.Where(each => each?["richItemRenderer"]?["content"]?["videoRenderer"]?["upcomingEventData"] is JsonNode eachNode && eachNode.GetValueKind() == JsonValueKind.Object)
+				.ToList()
+			?? new List<JsonNode?>(capacity: 0);
+		}
+
+		private static JsonNode? GetLiveNode(JsonArray? tabContents)
+		{
+			return tabContents?.SingleOrDefault((JsonNode? each) =>
+			{
+				JsonNode? videoRenderer = each?["richItemRenderer"]?["content"]?["videoRenderer"];
+				JsonArray? thumbnailOverlays = (JsonArray?)videoRenderer?["thumbnailOverlays"];
+
+				JsonNode? iconTypeNode = thumbnailOverlays
+					?.FirstOrDefault(each => each?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"] is JsonNode iconType && iconType.GetValueKind() == JsonValueKind.String);
+
+				return String.Equals((string?)iconTypeNode?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"], "LIVE", StringComparison.OrdinalIgnoreCase);
+			},
+			null);
 		}
 
 		private static string? GetDisplayName(JsonNode? json)
@@ -156,29 +195,11 @@ namespace StormLib.Services.YouTube
 			return int.TryParse(onlyDigits, out int viewers) ? viewers : null;
 		}
 
-		private async Task<IReadOnlyList<Result<YouTubeStream>>> UpdateManyAsync(IReadOnlyList<YouTubeStream> streams, CancellationToken cancellationToken)
+		private static string GetOnlyDigits(string text)
 		{
-			List<Result<YouTubeStream>> results = new List<Result<YouTubeStream>>(capacity: streams.Count);
-
-			for (int i = 0; i < streams.Count; i++)
-			{
-				YouTubeStream stream = streams[i];
-
-				Result<YouTubeStream> result = await UpdateOneAsync(stream, cancellationToken).ConfigureAwait(false);
-
-				results.Add(result);
-
-				if (i < streams.Count - 1)
-				{
-					TimeSpan delay = GetManyUpdateDelay(streams.Count);
-
-					logger.LogTrace("waiting for {Time} ms to update '{Stream}'", delay.TotalMilliseconds, streams[i + 1].Name);
-
-					await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-				}
-			}
-
-			return results.AsReadOnly();
+			return new StringBuilder()
+				.Append(text.Trim().Where(static c => Char.IsDigit(c)).ToArray())
+				.ToString();
 		}
 
 		private static TimeSpan GetManyUpdateDelay(int totalToUpdate)
@@ -193,13 +214,6 @@ namespace StormLib.Services.YouTube
 			int delayMilliseconds = System.Security.Cryptography.RandomNumberGenerator.GetInt32(minimum, maximum);
 
 			return TimeSpan.FromMilliseconds(delayMilliseconds);
-		}
-
-		private static string GetOnlyDigits(string text)
-		{
-			return new StringBuilder()
-				.Append(text.Trim().Where(static c => Char.IsDigit(c)).ToArray())
-				.ToString();
-		}
+		}		
 	}
 }
