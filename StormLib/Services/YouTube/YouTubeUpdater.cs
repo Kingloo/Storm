@@ -109,59 +109,93 @@ namespace StormLib.Services.YouTube
 				};
 			}
 
+			JsonNode? json = GetJson(text, stream.Link.AbsoluteUri);
+
+			if (json is null)
+			{
+				return new Result<YouTubeStream>(stream)
+				{
+					Action = (YouTubeStream y) =>
+					{
+						y.Status = Status.Problem;
+						y.ViewersCount = null;
+					},
+					StatusCode = statusCode,
+					Message = "JSON parsing failed"
+				};
+			}
+
 			return new Result<YouTubeStream>(stream)
 			{
 				Action = (YouTubeStream y) =>
 				{
-					JsonNode? json = GetJson(text);
+					List<JsonNode> upcomingNodes = new List<JsonNode>(capacity: 0);
+					JsonNode? liveNode = null;
+
 					JsonArray? tabContents = ExtractTabContents(json);
-					List<JsonNode?> upcomingNodes = GetUpcomingNodes(tabContents);
-					JsonNode? liveNode = GetLiveNode(tabContents);
 
-					y.DisplayName = GetDisplayName(json) ?? stream.Link.AbsoluteUri;
-
-					y.Status = (liveNode is not null) switch
+					if (tabContents is not null)
 					{
-						true => Status.Public,
-						false => (upcomingNodes is not null && upcomingNodes.Count > 0) ? Status.LiveSoon : Status.Offline
-					};
+						upcomingNodes = GetUpcomingNodes(tabContents);
+						liveNode = GetLiveNode(tabContents);
+					}
+					
+					y.DisplayName = GetDisplayName(json) is string { Length: > 0 } displayName
+						? displayName
+						: stream.Link.AbsoluteUri;
+
+					y.Status = liveNode is not null
+						? Status.Public
+						: (upcomingNodes.Count > 0) ? Status.LiveSoon : Status.Offline;
 
 					y.ViewersCount = liveNode is not null
 						? GetViewers(liveNode)
-						: GetViewers(upcomingNodes?.LastOrDefault());
+						: upcomingNodes.Count > 0
+							? GetViewers(upcomingNodes.Last())
+							: null;
 				},
 				StatusCode = statusCode
 			};
 		}
 
-		private static JsonNode? GetJson(string text)
+		private JsonNode? GetJson(string text, string streamUri)
 		{
 			const string beginning = "var ytInitialData = ";
 			const string ending = ";</script>";
 
 			string rawJson = text.FindBetween(beginning, ending).FirstOrDefault() ?? string.Empty;
 
-			return JsonHelpers.TryParse(rawJson, out JsonNode? jsonNode) ? jsonNode : null;
+			if (JsonHelpers.TryParse(rawJson, out JsonNode? jsonNode))
+			{
+				return jsonNode;
+			}
+			else
+			{
+				logger.LogWarning("YouTube: parsing JSON failed for '{StreamUri}'", streamUri);
+
+				return null;
+			}
 		}
 
-		private static JsonArray? ExtractTabContents(JsonNode? json)
+		private static JsonArray? ExtractTabContents(JsonNode json)
 		{
-			JsonArray? tabs = (JsonArray?)json?["contents"]?["twoColumnBrowseResultsRenderer"]?["tabs"];
-			JsonNode? firstTabWithContent = tabs?.FirstOrDefault(each => each?["tabRenderer"]?["content"] is JsonNode withContent && withContent.GetValueKind() == JsonValueKind.Object);
+			JsonArray? tabs = (JsonArray?)json["contents"]?["twoColumnBrowseResultsRenderer"]?["tabs"];
+			JsonNode? firstTabWithContent = tabs?.FirstOrDefault(static each => each?["tabRenderer"]?["content"] is JsonNode withContent && withContent.GetValueKind() == JsonValueKind.Object);
 			return (JsonArray?)firstTabWithContent?["tabRenderer"]?["content"]?["richGridRenderer"]?["contents"];
 		}
 
-		private static List<JsonNode?> GetUpcomingNodes(JsonArray? tabContents)
+		private static List<JsonNode> GetUpcomingNodes(JsonArray tabContents)
 		{
 			return tabContents
-				?.Where(each => each?["richItemRenderer"]?["content"]?["videoRenderer"]?["upcomingEventData"] is JsonNode eachNode && eachNode.GetValueKind() == JsonValueKind.Object)
+				.Where(static each => each?["richItemRenderer"]?["content"]?["videoRenderer"]?["upcomingEventData"] is JsonNode eachNode && eachNode.GetValueKind() == JsonValueKind.Object)
+				.Cast<JsonNode>()
 				.ToList()
-			?? new List<JsonNode?>(capacity: 0);
+			?? new List<JsonNode>(capacity: 0);
 		}
 
-		private static JsonNode? GetLiveNode(JsonArray? tabContents)
+		private static JsonNode? GetLiveNode(JsonArray tabContents)
 		{
-			return tabContents?.SingleOrDefault((JsonNode? each) =>
+			return tabContents.SingleOrDefault(static (JsonNode? each) =>
 			{
 				JsonNode? videoRenderer = each?["richItemRenderer"]?["content"]?["videoRenderer"];
 				JsonArray? thumbnailOverlays = (JsonArray?)videoRenderer?["thumbnailOverlays"];
@@ -174,12 +208,12 @@ namespace StormLib.Services.YouTube
 			null);
 		}
 
-		private static string? GetDisplayName(JsonNode? json)
+		private static string? GetDisplayName(JsonNode json)
 		{
-			return (string?)json?["header"]?["pageHeaderRenderer"]?["pageTitle"];
+			return (string?)json["header"]?["pageHeaderRenderer"]?["pageTitle"];
 		}
 
-		private static int? GetViewers(JsonNode? node)
+		private static int? GetViewers(JsonNode node)
 		{
 			JsonArray? runs = (JsonArray?)node?["richItemRenderer"]?["content"]?["videoRenderer"]?["viewCountText"]?["runs"];
 
