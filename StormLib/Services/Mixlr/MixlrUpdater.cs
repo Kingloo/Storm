@@ -50,7 +50,7 @@ namespace StormLib.Services.Mixlr
 
 				return new[] { singleResult };
 			}
-			
+
 			return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 		}
 

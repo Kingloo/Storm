@@ -51,7 +51,7 @@ namespace StormLib.Services.Chaturbate
 
 				return new[] { singleResult };
 			}
-			
+
 			return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 		}
 

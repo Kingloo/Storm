@@ -53,7 +53,7 @@ namespace StormLib.Services.YouTube
 
 				return new[] { singleResult };
 			}
-			
+
 			return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -182,16 +182,16 @@ namespace StormLib.Services.YouTube
 		private static int? GetViewers(JsonNode? node)
 		{
 			JsonArray? runs = (JsonArray?)node?["richItemRenderer"]?["content"]?["videoRenderer"]?["viewCountText"]?["runs"];
-			
+
 			string? number = (string?)runs?.FirstOrDefault()?["text"];
-			
+
 			if (number is null)
 			{
 				return null;
 			}
-			
+
 			string onlyDigits = GetOnlyDigits(number);
-			
+
 			return int.TryParse(onlyDigits, out int viewers) ? viewers : null;
 		}
 
@@ -214,6 +214,6 @@ namespace StormLib.Services.YouTube
 			int delayMilliseconds = System.Security.Cryptography.RandomNumberGenerator.GetInt32(minimum, maximum);
 
 			return TimeSpan.FromMilliseconds(delayMilliseconds);
-		}		
+		}
 	}
 }

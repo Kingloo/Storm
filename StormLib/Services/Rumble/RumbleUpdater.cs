@@ -49,7 +49,7 @@ namespace StormLib.Services.Rumble
 
 				return new[] { singleResult };
 			}
-			
+
 			return await UpdateManyAsync(streams, cancellationToken).ConfigureAwait(false);
 		}
 
