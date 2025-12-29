@@ -337,14 +337,7 @@ namespace StormDesktop.Gui
 			{
 				if (disposing)
 				{
-					if (listenToMessageQueueCts is not null)
-					{
-						listenToMessageQueueCts.Cancel();
-
-						listenToMessageQueueCts.Dispose();
-
-						listenToMessageQueueCts = null;
-					}
+					StopListeningToQueue();
 				}
 
 				disposedValue = true;
