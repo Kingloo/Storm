@@ -135,10 +135,22 @@ namespace StormDesktop.Gui
 			{
 				listenToMessageQueueCts = new CancellationTokenSource();
 
-				Task _ = Task.Run(ListenToMessageQueueAsync, listenToMessageQueueCts.Token);
+				Task _ = Task
+					.Run(ListenToMessageQueueAsync, listenToMessageQueueCts.Token)
+					.ContinueWith(
+						OnUpdaterMessageQueueStopped,
+						null,
+						CancellationToken.None,
+						TaskContinuationOptions.OnlyOnFaulted,
+						TaskScheduler.Current);
 
 				logger.LogDebug("listening to update message queue");
 			}
+		}
+
+		private void OnUpdaterMessageQueueStopped(Task<ValueTask> _, object? __)
+		{
+			logger.LogError("updater message queue listener faulted");
 		}
 
 		private async ValueTask ListenToMessageQueueAsync()
