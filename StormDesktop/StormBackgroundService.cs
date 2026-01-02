@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -26,22 +28,36 @@ namespace StormDesktop
 		private readonly TUpdater updater;
 		private readonly TOptionsMonitor optionsMonitor;
 		private readonly UpdaterMessageQueue updaterMessageQueue;
+		private readonly Counter<int> updateLoopBegunMeter;
+		private readonly Counter<int> updateLoopEndMeter;
+		private readonly ObservableGauge<int> updateLoopActiveMeter;
+		private readonly Histogram<int> streamsCountMeter;
+
+		private bool isUpdateRunning = false;
 
 		public StormBackgroundService(
 			ILoggerFactory loggerFactory,
 			TUpdater updater,
 			TOptionsMonitor optionsMonitor,
-			UpdaterMessageQueue updaterMessageQueue)
+			UpdaterMessageQueue updaterMessageQueue,
+			IMeterFactory meterFactory)
 		{
 			ArgumentNullException.ThrowIfNull(loggerFactory);
 			ArgumentNullException.ThrowIfNull(updater);
 			ArgumentNullException.ThrowIfNull(optionsMonitor);
 			ArgumentNullException.ThrowIfNull(updaterMessageQueue);
+			ArgumentNullException.ThrowIfNull(meterFactory);
 
 			this.logger = loggerFactory.CreateLogger($"StormDesktop.Services.{typeof(TStream).Name}");
 			this.updater = updater;
 			this.optionsMonitor = optionsMonitor;
 			this.updaterMessageQueue = updaterMessageQueue;
+
+			Meter meter = meterFactory.Create(new MeterOptions($"StormBackgroundService.{typeof(TUpdater).Name}"));
+			updateLoopBegunMeter = meter.CreateCounter<int>("times_update_loop_began", "total", "updater begun");
+			updateLoopEndMeter = meter.CreateCounter<int>("times_update_loop_ended", "total", "updater ended");
+			updateLoopActiveMeter = meter.CreateObservableGauge<int>("is_update_running", () => isUpdateRunning ? 1 : 0, "bool", "is updater running");
+			streamsCountMeter = meter.CreateHistogram<int>("updates", null, "histogram of updates");
 		}
 
 		public override Task StartAsync(CancellationToken cancellationToken)
@@ -66,13 +82,24 @@ namespace StormDesktop
 
 			ExceptionDispatchInfo? edi = null;
 
+			using ActivitySource? activitySource = new ActivitySource($"StormDesktop.Services.{typeof(TUpdater).Name}");
+
 			while (true)
 			{
 				stoppingToken.ThrowIfCancellationRequested();
 
 				try
 				{
-					await RunUpdate(stoppingToken).ConfigureAwait(false);
+					using (Activity? activity = activitySource.CreateActivity("RunUpdate", ActivityKind.Internal))
+					{
+						UpdaterBegun();
+
+						DateTimeOffset beginTime = DateTimeOffset.Now;
+
+						int streamsUpdated = await RunUpdate(stoppingToken).ConfigureAwait(false);
+
+						UpdaterEnd(activity, beginTime, DateTimeOffset.Now, streamsUpdated);
+					}
 
 					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
 				}
@@ -105,23 +132,47 @@ namespace StormDesktop
 			}
 		}
 
-		private async ValueTask RunUpdate(CancellationToken cancellationToken)
+		private void UpdaterBegun()
+		{
+			isUpdateRunning = true;
+			
+			updateLoopBegunMeter.Add(1);
+		}
+
+		private void UpdaterEnd(Activity? activity, DateTimeOffset beginTime, DateTimeOffset endTime, int count)
+		{
+			isUpdateRunning = false;
+
+			updateLoopEndMeter.Add(1);
+
+			activity?.SetTag("total_streams", count);
+			activity?.SetTag("duration", (endTime - beginTime).TotalMilliseconds);
+			
+			streamsCountMeter.Record(
+				count,
+				new KeyValuePair<string, object?>("begin_time", beginTime.ToUnixTimeSeconds()),
+				new KeyValuePair<string, object?>("end_time", endTime.ToUnixTimeSeconds()),
+				new KeyValuePair<string, object?>("ms", (endTime - beginTime).TotalMilliseconds)
+			);
+		}
+
+		private async ValueTask<int> RunUpdate(CancellationToken cancellationToken)
 		{
 			List<TStream> streams = updaterMessageQueue.StreamSource.OfType<TStream>().ToList();
 
 			if (streams.Count == 0)
 			{
-				return;
+				return 0;
 			}
 
 			IReadOnlyList<Result<TStream>> results = new List<Result<TStream>>(capacity: streams.Count);
 
+			int streamCount = streams.Count;
+			string accountPluralized = streams.Count == 1 ? "account" : "accounts";
+			string streamNames = String.Join(',', streams.Select(static s => s.DisplayName));
+
 			try
 			{
-				int streamCount = streams.Count;
-				string accountPluralized = streams.Count == 1 ? "account" : "accounts";
-				string streamNames = String.Join(',', streams.Select(static s => s.DisplayName));
-
 				results = await updater.UpdateAsync(streams, cancellationToken).ConfigureAwait(false);
 
 				logger.LogDebug("updated {Count} {StreamPluralized} ({StreamNames})", streamCount, accountPluralized, streamNames);
@@ -149,6 +200,8 @@ namespace StormDesktop
 					logger.LogCritical("updater type was {UpdaterType}", updater.UpdaterType);
 					break;
 			}
+
+			return streamCount;
 		}
 
 		private void HandleUpdaterTypeOne(IReadOnlyList<Result<TStream>> results)
