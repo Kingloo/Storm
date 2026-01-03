@@ -152,7 +152,7 @@ namespace StormDesktop
 				count,
 				new KeyValuePair<string, object?>("begin_time", beginTime.ToUnixTimeSeconds()),
 				new KeyValuePair<string, object?>("end_time", endTime.ToUnixTimeSeconds()),
-				new KeyValuePair<string, object?>("ms", (endTime - beginTime).TotalMilliseconds)
+				new KeyValuePair<string, object?>("duration (ms)", (endTime - beginTime).TotalMilliseconds)
 			);
 		}
 
