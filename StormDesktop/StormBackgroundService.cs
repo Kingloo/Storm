@@ -84,7 +84,9 @@ namespace StormDesktop
 
 			using ActivitySource? activitySource = new ActivitySource($"StormDesktop.Services.{typeof(TUpdater).Name}");
 
-			while (true)
+			bool continueLooping = true;
+
+			while (continueLooping)
 			{
 				stoppingToken.ThrowIfCancellationRequested();
 
@@ -114,6 +116,8 @@ namespace StormDesktop
 					if (stoppingToken.IsCancellationRequested)
 					{
 						logger.LogInformation("stopped (cancelled)");
+
+						continueLooping = false;
 					}
 					else
 					{
@@ -127,13 +131,11 @@ namespace StormDesktop
 
 							edi = null;
 						}
-						else
-						{
-							logger.LogInformation("stopped (not cancelled, edi null)");
-						}
 					}
 				}
 			}
+
+			logger.LogInformation("stopped (end of executeasync reached)");
 		}
 
 		private void UpdaterBegun()
