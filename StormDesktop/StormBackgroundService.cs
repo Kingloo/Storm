@@ -113,7 +113,7 @@ namespace StormDesktop
 				{
 					if (stoppingToken.IsCancellationRequested)
 					{
-						logger.LogDebug("stopped (cancelled)");
+						logger.LogInformation("stopped (cancelled)");
 					}
 					else
 					{
@@ -126,6 +126,10 @@ namespace StormDesktop
 								edi.SourceException.Message);
 
 							edi = null;
+						}
+						else
+						{
+							logger.LogInformation("stopped (not cancelled, edi null)");
 						}
 					}
 				}
