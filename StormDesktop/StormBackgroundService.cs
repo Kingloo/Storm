@@ -88,6 +88,8 @@ namespace StormDesktop
 
 			while (continueLooping)
 			{
+				logger.LogDebug("loop started");
+
 				stoppingToken.ThrowIfCancellationRequested();
 
 				try
@@ -133,6 +135,8 @@ namespace StormDesktop
 						}
 					}
 				}
+
+				logger.LogDebug("loop ended");
 			}
 
 			logger.LogInformation("stopped (end of executeasync reached)");
