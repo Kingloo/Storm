@@ -159,9 +159,37 @@ namespace StormDesktop.Gui
 			{
 				foreach (Exception each in aggEx.InnerExceptions)
 				{
-					logger.LogError(each, "updater message queue exception: '{Type}' - '{Message}'", each.GetType().Name, each.Message);
+					logger.LogError(
+						each,
+						"updater message queue exception: '{Type}' - '{Message}'{NewLine}{StackTrace}",
+						each.GetType().Name,
+						each.Message,
+						Environment.NewLine,
+						GetStackTrace(each.StackTrace, 150)
+					);
 				}
 			}
+
+			logger.LogInformation("attempting to restart listener queue");
+
+			StartListeningToMessageQueue();
+		}
+
+		private static string GetStackTrace(string? stackTrace, int characters)
+		{
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(characters);
+
+			if (stackTrace is null)
+			{
+				return "null";
+			}
+
+			if (stackTrace.Length <= characters)
+			{
+				return stackTrace;
+			}
+
+			return stackTrace[0..characters];
 		}
 
 		private async Task ListenToMessageQueueAsync()

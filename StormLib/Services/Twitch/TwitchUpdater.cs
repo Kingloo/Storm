@@ -115,7 +115,7 @@ namespace StormLib.Services.Twitch
 			foreach (TwitchStream each in streams)
 			{
 				JsonNode? data = jsonArray
-					.SingleOrDefault((JsonNode? element) =>
+					.FirstOrDefault((JsonNode? element) =>
 					{
 						bool elementHasUserData = false;
 						bool doesUserDataLoginMatchStreamName = false;

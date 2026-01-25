@@ -195,7 +195,7 @@ namespace StormLib.Services.YouTube
 
 		private static JsonNode? GetLiveNode(JsonArray tabContents)
 		{
-			return tabContents.SingleOrDefault(static (JsonNode? each) =>
+			return tabContents.FirstOrDefault(static (JsonNode? each) =>
 			{
 				JsonNode? videoRenderer = each?["richItemRenderer"]?["content"]?["videoRenderer"];
 				JsonArray? thumbnailOverlays = (JsonArray?)videoRenderer?["thumbnailOverlays"];
