@@ -145,7 +145,7 @@ namespace StormDesktop.Gui
 				.ContinueWith(
 					OnUpdaterMessageQueueStopped,
 					CancellationToken.None,
-					TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.OnlyOnCanceled,
+					TaskContinuationOptions.OnlyOnFaulted,
 					TaskScheduler.Default);
 
 			logger.LogDebug("listening to update message queue");
