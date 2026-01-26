@@ -86,10 +86,10 @@ namespace StormDesktop
 
 			bool continueLooping = true;
 
+			stoppingToken.Register(() => continueLooping = false);
+
 			while (continueLooping)
 			{
-				stoppingToken.ThrowIfCancellationRequested();
-
 				try
 				{
 					using (Activity? activity = activitySource.CreateActivity("RunUpdate", ActivityKind.Internal))
@@ -124,8 +124,6 @@ namespace StormDesktop
 					if (stoppingToken.IsCancellationRequested)
 					{
 						logger.LogInformation("stopped (cancelled)");
-
-						continueLooping = false;
 					}
 					else
 					{
