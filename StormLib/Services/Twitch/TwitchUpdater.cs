@@ -109,7 +109,9 @@ namespace StormLib.Services.Twitch
 		{
 			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 100, new TwitchGameComparer());
 
-			using (FileStream readFsAsync = new FileStream(file.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan))
+			FileStream readFsAsync = new FileStream(file.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+			try
 			{
 				using StreamReader sr = new StreamReader(readFsAsync);
 
@@ -123,11 +125,15 @@ namespace StormLib.Services.Twitch
 						&& Int64.TryParse(values[0], out Int64 gameId)
 						&& !String.IsNullOrWhiteSpace(values[1]))
 					{
-						TwitchGame game = new TwitchGame(gameId, values[1].Trim('"'));
+						TwitchGame game = new TwitchGame(gameId, values[1].Trim('"')); // the CSV stores the game name with quotes around, so we remove them here
 
 						twitchGames.Add(game);
 					}
 				}
+			}
+			finally
+			{
+				await readFsAsync.DisposeAsync().ConfigureAwait(false);
 			}
 
 			return twitchGames;
@@ -135,12 +141,24 @@ namespace StormLib.Services.Twitch
 
 		private static async Task SaveGameIds(HashSet<TwitchGame> twitchGames, FileInfo file)
 		{
-			using FileStream writeFsAsync = new FileStream(file.FullName, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
-			using StreamWriter sw = new StreamWriter(writeFsAsync);
+			FileStream writeFsAsync = new FileStream(file.FullName, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
-			foreach (string line in twitchGames.OrderBy(static game => game.Id).Select(static game => $"{game.Id},\"{game.Name}\""))
+			try
 			{
-				await sw.WriteLineAsync(line).ConfigureAwait(false);
+				using StreamWriter sw = new StreamWriter(writeFsAsync);
+
+				foreach (string line in twitchGames.OrderBy(static game => game.Id).Select(static game => $"{game.Id},\"{game.Name}\""))
+				{
+					await sw.WriteLineAsync(line).ConfigureAwait(false);
+				}
+
+				await sw.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+			}
+			finally
+			{
+				await writeFsAsync.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+
+				await writeFsAsync.DisposeAsync().ConfigureAwait(false);
 			}
 		}
 
