@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -22,6 +23,7 @@ namespace StormLib.Services.Twitch
 		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<TwitchOptions> twitchOptionsMonitor;
 		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
+		private readonly HashSet<TwitchGame> gameIdsSeenThisAppRun = new HashSet<TwitchGame>(capacity: 100);
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.Many;
 
@@ -74,7 +76,72 @@ namespace StormLib.Services.Twitch
 				chunkCount++;
 			}
 
+			if (System.Security.Cryptography.RandomNumberGenerator.GetInt32(fromInclusive: 0, toExclusive: 20) == 0)
+			{
+				await DumpGameIdsAsync(gameIdsSeenThisAppRun, cancellationToken).ConfigureAwait(false);
+			}
+
 			return allResults;
+		}
+
+		private async ValueTask DumpGameIdsAsync(HashSet<TwitchGame> twitchGames, CancellationToken cancellationToken)
+		{
+			string localAppDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Storm");
+			string filename = "twitchGames.csv";
+
+			if (!Directory.Exists(localAppDir))
+			{
+				Directory.CreateDirectory(localAppDir);
+			}
+
+			FileInfo file = new FileInfo(Path.Combine(localAppDir, filename));
+
+			HashSet<TwitchGame> cachedTwitchGames = await LoadCachedTwitchGameIds(file, cancellationToken).ConfigureAwait(false);
+
+			cachedTwitchGames.UnionWith(twitchGames);
+
+			logger.LogDebug("dumping {Count} Twitch game IDs to '{Path}", twitchGames.Count, file.FullName);
+
+			await SaveGameIds(twitchGames, file).ConfigureAwait(false);
+		}
+
+		private static async ValueTask<HashSet<TwitchGame>> LoadCachedTwitchGameIds(FileInfo file, CancellationToken cancellationToken)
+		{
+			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 100, new TwitchGameComparer());
+
+			using (FileStream readFsAsync = new FileStream(file.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan))
+			{
+				using StreamReader sr = new StreamReader(readFsAsync);
+
+				string? line = string.Empty;
+				
+				while ((line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is not null)
+				{
+					string[] values = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+					if (values.Length == 2
+						&& Int64.TryParse(values[0], out Int64 gameId)
+						&& !String.IsNullOrWhiteSpace(values[1]))
+					{
+						TwitchGame game = new TwitchGame(gameId, values[1].Trim('"'));
+
+						twitchGames.Add(game);
+					}
+				}
+			}
+
+			return twitchGames;
+		}
+
+		private static async Task SaveGameIds(HashSet<TwitchGame> twitchGames, FileInfo file)
+		{
+			using FileStream writeFsAsync = new FileStream(file.FullName, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+			using StreamWriter sw = new StreamWriter(writeFsAsync);
+
+			foreach (string line in twitchGames.OrderBy(static game => game.Id).Select(static game => $"{game.Id},\"{game.Name}\""))
+			{
+				await sw.WriteLineAsync(line).ConfigureAwait(false);
+			}
 		}
 
 		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
@@ -149,6 +216,11 @@ namespace StormLib.Services.Twitch
 				else
 				{
 					TwitchGame? newGame = GetGame(userData);
+
+					if (newGame is not null)
+					{
+						gameIdsSeenThisAppRun.Add(newGame);
+					}
 
 					action = IsUnwantedGameId(newGame?.Id) switch
 					{
