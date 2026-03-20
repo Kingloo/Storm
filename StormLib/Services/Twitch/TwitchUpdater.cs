@@ -119,6 +119,11 @@ namespace StormLib.Services.Twitch
 				
 				while ((line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is not null)
 				{
+					if (line.StartsWith('#'))
+					{
+						continue;
+					}
+
 					string[] values = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
 					if (values.Length == 2
@@ -141,13 +146,22 @@ namespace StormLib.Services.Twitch
 
 		private static async Task SaveGameIds(HashSet<TwitchGame> twitchGames, FileInfo file)
 		{
+			List<string> lines = new List<string>(capacity: twitchGames.Count + 1);
+
+			lines.Add($"# last updated at {DateTimeOffset.Now:G}");
+
+			foreach (string each in twitchGames.OrderBy(static game => game.Id).Select(static game => $"{game.Id},\"{game.Name}\""))
+			{
+				lines.Add(each);
+			}
+
 			FileStream writeFsAsync = new FileStream(file.FullName, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
 			try
 			{
 				using StreamWriter sw = new StreamWriter(writeFsAsync);
 
-				foreach (string line in twitchGames.OrderBy(static game => game.Id).Select(static game => $"{game.Id},\"{game.Name}\""))
+				foreach (string line in lines)
 				{
 					await sw.WriteLineAsync(line).ConfigureAwait(false);
 				}
