@@ -26,6 +26,7 @@ namespace StormLib.Services.Twitch
 		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
 		private readonly HashSet<TwitchGame> gameIdsSeenThisAppRun = new HashSet<TwitchGame>(capacity: 100);
 		private static readonly Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+		private static readonly TwitchGameComparer _twitchGameComparer = new TwitchGameComparer();
 
 		public UpdaterType UpdaterType { get; } = UpdaterType.Many;
 
@@ -141,7 +142,12 @@ namespace StormLib.Services.Twitch
 
 		private static async ValueTask<HashSet<TwitchGame>> LoadCachedTwitchGameIds(FileInfo file, CancellationToken cancellationToken)
 		{
-			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 100, new TwitchGameComparer());
+			if (file.Exists && file.Length > 1024 * 1024 * 10) // 1024 * 1024 * 10 = 10 MiB
+			{
+				throw new ArgumentException("file exceeds 10 MiB", nameof(file));
+			}
+			
+			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 100, _twitchGameComparer);
 
 			using (FileStream readFsAsync = new FileStream(
 				file.FullName,
