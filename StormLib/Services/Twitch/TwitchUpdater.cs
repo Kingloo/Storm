@@ -165,10 +165,10 @@ namespace StormLib.Services.Twitch
 					string[] values = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
 					if (values.Length == 2
-						&& Int64.TryParse(values[0], out Int64 gameId)
-						&& !String.IsNullOrWhiteSpace(values[1]))
+						&& Int64.TryParse(values[0], out Int64 id)
+						&& values[1] is string { Length: > 0 } name)
 					{
-						TwitchGame game = new TwitchGame(gameId, values[1].Trim('"')); // the CSV stores the game name with quotes around, so we remove them here
+						TwitchGame game = new TwitchGame(id, name.Trim('"')); // the CSV stores the game name with quotes around, so we remove them here
 
 						twitchGames.Add(game);
 					}
