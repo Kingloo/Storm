@@ -194,12 +194,18 @@ namespace StormLib.Services.Twitch
 		{
 			BackupGameIdCacheFile(file);
 
-			List<string> csvLines = twitchGames
-				.OrderBy(static game => game.Id)
-				.Select(static game => $"{game.Id},\"{game.Name}\"")
-				.ToList();
+			List<string> csvLines = new List<string>(capacity: twitchGames.Count + 1)
+				{
+					$"# last updated at {DateTimeOffset.Now:G}"
+				};
 
-			using FileStream writeFsAsync = new FileStream(
+			IEnumerable<string> sortedGameIdsAndNames = twitchGames
+				.OrderBy(static game => game.Id)
+				.Select(static game => $"{game.Id},\"{game.Name}\"");
+
+			csvLines.AddRange(sortedGameIdsAndNames);
+
+			FileStream writeFsAsync = new FileStream(
 				file.FullName,
 				FileMode.Truncate,
 				FileAccess.Write,
@@ -207,11 +213,20 @@ namespace StormLib.Services.Twitch
 				4096,
 				FileOptions.Asynchronous | FileOptions.SequentialScan);
 			
-			using StreamWriter sw = new StreamWriter(writeFsAsync, _encoding);
-
-			foreach (string each in csvLines)
+			try
 			{
-				await sw.WriteLineAsync(each).ConfigureAwait(false);
+				using StreamWriter sw = new StreamWriter(writeFsAsync, _encoding);
+
+				foreach (string each in csvLines)
+				{
+					await sw.WriteLineAsync(each).ConfigureAwait(false);
+				}
+			}
+			finally
+			{
+				await writeFsAsync.FlushAsync(CancellationToken.None).ConfigureAwait(true);
+				
+				await writeFsAsync.DisposeAsync().ConfigureAwait(true);
 			}
 
 			return csvLines.Count;
