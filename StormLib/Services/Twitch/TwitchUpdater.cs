@@ -153,7 +153,7 @@ namespace StormLib.Services.Twitch
 				file.FullName,
 				FileMode.OpenOrCreate,
 				FileAccess.Read,
-				FileShare.None,
+				FileShare.Read,
 				4096,
 				FileOptions.Asynchronous | FileOptions.SequentialScan))
 			{
