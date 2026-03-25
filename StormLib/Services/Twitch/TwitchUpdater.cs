@@ -192,6 +192,8 @@ namespace StormLib.Services.Twitch
 
 		private static async ValueTask<int> SaveGameIds(HashSet<TwitchGame> twitchGames, FileInfo file)
 		{
+			BackupGameIdCacheFile(file);
+
 			List<string> csvLines = twitchGames
 				.OrderBy(static game => game.Id)
 				.Select(static game => $"{game.Id},\"{game.Name}\"")
@@ -213,6 +215,21 @@ namespace StormLib.Services.Twitch
 			}
 
 			return csvLines.Count;
+		}
+
+		private static void BackupGameIdCacheFile(FileInfo file)
+		{
+			string tempDirectory = Path.GetTempPath();
+
+			string timestamp = DateTimeOffset.Now.ToString("yyyy-MM-dd_HH-mm-ss", CultureInfo.CurrentCulture);
+
+			string random = Guid.NewGuid().ToString()[0..6];
+
+			string filename = $"twitchGames--{timestamp}--{random}.tmp";
+
+			string fullBackupPath = Path.Combine(tempDirectory, filename);
+
+			File.Copy(file.FullName, fullBackupPath);
 		}
 
 		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
