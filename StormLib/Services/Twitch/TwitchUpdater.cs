@@ -24,7 +24,7 @@ namespace StormLib.Services.Twitch
 		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<TwitchOptions> twitchOptionsMonitor;
 		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
-		private readonly HashSet<TwitchGame> gameIdsSeenThisAppRun = new HashSet<TwitchGame>(capacity: 100);
+		private readonly HashSet<TwitchGame> gameIdsSeenThisAppRun = new HashSet<TwitchGame>(capacity: 500);
 		private static readonly Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 		private static readonly TwitchGameComparer _twitchGameComparer = new TwitchGameComparer();
 
@@ -140,9 +140,9 @@ namespace StormLib.Services.Twitch
 			if (twitchOptionsMonitor.CurrentValue.GameIdCacheSaveFrequency == TwitchGameIdCacheSaveFrequency.Maximum
 				|| countCombined > cachedCount)
 			{
-				logger.LogDebug("dumping {Count} Twitch game IDs to '{Path}", twitchGames.Count, file.FullName);
+				int gameIdsWritten = await SaveGameIds(twitchGames, file).ConfigureAwait(false);
 
-				await SaveGameIds(twitchGames, file).ConfigureAwait(false);
+				logger.LogDebug("dumped {Count} Twitch game IDs to '{Path}", gameIdsWritten, file.FullName);
 			}
 		}
 
@@ -153,7 +153,7 @@ namespace StormLib.Services.Twitch
 				throw new ArgumentException("file exceeds 10 MiB", nameof(file));
 			}
 			
-			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 100, _twitchGameComparer);
+			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 500, _twitchGameComparer);
 
 			using (FileStream readFsAsync = new FileStream(
 				file.FullName,
@@ -190,7 +190,7 @@ namespace StormLib.Services.Twitch
 			return twitchGames;
 		}
 
-		private static async Task SaveGameIds(HashSet<TwitchGame> twitchGames, FileInfo file)
+		private static async ValueTask<int> SaveGameIds(HashSet<TwitchGame> twitchGames, FileInfo file)
 		{
 			List<string> csvLines = twitchGames
 				.OrderBy(static game => game.Id)
@@ -199,7 +199,7 @@ namespace StormLib.Services.Twitch
 
 			using FileStream writeFsAsync = new FileStream(
 				file.FullName,
-				FileMode.Open,
+				FileMode.Truncate,
 				FileAccess.Write,
 				FileShare.None,
 				4096,
@@ -207,10 +207,12 @@ namespace StormLib.Services.Twitch
 			
 			using StreamWriter sw = new StreamWriter(writeFsAsync, _encoding);
 
-			foreach (var each in csvLines)
+			foreach (string each in csvLines)
 			{
 				await sw.WriteLineAsync(each).ConfigureAwait(false);
 			}
+
+			return csvLines.Count;
 		}
 
 		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
