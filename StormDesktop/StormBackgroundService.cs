@@ -141,7 +141,10 @@ namespace StormDesktop
 				}
 			}
 
-			logger.LogInformation("stopped (end of executeasync reached)");
+			if (!stoppingToken.IsCancellationRequested)
+			{
+				logger.LogInformation("stopped but not cancelled (end of executeasync reached)");
+			}
 		}
 
 		private void UpdaterBegun()
