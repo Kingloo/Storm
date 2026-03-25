@@ -174,7 +174,7 @@ namespace StormLib.Services.Twitch
 						continue;
 					}
 
-					string[] values = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
+					string[] values = line.Split(',', 2, StringSplitOptions.RemoveEmptyEntries);
 
 					if (values.Length == 2
 						&& Int64.TryParse(values[0], out Int64 id)
