@@ -115,7 +115,12 @@ namespace StormLib.Services.Twitch
 		private async ValueTask DumpGameIdsAsync(HashSet<TwitchGame> twitchGames, CancellationToken cancellationToken)
 		{
 			string localAppDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Storm");
+			
+#if DEBUG
+			string filename = "twitchGames-Debug.csv";
+#else
 			string filename = "twitchGames.csv";
+#endif
 
 			if (!Directory.Exists(localAppDir))
 			{
@@ -132,7 +137,8 @@ namespace StormLib.Services.Twitch
 
 			int countCombined = cachedTwitchGames.Count;
 
-			if (countCombined > cachedCount)
+			if (twitchOptionsMonitor.CurrentValue.GameIdCacheSaveFrequency == TwitchGameIdCacheSaveFrequency.Maximum
+				|| countCombined > cachedCount)
 			{
 				logger.LogDebug("dumping {Count} Twitch game IDs to '{Path}", twitchGames.Count, file.FullName);
 
@@ -186,14 +192,10 @@ namespace StormLib.Services.Twitch
 
 		private static async Task SaveGameIds(HashSet<TwitchGame> twitchGames, FileInfo file)
 		{
-			StringBuilder sb = new StringBuilder();
-			
-			_ = sb.AppendLine(CultureInfo.CurrentCulture, $"# last updated at {DateTimeOffset.Now:G}");
-
-			foreach (string each in twitchGames.OrderBy(static game => game.Id).Select(static game => $"{game.Id},\"{game.Name}\""))
-			{
-				_ = sb.AppendLine(each);
-			}
+			List<string> csvLines = twitchGames
+				.OrderBy(static game => game.Id)
+				.Select(static game => $"{game.Id},\"{game.Name}\"")
+				.ToList();
 
 			using FileStream writeFsAsync = new FileStream(
 				file.FullName,
@@ -205,7 +207,10 @@ namespace StormLib.Services.Twitch
 			
 			using StreamWriter sw = new StreamWriter(writeFsAsync, _encoding);
 
-			await sw.WriteAsync(sb, CancellationToken.None).ConfigureAwait(false);
+			foreach (var each in csvLines)
+			{
+				await sw.WriteLineAsync(each).ConfigureAwait(false);
+			}
 		}
 
 		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
