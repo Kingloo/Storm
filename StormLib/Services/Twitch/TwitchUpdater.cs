@@ -205,15 +205,13 @@ namespace StormLib.Services.Twitch
 
 			csvLines.AddRange(sortedGameIdsAndNames);
 
-			FileStream writeFsAsync = new FileStream(
+			using (FileStream writeFsAsync = new FileStream(
 				file.FullName,
 				FileMode.Truncate,
 				FileAccess.Write,
 				FileShare.None,
 				4096,
-				FileOptions.Asynchronous | FileOptions.SequentialScan);
-			
-			try
+				FileOptions.Asynchronous | FileOptions.SequentialScan))
 			{
 				using StreamWriter sw = new StreamWriter(writeFsAsync, _encoding);
 
@@ -222,13 +220,7 @@ namespace StormLib.Services.Twitch
 					await sw.WriteLineAsync(each).ConfigureAwait(false);
 				}
 			}
-			finally
-			{
-				await writeFsAsync.FlushAsync(CancellationToken.None).ConfigureAwait(true);
-				
-				await writeFsAsync.DisposeAsync().ConfigureAwait(true);
-			}
-
+			
 			return csvLines.Count;
 		}
 
