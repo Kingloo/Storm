@@ -131,16 +131,16 @@ namespace StormLib.Services.Twitch
 
 			HashSet<TwitchGame> cachedTwitchGames = await LoadCachedTwitchGameIds(file, cancellationToken).ConfigureAwait(false);
 
-			int cachedCount = cachedTwitchGames.Count;
+			int countExistingCached = cachedTwitchGames.Count;
 
 			cachedTwitchGames.UnionWith(twitchGames);
 
-			int countCombined = cachedTwitchGames.Count;
+			int countCachedAndNew = cachedTwitchGames.Count;
 
 			if (twitchOptionsMonitor.CurrentValue.GameIdCacheSaveFrequency == TwitchGameIdCacheSaveFrequency.Maximum
-				|| countCombined > cachedCount)
+				|| countCachedAndNew > countExistingCached)
 			{
-				int gameIdsWritten = await SaveGameIds(twitchGames, file).ConfigureAwait(false);
+				int gameIdsWritten = await SaveGameIds(cachedTwitchGames, file).ConfigureAwait(false);
 
 				logger.LogDebug("dumped {Count} Twitch game IDs to '{Path}", gameIdsWritten, file.FullName);
 			}
@@ -153,7 +153,7 @@ namespace StormLib.Services.Twitch
 				throw new ArgumentException("file exceeds 10 MiB", nameof(file));
 			}
 			
-			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 500, _twitchGameComparer);
+			HashSet<TwitchGame> twitchGames = new HashSet<TwitchGame>(capacity: 1000, _twitchGameComparer);
 
 			using (FileStream readFsAsync = new FileStream(
 				file.FullName,
@@ -207,7 +207,7 @@ namespace StormLib.Services.Twitch
 
 			using (FileStream writeFsAsync = new FileStream(
 				file.FullName,
-				FileMode.Truncate,
+				FileMode.Truncate, // BEWARE! Truncate requires that the file already exists - make sure to always create it in 'load IDs'
 				FileAccess.Write,
 				FileShare.None,
 				4096,
@@ -221,7 +221,8 @@ namespace StormLib.Services.Twitch
 				}
 			}
 			
-			return csvLines.Count;
+			return csvLines.Count - 1;
+			// this return value is supposed to be 'game IDs written', so minus 1 to remove the datetime comment
 		}
 
 		private static void BackupGameIdCacheFile(FileInfo file)
