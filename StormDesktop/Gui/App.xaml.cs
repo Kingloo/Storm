@@ -167,12 +167,9 @@ namespace StormDesktop.Gui
 
 			sink.StartSink();
 
-			using (host.Services.CreateScope())
-			{
-				MainWindow = host.Services.GetRequiredService<MainWindow>();
+			MainWindow = host.Services.GetRequiredService<MainWindow>();
 
-				MainWindow.Closed += MainWindow_Closed;
-			}
+			MainWindow.Closed += MainWindow_Closed;
 
 			MainWindow.Show();
 

@@ -24,7 +24,7 @@ namespace StormLib.Services.Twitch
 		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<TwitchOptions> twitchOptionsMonitor;
 		private readonly IOptionsMonitor<StormOptions> stormOptionsMonitor;
-		private readonly HashSet<TwitchGame> gameIdsSeenThisAppRun = new HashSet<TwitchGame>(capacity: 500);
+		private readonly HashSet<TwitchGame> gameIdsSeenThisAppRun = new HashSet<TwitchGame>(capacity: 500, _twitchGameComparer);
 		private static readonly Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 		private static readonly TwitchGameComparer _twitchGameComparer = new TwitchGameComparer();
 
