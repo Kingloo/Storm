@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -19,6 +19,8 @@ namespace StormLib.Services.YouTube
 {
 	public class YouTubeUpdater : IUpdater<YouTubeStream>
 	{
+		private static readonly string[] youTubeLiveMarkers = { "\"text\":\"LIVE\"", "\"text\":\"EN DIRECT\"" };
+		
 		private readonly ILogger<YouTubeUpdater> logger;
 		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IOptionsMonitor<YouTubeOptions> youTubeOptionsMonitor;
@@ -116,7 +118,23 @@ namespace StormLib.Services.YouTube
 				};
 			}
 
-			JsonNode? json = GetJson(text, stream.Link.AbsoluteUri);
+			string? rawJson = GetRawJson(text);
+
+			if (rawJson is null)
+			{
+				return new Result<YouTubeStream>(stream)
+				{
+					Action = (YouTubeStream y) =>
+					{
+						y.Status = Status.Problem;
+						y.ViewersCount = null;
+					},
+					StatusCode = statusCode,
+					Message = "failed to extract JSON from webpage"
+				};
+			}
+
+			JsonNode? json = GetJson(rawJson);
 
 			if (json is null)
 			{
@@ -151,37 +169,31 @@ namespace StormLib.Services.YouTube
 						? displayName
 						: stream.Link.AbsoluteUri;
 
-					y.Status = liveNode is not null
-						? Status.Public
-						: (upcomingNodes.Count > 0) ? Status.LiveSoon : Status.Offline;
+					y.Status = GetLiveStatus(liveNode, upcomingNodes.Count, rawJson);
 
-					y.ViewersCount = liveNode is not null
-						? GetViewers(liveNode)
-						: upcomingNodes.Count > 0
-							? GetViewers(upcomingNodes.Last())
-							: null;
+					y.ViewersCount = y.Status switch
+					{
+						Status.Public => GetViewers(rawJson),
+						_ => null
+					};
 				},
 				StatusCode = statusCode
 			};
 		}
 
-		private JsonNode? GetJson(string text, string streamUri)
+		private static string? GetRawJson(string text)
 		{
 			const string beginning = "var ytInitialData = ";
 			const string ending = ";</script>";
 
-			string rawJson = text.FindBetween(beginning, ending).FirstOrDefault() ?? string.Empty;
+			return text.FindBetween(beginning, ending).FirstOrDefault();
+		}
 
-			if (JsonHelpers.TryParse(rawJson, out JsonNode? jsonNode))
-			{
-				return jsonNode;
-			}
-			else
-			{
-				logger.LogWarning("YouTube: parsing JSON failed for '{StreamUri}'", streamUri);
-
-				return null;
-			}
+		private static JsonNode? GetJson(string? rawJson)
+		{
+			return rawJson is string { Length: > 0 } && JsonHelpers.TryParse(rawJson, out JsonNode? jsonNode)
+				? jsonNode
+				: null;
 		}
 
 		private static JsonArray? ExtractTabContents(JsonNode json)
@@ -223,39 +235,91 @@ namespace StormLib.Services.YouTube
 			null);
 		}
 
+		private static Status GetLiveStatus(JsonNode? liveNode, int upcomingNodesCount, string rawJson)
+		{
+			if (liveNode is not null)
+			{
+				return Status.Public;
+			}
+
+			bool containsAnyLiveMarker = youTubeLiveMarkers.Any(marker => rawJson.Contains(marker, StringComparison.Ordinal));
+			// .NET 9 or greater: use SearchValues for searching for multiple string within a string
+			
+			return containsAnyLiveMarker
+				? Status.Public
+				: upcomingNodesCount > 0
+					? Status.LiveSoon
+					: Status.Offline;
+		}
+
 		private static string? GetDisplayName(JsonNode json)
 		{
 			return (string?)json["header"]?["pageHeaderRenderer"]?["pageTitle"];
 		}
 
-		private static int? GetViewers(JsonNode node)
+		private static int? GetViewers(string text)
 		{
-			JsonArray? runs = (JsonArray?)node?["richItemRenderer"]?["content"]?["videoRenderer"]?["viewCountText"]?["runs"];
+			/*
 
-			string? number = (string?)runs?.FirstOrDefault()?["text"];
+			Some examples of the viewers text:
 
-			if (number is null)
+			1 watching
+			945 spectateurs
+			1.1k watching
+			1,1k spectateurs
+			14k spectateurs
+
+			French decimal separator is ',' (comma)
+			English decimal separator is '.' (dot)
+
+			the space is an nbsp UTF-8 00A0 (sometimes C2 A0)
+
+			Limitation: for viewer counts > 1000, we can only get approximate numbers
+			e.g. 1.1k turns into 1100 viewers
+
+			*/
+			
+			int? viewers = null;
+
+			const string beginning = "\"text\":{\"content\":\"";
+			const string ending = "\"}";
+			const string nbsp = "\u00A0";
+			const string space = " ";
+			
+			if (text.FindBetween(beginning, ending).FirstOrDefault() is string { Length: > 0 } viewersText)
 			{
-				return null;
+				bool useNbsp = viewersText.Contains(nbsp, StringComparison.OrdinalIgnoreCase);
+
+				string[] segments = viewersText.Split(useNbsp ? nbsp : space, StringSplitOptions.RemoveEmptyEntries);
+
+				if (segments.Length != 2)
+				{
+					return null;
+				}
+				
+				double magnitude = segments[1].Last() switch
+				{
+					'k' => 1_000,
+					'm' => 1_000_000, // never seen live stream with more than 1 million viewers, presuming it would use 'm'
+					_ => 1
+				};
+
+				CultureInfo culture = String.Equals(segments[1], "watching", StringComparison.OrdinalIgnoreCase)
+					? CultureInfo.CreateSpecificCulture("en") // uses '.' (dot) as decimal separator
+					: CultureInfo.CreateSpecificCulture("fr"); // uses ',' (comma) as decimal separator
+
+				string number = magnitude == 1
+					? segments[0]
+					: segments[0][..^1];
+				// removes the 'k' or 'm' at the end of the number
+
+				if (double.TryParse(number, NumberStyles.AllowDecimalPoint, culture, out double result))
+				{
+					viewers = Convert.ToInt32(result * magnitude);
+				}
 			}
 
-			string onlyDigits = GetOnlyDigits(number);
-
-			return int.TryParse(onlyDigits, out int viewers)
-				? viewers
-				: null;
-		}
-
-		private static string GetOnlyDigits(string text)
-		{
-			return new StringBuilder()
-				.Append(text.Trim().Where(IsDigit).ToArray())
-				.ToString();
-		}
-
-		private static bool IsDigit(char c)
-		{
-			return Char.IsDigit(c);
+			return viewers;
 		}
 
 		private static TimeSpan GetManyUpdateDelay(int totalToUpdate)
