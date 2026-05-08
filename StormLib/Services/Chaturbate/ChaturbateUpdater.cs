@@ -57,7 +57,7 @@ namespace StormLib.Services.Chaturbate
 
 		private async Task<Result<ChaturbateStream>> UpdateOneAsync(ChaturbateStream stream, CancellationToken cancellationToken)
 		{
-			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			HttpStatusCode? statusCode = null;
 			string text = string.Empty;
 
 			Status newStatus = Status.Unknown;

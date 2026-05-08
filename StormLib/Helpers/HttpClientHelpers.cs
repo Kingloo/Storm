@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace StormLib.Helpers
 {
-	internal sealed record HttpResponse(HttpStatusCode StatusCode, string Response);
+	internal sealed record HttpResponse(HttpStatusCode? StatusCode, string Response);
 
 	internal static class HttpClientHelpers
 	{
@@ -44,7 +44,8 @@ namespace StormLib.Helpers
 
 		private static async ValueTask<HttpResponse> GetStringAsync(HttpClient client, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
 		{
-			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			HttpStatusCode? statusCode = null;
+			
 			string text = string.Empty;
 
 			HttpResponseMessage? responseMessage = null;

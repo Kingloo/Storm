@@ -242,7 +242,7 @@ namespace StormLib.Services.Twitch
 
 		private async Task<IReadOnlyList<Result<TwitchStream>>> UpdateChunkAsync(IEnumerable<TwitchStream> streams, CancellationToken cancellationToken)
 		{
-			(HttpStatusCode statusCode, string text) = await RequestGraphQlDataAsync(streams, cancellationToken).ConfigureAwait(false);
+			(HttpStatusCode? statusCode, string text) = await RequestGraphQlDataAsync(streams, cancellationToken).ConfigureAwait(false);
 
 			if (statusCode != HttpStatusCode.OK)
 			{

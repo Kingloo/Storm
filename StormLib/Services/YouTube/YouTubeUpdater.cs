@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StormLib.Common;
 using StormLib.Extensions;
 using StormLib.Helpers;
 using StormLib.Interfaces;
@@ -88,12 +89,18 @@ namespace StormLib.Services.YouTube
 
 			Uri uri = new Uri($"{stream.Link.AbsoluteUri}/streams?ucbcb=1", UriKind.Absolute);
 
-			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			HttpStatusCode? statusCode = null;
 			string text = string.Empty;
+
+			static void ConfigureRequest(HttpRequestMessage requestMessage)
+			{
+				requestMessage.Version = HttpVersion.Version20;
+				requestMessage.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+			}
 
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.YouTube))
 			{
-				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, uri, cancellationToken).ConfigureAwait(false);
+				(statusCode, text) = await Helpers.HttpClientHelpers.GetStringAsync(client, uri, ConfigureRequest, cancellationToken).ConfigureAwait(false);
 			}
 
 			if (statusCode != HttpStatusCode.OK)
@@ -129,7 +136,7 @@ namespace StormLib.Services.YouTube
 			{
 				Action = (YouTubeStream y) =>
 				{
-					List<JsonNode> upcomingNodes = new List<JsonNode>(capacity: 0);
+					List<JsonNode> upcomingNodes = EmptyList<JsonNode>.Empty;
 					JsonNode? liveNode = null;
 
 					JsonArray? tabContents = ExtractTabContents(json);
@@ -180,17 +187,24 @@ namespace StormLib.Services.YouTube
 		private static JsonArray? ExtractTabContents(JsonNode json)
 		{
 			JsonArray? tabs = (JsonArray?)json["contents"]?["twoColumnBrowseResultsRenderer"]?["tabs"];
-			JsonNode? firstTabWithContent = tabs?.FirstOrDefault(static each => each?["tabRenderer"]?["content"] is JsonNode withContent && withContent.GetValueKind() == JsonValueKind.Object);
+			
+			JsonNode? firstTabWithContent = tabs
+				?.FirstOrDefault(static each =>
+					each?["tabRenderer"]?["content"] is JsonNode withContent && withContent.GetValueKind() == JsonValueKind.Object
+				);
+			
 			return (JsonArray?)firstTabWithContent?["tabRenderer"]?["content"]?["richGridRenderer"]?["contents"];
 		}
 
 		private static List<JsonNode> GetUpcomingNodes(JsonArray tabContents)
 		{
 			return tabContents
-				.Where(static each => each?["richItemRenderer"]?["content"]?["videoRenderer"]?["upcomingEventData"] is JsonNode eachNode && eachNode.GetValueKind() == JsonValueKind.Object)
+				.Where(static each =>
+					each?["richItemRenderer"]?["content"]?["videoRenderer"]?["upcomingEventData"] is JsonNode eachNode && eachNode.GetValueKind() == JsonValueKind.Object
+				)
 				.Cast<JsonNode>()
 				.ToList()
-			?? new List<JsonNode>(capacity: 0);
+			?? EmptyList<JsonNode>.Empty;
 		}
 
 		private static JsonNode? GetLiveNode(JsonArray tabContents)
@@ -198,10 +212,11 @@ namespace StormLib.Services.YouTube
 			return tabContents.FirstOrDefault(static (JsonNode? each) =>
 			{
 				JsonNode? videoRenderer = each?["richItemRenderer"]?["content"]?["videoRenderer"];
+				
 				JsonArray? thumbnailOverlays = (JsonArray?)videoRenderer?["thumbnailOverlays"];
 
 				JsonNode? iconTypeNode = thumbnailOverlays
-					?.FirstOrDefault(each => each?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"] is JsonNode iconType && iconType.GetValueKind() == JsonValueKind.String);
+					?.FirstOrDefault(static each => each?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"] is JsonNode iconType && iconType.GetValueKind() == JsonValueKind.String);
 
 				return String.Equals((string?)iconTypeNode?["thumbnailOverlayTimeStatusRenderer"]?["icon"]?["iconType"], "LIVE", StringComparison.OrdinalIgnoreCase);
 			},
@@ -226,26 +241,33 @@ namespace StormLib.Services.YouTube
 
 			string onlyDigits = GetOnlyDigits(number);
 
-			return int.TryParse(onlyDigits, out int viewers) ? viewers : null;
+			return int.TryParse(onlyDigits, out int viewers)
+				? viewers
+				: null;
 		}
 
 		private static string GetOnlyDigits(string text)
 		{
 			return new StringBuilder()
-				.Append(text.Trim().Where(static c => Char.IsDigit(c)).ToArray())
+				.Append(text.Trim().Where(IsDigit).ToArray())
 				.ToString();
+		}
+
+		private static bool IsDigit(char c)
+		{
+			return Char.IsDigit(c);
 		}
 
 		private static TimeSpan GetManyUpdateDelay(int totalToUpdate)
 		{
-			(int minimum, int maximum) = totalToUpdate switch
+			(int minimumInc, int maximumEx) = totalToUpdate switch
 			{
 				<= 5 => (100, 500),
 				<= 10 => (500, 1000),
 				> 10 => (1000, 2000)
 			};
 
-			int delayMilliseconds = System.Security.Cryptography.RandomNumberGenerator.GetInt32(minimum, maximum);
+			int delayMilliseconds = System.Security.Cryptography.RandomNumberGenerator.GetInt32(minimumInc, maximumEx);
 
 			return TimeSpan.FromMilliseconds(delayMilliseconds);
 		}

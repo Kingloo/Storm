@@ -78,7 +78,7 @@ namespace StormLib.Services.Kick
 				AddHeaders(stormOptionsMonitor.CurrentValue.CommonHeaders, requestMessage);
 			}
 
-			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			HttpStatusCode? statusCode = null;
 			string text = string.Empty;
 
 			(statusCode, text) = await HttpClientHelpers.GetStringAsync(httpClient, apiEndpointForStream, ConfigureRequest, cancellationToken).ConfigureAwait(false);

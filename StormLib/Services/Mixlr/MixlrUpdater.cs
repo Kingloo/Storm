@@ -60,7 +60,7 @@ namespace StormLib.Services.Mixlr
 
 			Uri uri = new Uri($"{mixlrOptionsMonitor.CurrentValue.ApiUri}/users/{stream.Name}", UriKind.Absolute);
 
-			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			HttpStatusCode? statusCode = null;
 			string text = string.Empty;
 
 			using (HttpClient client = httpClientFactory.CreateClient(HttpClientNames.Mixlr))

@@ -55,7 +55,7 @@ namespace StormLib.Services.Rumble
 
 		private async Task<Result<RumbleStream>> UpdateOneAsync(RumbleStream stream, CancellationToken cancellationToken)
 		{
-			HttpStatusCode statusCode = HttpStatusCode.Unused;
+			HttpStatusCode? statusCode = null;
 			string text = string.Empty;
 
 			Status newStatus = Status.Unknown;
