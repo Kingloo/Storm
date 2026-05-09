@@ -107,77 +107,103 @@ namespace StormLib.Services.YouTube
 
 			if (statusCode != HttpStatusCode.OK)
 			{
-				return new Result<YouTubeStream>(stream)
-				{
-					Action = static (YouTubeStream y) =>
-					{
-						y.Status = Status.Problem;
-						y.ViewersCount = null;
-					},
-					StatusCode = statusCode
-				};
+				return HttpStatusNotOkResult(stream, statusCode);
 			}
 
 			string? rawJson = GetRawJson(text);
 
 			if (rawJson is null)
 			{
-				return new Result<YouTubeStream>(stream)
-				{
-					Action = (YouTubeStream y) =>
-					{
-						y.Status = Status.Problem;
-						y.ViewersCount = null;
-					},
-					StatusCode = statusCode,
-					Message = "failed to extract JSON from webpage"
-				};
+				return FailedToExtractRawJsonResult(stream, statusCode);
 			}
 
 			JsonNode? json = GetJson(rawJson);
 
 			if (json is null)
 			{
-				return new Result<YouTubeStream>(stream)
-				{
-					Action = (YouTubeStream y) =>
-					{
-						y.Status = Status.Problem;
-						y.ViewersCount = null;
-					},
-					StatusCode = statusCode,
-					Message = "JSON parsing failed"
-				};
+				return FailedToParseJsonResult(stream, statusCode);
 			}
+
+			return SuccessResult(stream, statusCode, json, rawJson);
+		}
+
+		private static Result<YouTubeStream> HttpStatusNotOkResult(YouTubeStream stream, HttpStatusCode? statusCode)
+		{
+			return new Result<YouTubeStream>(stream)
+			{
+				Action = static (YouTubeStream y) =>
+				{
+					y.Status = Status.Problem;
+					y.ViewersCount = null;
+				},
+				StatusCode = statusCode,
+				Message = $"status code was {HttpStatusCodeHelpers.FormatStatusCode(statusCode)}"
+			};
+		}
+
+		private static Result<YouTubeStream> FailedToExtractRawJsonResult(YouTubeStream stream, HttpStatusCode? statusCode)
+		{
+			return new Result<YouTubeStream>(stream)
+			{
+				Action = (YouTubeStream y) =>
+				{
+					y.Status = Status.Problem;
+					y.ViewersCount = null;
+				},
+				StatusCode = statusCode,
+				Message = "failed to extract JSON from webpage"
+			};
+		}
+
+		private static Result<YouTubeStream> FailedToParseJsonResult(YouTubeStream stream, HttpStatusCode? statusCode)
+		{
+			return new Result<YouTubeStream>(stream)
+			{
+				Action = (YouTubeStream y) =>
+				{
+					y.Status = Status.Problem;
+					y.ViewersCount = null;
+				},
+				StatusCode = statusCode,
+				Message = "JSON parsing failed"
+			};
+		}
+
+		private static Result<YouTubeStream> SuccessResult(YouTubeStream stream, HttpStatusCode? statusCode, JsonNode json, string rawJson)
+		{
+			List<JsonNode> upcomingNodes = EmptyList<JsonNode>.Empty;
+			JsonNode? liveNode = null;
+
+			JsonArray? tabContents = ExtractTabContents(json);
+
+			if (tabContents is not null)
+			{
+				upcomingNodes = GetUpcomingNodes(tabContents);
+				liveNode = GetLiveNode(tabContents);
+			}
+
+			string newDisplayName = GetDisplayName(json) is string { Length: > 0 } displayName
+				? displayName
+				: stream.Link.AbsoluteUri;
+
+			Status newStatus = GetLiveStatus(liveNode, upcomingNodes.Count, rawJson);
+
+			int? newViewersCount = newStatus switch
+			{
+				Status.Public => GetViewers(rawJson),
+				_ => null
+			};
 
 			return new Result<YouTubeStream>(stream)
 			{
 				Action = (YouTubeStream y) =>
 				{
-					List<JsonNode> upcomingNodes = EmptyList<JsonNode>.Empty;
-					JsonNode? liveNode = null;
-
-					JsonArray? tabContents = ExtractTabContents(json);
-
-					if (tabContents is not null)
-					{
-						upcomingNodes = GetUpcomingNodes(tabContents);
-						liveNode = GetLiveNode(tabContents);
-					}
-					
-					y.DisplayName = GetDisplayName(json) is string { Length: > 0 } displayName
-						? displayName
-						: stream.Link.AbsoluteUri;
-
-					y.Status = GetLiveStatus(liveNode, upcomingNodes.Count, rawJson);
-
-					y.ViewersCount = y.Status switch
-					{
-						Status.Public => GetViewers(rawJson),
-						_ => null
-					};
+					y.DisplayName = newDisplayName;
+					y.Status = newStatus;
+					y.ViewersCount = newViewersCount;
 				},
-				StatusCode = statusCode
+				StatusCode = statusCode,
+				Message = $"updated {newDisplayName}: {newStatus}"
 			};
 		}
 
