@@ -13,6 +13,7 @@ using StormLib;
 using StormLib.Interfaces;
 using StormLib.Services;
 using StormLib.Services.Kick;
+using static StormDesktop.EventIds.StormBackgroundService;
 using static StormLib.Common.ExceptionFilterUtility;
 using static StormLib.Helpers.HttpStatusCodeHelpers;
 
@@ -62,21 +63,21 @@ namespace StormDesktop
 
 		public override Task StartAsync(CancellationToken cancellationToken)
 		{
-			logger.LogDebug("starting");
+			logger.LogDebug(Starting, "starting");
 
 			return base.StartAsync(cancellationToken);
 		}
 
 		public override Task StopAsync(CancellationToken cancellationToken)
 		{
-			logger.LogDebug("stopping");
+			logger.LogDebug(Stopping, "stopping");
 
 			return base.StopAsync(cancellationToken);
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			logger.LogDebug("started");
+			logger.LogDebug(Started, "started");
 
 			await Task.Delay(TimeSpan.FromSeconds(1.5d), stoppingToken).ConfigureAwait(false);
 
@@ -98,20 +99,20 @@ namespace StormDesktop
 
 						DateTimeOffset beginTime = DateTimeOffset.Now;
 
-						logger.LogDebug("update started");
+						logger.LogDebug(UpdateStarted, "update started");
 
 						int streamsUpdated = await RunUpdate(stoppingToken).ConfigureAwait(false);
 
-						logger.LogDebug("update ended");
+						logger.LogDebug(UpdateEnded, "update ended");
 
 						UpdaterEnd(activity, beginTime, DateTimeOffset.Now, streamsUpdated);
 					}
 
-					logger.LogDebug("delay started");
+					logger.LogDebug(DelayStarted, "delay started");
 
 					await Task.Delay(optionsMonitor.CurrentValue.UpdateInterval, stoppingToken).ConfigureAwait(false);
 
-					logger.LogDebug("delay ended");
+					logger.LogDebug(DelayEnded, "delay ended");
 				}
 #pragma warning disable CA1031 // Do not catch general exception types
 				catch (Exception ex)
@@ -123,13 +124,14 @@ namespace StormDesktop
 				{
 					if (stoppingToken.IsCancellationRequested)
 					{
-						logger.LogInformation("stopped (cancelled)");
+						logger.LogInformation(StoppedCancelled, "stopped (cancelled)");
 					}
 					else
 					{
 						if (edi is not null)
 						{
 							logger.LogCritical(
+								StoppedUnexpectedly,
 								edi.SourceException,
 								"stopped unexpectedly: ({Type}: {Message})",
 								edi.SourceException.GetType(),
@@ -143,7 +145,7 @@ namespace StormDesktop
 
 			if (!stoppingToken.IsCancellationRequested)
 			{
-				logger.LogInformation("stopped but not cancelled (end of executeasync reached)");
+				logger.LogInformation(StoppedNotCancelled, "stopped but not cancelled (end of executeasync reached)");
 			}
 		}
 
