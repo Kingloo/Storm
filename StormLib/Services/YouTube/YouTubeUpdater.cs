@@ -343,7 +343,7 @@ namespace StormLib.Services.YouTube
 			1 watching
 			945 spectateurs
 			1.1k watching
-			1,1k spectateurs
+			1,1 k spectateurs
 			14k spectateurs
 
 			French decimal separator is ',' (comma)
@@ -367,32 +367,90 @@ namespace StormLib.Services.YouTube
 			{
 				bool useNbsp = viewersText.Contains(nbsp, StringComparison.OrdinalIgnoreCase);
 
-				string[] segments = viewersText.Split(useNbsp ? nbsp : space, StringSplitOptions.RemoveEmptyEntries);
+				string splitter = useNbsp ? nbsp : space;
 
-				if (segments.Length != 2)
+				(string? numberStringValue, double magnitude) = cultureInfo.IetfLanguageTag switch
 				{
-					return null;
-				}
-				
-				double magnitude = segments[1].Last() switch
-				{
-					'k' => 1_000,
-					'm' => 1_000_000, // never seen live stream with more than 1 million viewers, presuming it would use 'm'
-					_ => 1
+					EnglishBritish => GetViewersFromEnglish(viewersText, splitter),
+					FrenchFrance => GetViewersFromFrench(viewersText, splitter),
+					_ => (null, double.NaN)
 				};
-				
-				string number = magnitude == 1
-					? segments[0]
-					: segments[0][..^1];
-				// removes the 'k' or 'm' at the end of the number
 
-				if (double.TryParse(number, NumberStyles.AllowDecimalPoint, cultureInfo, out double result))
+				if (double.TryParse(numberStringValue, NumberStyles.AllowDecimalPoint, cultureInfo, out double result))
 				{
 					viewers = Convert.ToInt32(result * magnitude);
 				}
 			}
 
 			return viewers;
+		}
+
+		private static (string, double) GetViewersFromEnglish(string viewersText, string splitter)
+		{
+			string[] segments = viewersText.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+
+			double magnitude = GetMagnitudeFromLetter(segments[1].Last());
+
+			string numberStringValue = magnitude == 1
+				? segments[0] // 873 watching
+				: segments[0][..^1]; // 1.1k watching
+
+			return (numberStringValue, magnitude);
+		}
+
+		private static (string?, double) GetViewersFromFrench(string viewersText, string splitter)
+		{
+			string[] segments = viewersText.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+
+			if (segments.Length == 0)
+			{
+				return (null, double.NaN);
+			}
+			
+			double magnitude = GetMagnitudeFromLetter(viewersText.FirstOrDefault(FindMagnitudeLetter));
+
+			string? numberStringValue = GetNumber(segments);
+
+			return (numberStringValue.Trim(), magnitude);
+
+			static string GetNumber(string[] segments)
+			{
+				if (segments.Length == 3
+					&& segments[1].Length == 1
+					&& Char.IsAsciiLetterLower(segments[1][0]))
+				{
+					// 1,3 k spectateurs
+
+					return segments[0];
+				}
+
+				if (segments[0].EndsWith('k') || segments[0].EndsWith('m'))
+				{
+					// 1k spectateurs
+					// 1,1k spectateurs
+
+					return segments[0][..^1];
+				}
+
+				// 873 spectateurs
+				
+				return segments[0];
+			}
+		}
+
+		private static double GetMagnitudeFromLetter(char c)
+		{
+			return c switch
+			{
+				'k' => 1_000,
+				'm' => 1_000_000,
+				_ => 1
+			};
+		}
+
+		private static bool FindMagnitudeLetter(char arg)
+		{
+			return arg == 'k' || arg == 'm';
 		}
 
 		private static TimeSpan GetManyUpdateDelay(int totalToUpdate)
