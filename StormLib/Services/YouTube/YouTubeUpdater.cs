@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -19,7 +20,24 @@ namespace StormLib.Services.YouTube
 {
 	public class YouTubeUpdater : IUpdater<YouTubeStream>
 	{
-		private static readonly string[] youTubeLiveMarkers = { "\"text\":\"LIVE\"", "\"text\":\"EN DIRECT\"" };
+		// 'CultureInfo.IetfLanguageTag's
+		private const string EnglishAmerican = "en-US";
+		private const string EnglishBritish = "en-GB";
+		private const string FrenchFrance = "fr-FR";
+		
+		private static readonly FrozenDictionary<string, string> liveMarkers = new Dictionary<string, string>
+		{
+			{ EnglishBritish, "\"text\":\"LIVE\"" },
+			{ FrenchFrance, "\"text\":\"EN DIRECT\"" }
+		}
+		.ToFrozenDictionary();
+		
+		private static readonly FrozenDictionary<string, string> upcomingMarkers = new Dictionary<string, string>
+		{
+			{ EnglishBritish, "\"text\":\"Upcoming\"" },
+			{ FrenchFrance, "\"text\":\"À venir\"" }
+		}
+		.ToFrozenDictionary();
 		
 		private readonly ILogger<YouTubeUpdater> logger;
 		private readonly IHttpClientFactory httpClientFactory;
@@ -182,15 +200,17 @@ namespace StormLib.Services.YouTube
 				liveNode = GetLiveNode(tabContents);
 			}
 
+			CultureInfo cultureInfo = DetermineCulture(rawJson);
+
 			string newDisplayName = GetDisplayName(json) is string { Length: > 0 } displayName
 				? displayName
 				: stream.Link.AbsoluteUri;
 
-			Status newStatus = GetLiveStatus(liveNode, upcomingNodes.Count, rawJson);
+			Status newStatus = GetStatus(liveNode, cultureInfo, rawJson);
 
 			int? newViewersCount = newStatus switch
 			{
-				Status.Public => GetViewers(rawJson),
+				Status.Public => GetViewers(rawJson, cultureInfo),
 				_ => null
 			};
 
@@ -205,6 +225,26 @@ namespace StormLib.Services.YouTube
 				StatusCode = statusCode,
 				Message = $"updated {newDisplayName}: {newStatus}"
 			};
+		}
+
+		private static CultureInfo DetermineCulture(string rawJson)
+		{
+			const string accessibilityTextEnglish = "\"accessibilityText\":\"Watch Later\"";
+			const string accessibilityTextFrench = "\"accessibilityText\":\"À regarder plus tard\"";
+
+			if (rawJson.Contains(accessibilityTextEnglish, StringComparison.Ordinal))
+			{
+				return CultureInfo.CreateSpecificCulture(EnglishBritish);
+			}
+
+			if (rawJson.Contains(accessibilityTextFrench, StringComparison.Ordinal))
+			{
+				return CultureInfo.CreateSpecificCulture(FrenchFrance);
+			}
+
+			// .NET 9 or greater: SearchValues can do this faster
+			
+			return CultureInfo.CreateSpecificCulture(EnglishAmerican);
 		}
 
 		private static string? GetRawJson(string text)
@@ -261,21 +301,32 @@ namespace StormLib.Services.YouTube
 			null);
 		}
 
-		private static Status GetLiveStatus(JsonNode? liveNode, int upcomingNodesCount, string rawJson)
+		private static Status GetStatus(JsonNode? liveNode, CultureInfo cultureInfo, string rawJson)
 		{
 			if (liveNode is not null)
 			{
 				return Status.Public;
 			}
 
-			bool containsAnyLiveMarker = youTubeLiveMarkers.Any(marker => rawJson.Contains(marker, StringComparison.Ordinal));
-			// .NET 9 or greater: use SearchValues for searching for multiple string within a string
-			
-			return containsAnyLiveMarker
-				? Status.Public
-				: upcomingNodesCount > 0
-					? Status.LiveSoon
-					: Status.Offline;
+			bool containsLiveMarker = liveMarkers.TryGetValue(cultureInfo.IetfLanguageTag, out string? liveMarker)
+				&& rawJson.Contains(liveMarker, StringComparison.Ordinal);
+
+			if (containsLiveMarker)
+			{
+				return Status.Public;
+			}
+
+			bool containsUpcomingMarker = upcomingMarkers.TryGetValue(cultureInfo.IetfLanguageTag, out string? upcomingMarker)
+				&& rawJson.Contains(upcomingMarker, StringComparison.Ordinal);
+
+			if (containsUpcomingMarker)
+			{
+				return Status.LiveSoon;
+			}
+
+			return Status.Offline;
+
+			// .NET 9 or greater: use SearchValues for searching for multiple strings within a string
 		}
 
 		private static string? GetDisplayName(JsonNode json)
@@ -283,7 +334,7 @@ namespace StormLib.Services.YouTube
 			return (string?)json["header"]?["pageHeaderRenderer"]?["pageTitle"];
 		}
 
-		private static int? GetViewers(string text)
+		private static int? GetViewers(string text, CultureInfo cultureInfo)
 		{
 			/*
 
@@ -329,17 +380,13 @@ namespace StormLib.Services.YouTube
 					'm' => 1_000_000, // never seen live stream with more than 1 million viewers, presuming it would use 'm'
 					_ => 1
 				};
-
-				CultureInfo culture = String.Equals(segments[1], "watching", StringComparison.OrdinalIgnoreCase)
-					? CultureInfo.CreateSpecificCulture("en") // uses '.' (dot) as decimal separator
-					: CultureInfo.CreateSpecificCulture("fr"); // uses ',' (comma) as decimal separator
-
+				
 				string number = magnitude == 1
 					? segments[0]
 					: segments[0][..^1];
 				// removes the 'k' or 'm' at the end of the number
 
-				if (double.TryParse(number, NumberStyles.AllowDecimalPoint, culture, out double result))
+				if (double.TryParse(number, NumberStyles.AllowDecimalPoint, cultureInfo, out double result))
 				{
 					viewers = Convert.ToInt32(result * magnitude);
 				}
